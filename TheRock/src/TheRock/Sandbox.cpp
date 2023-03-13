@@ -13,8 +13,8 @@ public:
 RockEngine::Application* RockEngine::CreateApplication()
 {
 	RockEngine::ApplicationProps props;
-	props.WindowHeight = 600;
-	props.WindowWidth = 600;
-	props.Name = "Name";
+	props.WindowHeight = 1600;
+	props.WindowWidth = 1600;
+	props.Name = "Title";
 	return new Sandbox(props);
 }

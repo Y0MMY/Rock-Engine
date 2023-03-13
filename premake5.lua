@@ -9,7 +9,13 @@ workspace "RockEngine"
         "Dist"
     }
     
-local outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+include "Dependencies.lua"
+
+group "Dependencies"
+include "RockEngine/vendor/GLFW"
+group ""
 
 group "Core"
 project "RockEngine"
@@ -20,18 +26,27 @@ project "RockEngine"
 	targetdir ("build/bin/" .. outputdir .. "/%{prj.name}")
     objdir ("build/bin-int/" .. outputdir .. "/%{prj.name}")
 
+	pchheader("pch.h")
+	pchsource("RockEngine/src/pch.cpp")
+
 	files 
 	{ 
-		"%{prj.name}/**.h", 
-		"%{prj.name}/**.c", 
-		"%{prj.name}/**.hpp", 
-		"%{prj.name}/**.cpp" 
+		"%{prj.name}/src/**.h", 
+		"%{prj.name}/src/**.c", 
+		"%{prj.name}/src/**.hpp", 
+		"%{prj.name}/src/**.cpp" 
     }
 
     includedirs
 	{
 		"%{prj.name}/src",
 		"%{prj.name}/vendor",
+		"%{IncludeDir.GLFW}"
+	}
+
+	links
+	{
+		"GLFW"
 	}
     
 	filter "system:windows"

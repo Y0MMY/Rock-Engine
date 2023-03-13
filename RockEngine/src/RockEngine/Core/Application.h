@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "RockEngine/Core/Core.h"
+
 namespace RockEngine
 {
 	struct ApplicationProps {
