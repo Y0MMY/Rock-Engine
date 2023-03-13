@@ -1,0 +1,3 @@
+[submodule "RockEngine/vendor/GLFW"]
+	path = RockEngine/vendor/GLFW
+	url = https://github.com/y0mmy/glfw.git
