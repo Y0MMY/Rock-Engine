@@ -15,6 +15,7 @@ include "Dependencies.lua"
 
 group "Dependencies"
 include "RockEngine/vendor/GLFW"
+include "RockEngine/vendor/Glad"
 group ""
 
 group "Core"
@@ -41,12 +42,14 @@ project "RockEngine"
 	{
 		"%{prj.name}/src",
 		"%{prj.name}/vendor",
-		"%{IncludeDir.GLFW}"
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.GLAD}",
 	}
 
 	links
 	{
-		"GLFW"
+		"GLFW",
+		"GLAD"
 	}
     
 	filter "system:windows"

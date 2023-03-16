@@ -3,6 +3,8 @@
 #include <string>
 
 #include "RockEngine/Core/Core.h"
+#include "RockEngine/Core/LayerStack.h"
+#include <RockEngine/Core/Window.h>
 
 namespace RockEngine
 {
@@ -15,9 +17,22 @@ namespace RockEngine
 	{
 	public:
 		Application(const ApplicationProps& props);
-		virtual ~Application() = default;
+		virtual ~Application();
+
+		virtual void OnInit(){}
+		virtual void OnShutdown(){}
+		virtual void OnUpdate(){}
+
+		void PushLayer(Layer* layer);
+		void PopLayer(Layer* layer);
 
 		virtual void Run();
+	private:
+
+		std::unique_ptr<Window> m_Window;
+
+		LayerStack m_LayerStack;
+		bool m_Running = true;
 	};
 
 	//Iml. by client

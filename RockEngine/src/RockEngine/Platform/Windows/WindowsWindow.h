@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "RockEngine/Core/Window.h"
@@ -9,6 +10,8 @@ namespace RockEngine
 	class WindowsWindow : public Window {
 	public:
 		WindowsWindow(const WindowProps& props);
+
+		void OnUpdate() override;
 
 		// Windows attributes
 		uint32_t GetWidth() override { return m_Data.Width; }

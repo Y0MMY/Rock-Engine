@@ -1,19 +1,42 @@
 #include "pch.h"
 #include "Application.h"
-#include "RockEngine/Core/Window.h"
+#include <RockEngine/Renderer/RendererAPI.h>
 
 namespace RockEngine
 {
 	Application::Application(const ApplicationProps& props)
 	{
-		Window::Create({ props.Name, props.WindowWidth, props.WindowHeight });
+		m_Window = std::unique_ptr<Window>( Window::Create({ props.Name, props.WindowWidth, props.WindowHeight }));
+	}
+
+	Application::~Application()
+	{
+		for (Layer* layer : m_LayerStack)
+			layer->OnDetach();
 	}
 
 	void Application::Run()
 	{
-		while (1)
+		OnInit();
+		while (m_Running)
 		{
-			//RE_CORE_TRACE("Hello")
+			for (Layer* layer : m_LayerStack)
+				layer->OnUpdate();
+
+			m_Window->OnUpdate();
+			RendererAPI::Clear(0.2f, 0.3f, 0.8f, 1);
 		}
+	}
+
+	void Application::PushLayer(Layer* layer)
+	{
+		m_LayerStack.PushLayer(layer);
+		layer->OnAttach();
+	}
+
+	void Application::PopLayer(Layer* layer)
+	{
+		m_LayerStack.PopLayer(layer);
+		layer->OnDetach();
 	}
 }
