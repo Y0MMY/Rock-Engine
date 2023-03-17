@@ -16,13 +16,23 @@ namespace RockEngine
 
 		RE_CORE_TRACE("Creating window: {} - {} - {}", props.Title, props.Width, props.Height);
 
-		if (!glfwInit())
+		if (auto isInit = glfwInit())
 		{
-			RE_CORE_ERROR("Could not intialize GLFW!");
-			abort();
+			RE_CORE_ASSERT(isInit, "Could not intialize GLFW!");
 		}
 		glfwSetErrorCallback(GLFWErrorCallback);
 		m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
 		glfwMakeContextCurrent(m_Window);
+
+		if (auto isInit = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+		{
+			RE_CORE_ASSERT(isInit, "Could not intialize Glad!");
+		}
+	}
+
+	void WindowsWindow::OnUpdate()
+	{
+		glfwPollEvents();
+		glfwSwapBuffers(m_Window);
 	}
 }
