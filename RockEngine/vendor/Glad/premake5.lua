@@ -3,8 +3,8 @@ project "Glad"
     language "C"
     staticruntime "on"
 
-	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+	targetdir ("build/bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("build/bin-int/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{
@@ -19,3 +19,6 @@ project "Glad"
     
 	filter "system:windows"
         systemversion "latest"
+        
+    filter "configurations:Debug"
+		runtime "Debug"

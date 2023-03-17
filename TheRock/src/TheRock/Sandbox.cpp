@@ -1,5 +1,4 @@
 #include "TheRock.h"
-#include "EditorLayer.h"
 
 class Sandbox : public RockEngine::Application
 {
@@ -8,12 +7,12 @@ public:
 		: RockEngine::Application(props)
 	{}
 
-	void OnInit() override
+	/*void OnInit() override
 	{
 		PushLayer(new RockEngine::Editor());
 	}
 	virtual void OnShutdown(){}
-	virtual void OnUpdate(){}
+	virtual void OnUpdate(){}*/
 };
 
 RockEngine::Application* RockEngine::CreateApplication()

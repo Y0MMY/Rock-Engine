@@ -15,11 +15,13 @@ namespace RockEngine
 	public:
 		virtual ~Window(){}
 
+		virtual void OnUpdate() = 0;
+
 		// Windows attributes
 		virtual unsigned int GetWidth() = 0;
 		virtual unsigned int GetHeight() = 0;
 
-		virtual void OnUpdate() = 0;
+		inline virtual void* GetNativeWindow() = 0;
 
 		// Instance of window
 		static Window* Create(const WindowProps& props = WindowProps());

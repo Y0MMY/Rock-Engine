@@ -16,6 +16,7 @@ include "Dependencies.lua"
 group "Dependencies"
 include "RockEngine/vendor/GLFW"
 include "RockEngine/vendor/Glad"
+include "RockEngine/vendor/imgui"
 group ""
 
 group "Core"
@@ -44,12 +45,14 @@ project "RockEngine"
 		"%{prj.name}/vendor",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.GLAD}",
+		"%{IncludeDir.ImGui}"
 	}
 
 	links
 	{
 		"GLFW",
-		"GLAD"
+		"Glad",
+		"imgui"
 	}
     
 	filter "system:windows"
@@ -63,6 +66,7 @@ project "RockEngine"
 					
     filter "configurations:Debug"
         defines "RE_DEBUG"
+		runtime "Debug"
         symbols "On"
 group ""
 
@@ -101,7 +105,8 @@ project "TheRock"
         
 		links 
 		{ 
-			"RockEngine"
+			"RockEngine",
+			"%{LinksDir.ImGui}"
 		}
         
 		defines 
@@ -109,8 +114,9 @@ project "TheRock"
             "RE_PLATFORM_WINDOWS",
 		}
     
-    filter "configurations:Debug"
+   filter "configurations:Debug"
         defines "RE_DEBUG"
+		runtime "Debug"
         symbols "On"
 group ""   
   

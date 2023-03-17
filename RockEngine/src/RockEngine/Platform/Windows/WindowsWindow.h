@@ -16,6 +16,8 @@ namespace RockEngine
 		// Windows attributes
 		uint32_t GetWidth() override { return m_Data.Width; }
 		uint32_t GetHeight() override { return m_Data.Height; }
+
+		inline void* GetNativeWindow() { return m_Window; }
 	private:
 		struct WindowData
 		{
