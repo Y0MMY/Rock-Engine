@@ -15,4 +15,9 @@ namespace RockEngine
 	{
 		glClearColor(r, g, b, a);
 	}
+	
+	void RendererAPI::Init()
+	{
+
+	}
 }

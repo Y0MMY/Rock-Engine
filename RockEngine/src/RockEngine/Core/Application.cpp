@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Application.h"
-#include <RockEngine/Renderer/RendererAPI.h>
+#include <RockEngine/Renderer/Renderer.h>
+#include "ImGui/imgui.h"
 
 namespace RockEngine
 {
@@ -28,9 +29,10 @@ namespace RockEngine
 		{
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
+
+			Renderer::WaitAndRender();
 			RenderImGui();
 			m_Window->OnUpdate();
-			RendererAPI::Clear(0.2f, 0.3f, 0.8f, 1);
 		}
 	}
 
@@ -49,6 +51,9 @@ namespace RockEngine
 	void Application::RenderImGui()
 	{
 		m_ImGuiLayer->Begin();
+
+		ImGui::Begin("Renderer");
+		ImGui::End();
 
 		for (Layer* layer : m_LayerStack)
 			layer->OnImGuiRender();

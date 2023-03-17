@@ -11,3 +11,8 @@ namespace RockEngine
 #define BIT(x) (1u << x)
 
 #include "REAssert.h"
+
+namespace RockEngine
+{
+	using byte = unsigned char;
+}
