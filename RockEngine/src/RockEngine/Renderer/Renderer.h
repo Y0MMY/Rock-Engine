@@ -1,6 +1,9 @@
 #pragma once
 
+#include "RendererAPI.h"
+
 #include "RenderCommandQueue.h"
+#include "RockEngine/Core/Core.h"
 
 namespace RockEngine
 {
@@ -12,6 +15,8 @@ namespace RockEngine
 		static void Clear();
 		static void Clear(float r, float g, float b, float a = 1.0f);
 		static void SetClearColor(float r, float g, float b, float a);
+
+		static void DrawIndexed(u32 count);
 
 		static void Init();
 

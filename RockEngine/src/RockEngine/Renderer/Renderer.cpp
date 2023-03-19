@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "Renderer.h"
 
-#include "RendererAPI.h"
-
 namespace RockEngine
 {
 	RendererAPIType RendererAPI::s_RendererAPI = RendererAPIType::OpenGL;
@@ -24,6 +22,13 @@ namespace RockEngine
 		Renderer::Submit([=]() {
 			RendererAPI::Clear(r,g,b,a);
 			});
+	}
+
+	void Renderer::DrawIndexed(u32 count)
+	{
+		Renderer::Submit([=]() {
+			RendererAPI::DrawIndexed(count);
+		});
 	}
 
 	void Renderer::WaitAndRender()

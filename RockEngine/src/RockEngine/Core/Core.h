@@ -15,4 +15,5 @@ namespace RockEngine
 namespace RockEngine
 {
 	using byte = unsigned char;
+	using u32 = unsigned int;
 }

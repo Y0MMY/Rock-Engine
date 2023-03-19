@@ -16,8 +16,14 @@ namespace RockEngine
 		glClearColor(r, g, b, a);
 	}
 	
+	void RendererAPI::DrawIndexed(u32 count)
+	{
+		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+	}
 	void RendererAPI::Init()
 	{
-
+		/*unsigned int vao;
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);*/
 	}
 }

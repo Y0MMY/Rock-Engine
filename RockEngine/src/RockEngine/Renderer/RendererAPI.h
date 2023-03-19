@@ -14,8 +14,11 @@ namespace RockEngine
 	class RendererAPI
 	{
 	public:
+		// Commands
 		static void Clear(float r, float g, float b, float a);
 		static void SetClearColor(float r, float g, float b, float a);
+
+		static void DrawIndexed(u32 count);
 
 		static void Init();
 	public:
