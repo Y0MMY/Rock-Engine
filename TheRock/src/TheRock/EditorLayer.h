@@ -4,6 +4,9 @@
 #include "RockEngine/Core/Layer.h"
 #include "GLFW/include/GLFW/glfw3.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 namespace RockEngine
 {
 	class Editor : public Layer
@@ -24,25 +27,30 @@ namespace RockEngine
 		
 
 			m_IB = IndexBuffer::Create(indices, sizeof(indices));
+
+			m_Shader = Shader::Create("assets/shaders/shader.glsl");
+			m_Shader->Bind();
 		}
 		virtual void OnDetach() { }
 		virtual void OnUpdate() 
 		{
-			RockEngine::Renderer::Clear(m_ClearColor[0], m_ClearColor[1], m_ClearColor[2], m_ClearColor[3]);
-
-			m_VB->Bind();
+			RockEngine::Renderer::Clear(1.0f,1.0f,1.0f,1.0f);
+			m_Shader->SetFloat3("u_Color", m_ClearColor);
 			m_IB->Bind();
+			m_VB->Bind();
 			Renderer::DrawIndexed(3);
 		}
 		virtual void OnImGuiRender()
 		{
 			ImGui::Begin("GameLayer");
-			ImGui::ColorEdit4("Clear Color", m_ClearColor);
+			ImGui::ColorEdit3("Clear Color", glm::value_ptr(m_ClearColor));
 			ImGui::End();
 		}
 	private:
 		VertexBuffer* m_VB;
 		IndexBuffer* m_IB;
-		float m_ClearColor[4];
+		glm::vec3 m_ClearColor;
+
+		Shader* m_Shader;
 	};
 }

@@ -16,6 +16,8 @@ namespace RockEngine
 }
 
 // Core Logging Macros
-#define RE_CORE_TRACE(...)					RockEngine::Log::GetCoreLogger()->trace(__VA_ARGS__);
-#define RE_CORE_INFO(...)					RockEngine::Log::GetCoreLogger()->info(__VA_ARGS__);
-#define RE_CORE_ERROR(...)					RockEngine::Log::GetCoreLogger()->error(__VA_ARGS__);
+#define RE_CORE_TRACE(...)	RockEngine::Log::GetCoreLogger()->trace(__VA_ARGS__)
+#define RE_CORE_INFO(...)	RockEngine::Log::GetCoreLogger()->info(__VA_ARGS__)
+#define RE_CORE_WARN(...)	RockEngine::Log::GetCoreLogger()->warn(__VA_ARGS__)
+#define RE_CORE_ERROR(...)	RockEngine::Log::GetCoreLogger()->error(__VA_ARGS__)
+#define RE_CORE_FATAL(...)	RockEngine::Log::GetCoreLogger()->critical(__VA_ARGS__)

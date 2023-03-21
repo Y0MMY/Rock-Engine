@@ -15,5 +15,6 @@
 #include "RockEngine/Renderer/Renderer.h"
 #include "RockEngine/Platform/OpenGL/OpenGLIndexBuffer.h"
 #include "RockEngine/Platform/OpenGL/OpenGLVertexBuffer.h"
+#include "RockEngine/Renderer/Shader.h"
 
 //---------------------------------------------

@@ -45,7 +45,8 @@ project "RockEngine"
 		"%{prj.name}/vendor",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.GLAD}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.glm}"
 	}
 
 	links
@@ -97,6 +98,7 @@ project "TheRock"
         "%{prj.name}/src",
         "RockEngine/src",
         "RockEngine/vendor",
+		"%{IncludeDir.glm}"
     }
 	
 	filter "system:windows"
