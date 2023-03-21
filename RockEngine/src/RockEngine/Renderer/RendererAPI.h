@@ -11,6 +11,17 @@ namespace RockEngine
 		Vulkan = 2
 	};
 
+	struct RenderAPICapabilities
+	{
+		std::string Vendor;
+		std::string Renderer;
+		std::string Version;
+
+		int MaxSamples = 0;
+		float MaxAnisotropy = 0.0f;
+		int MaxTextureUnits = 0;
+	};
+
 	class RendererAPI
 	{
 	public:
@@ -22,6 +33,12 @@ namespace RockEngine
 		static void DrawIndexed(u32 count);
 
 		static void Init();
+
+		static RenderAPICapabilities& GetCapabilities()
+		{
+			static RenderAPICapabilities capabilities;
+			return capabilities;
+		}
 	public:
 		static RendererAPIType Current() {
 			return s_RendererAPI;

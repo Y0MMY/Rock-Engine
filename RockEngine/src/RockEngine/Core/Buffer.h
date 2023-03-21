@@ -59,7 +59,7 @@ namespace RockEngine
 		}
 
 		template <typename T>
-		T* As()
+		T* As() const
 		{
 			return (T*)(Data);
 		}

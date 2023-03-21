@@ -10,15 +10,21 @@ namespace RockEngine
 		OpenGLFramebuffer(const FramebufferSpec& spec);
 		~OpenGLFramebuffer() override;
 
+		virtual void Resize(uint32_t width, uint32_t height) override;
+
 		void Bind() const override;
 		void Unbind() const override;
 
 		void BindTexture(u32 slot) const override;
-		virtual void Resize(uint32_t width, uint32_t height) override;
 
-		const FramebufferSpec& GetSpecification() const override { return m_Spec; }
+		u32 GetWidth() const override { return m_Width; }
+		u32 GetHeight() const override { return m_Height; }
+
 		RendererID GetRendererID() const override { return m_RendererID; }
 		RendererID GetColorAttachmentRendererID() const override { return m_ColorAttachment; }
+		RendererID GetDepthAttachmentRendererID() const override { return m_DepthAttachment; }
+
+		const FramebufferSpec& GetSpecification() const override { return m_Spec; }
 	private:
 		RendererID m_RendererID;
 		RendererID m_ColorAttachment, m_DepthAttachment;

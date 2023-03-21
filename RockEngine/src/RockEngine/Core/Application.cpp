@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "Application.h"
+
 #include <RockEngine/Renderer/Renderer.h>
+#include "RockEngine/Renderer/Framebuffer.h"
+
 #include "ImGui/imgui.h"
 
 namespace RockEngine
@@ -92,6 +95,12 @@ namespace RockEngine
 		}
 		m_Minimized = false;
 		Renderer::Submit([=]() { Renderer::SetViewport(width, height, 0, 0); });
+
+		auto& fbs = FramebufferPool::GetGlobal()->GetAll();
+		for (auto& fb : fbs)
+		{
+			fb->Resize(width, height);
+		}
 		return true;
 	}
 }

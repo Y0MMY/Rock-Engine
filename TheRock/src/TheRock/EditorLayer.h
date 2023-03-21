@@ -35,6 +35,9 @@ namespace RockEngine
 			spec.Width = Application::Get().GetWindow().GetWidth();
 			spec.Height = Application::Get().GetWindow().GetHeight();
 			m_Framebuffer = Framebuffer::Create(spec);
+
+			m_Texture = Texture2D::Create("assets/textures/logo.png",false);
+			
 		}
 		virtual void OnDetach() { }
 		virtual void OnUpdate() 
@@ -76,7 +79,6 @@ namespace RockEngine
 			ImGui::Begin("Viewport", &p_open, window_flags);
 			auto viewportSize = ImGui::GetContentRegionAvail();
 			m_Framebuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-			m_Framebuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 			ImGui::Image((void*)m_Framebuffer->GetColorAttachmentRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
 			ImGui::PopStyleVar();
 
@@ -102,7 +104,7 @@ namespace RockEngine
 		Ref<IndexBuffer> m_IB;
 		Ref<Framebuffer> m_Framebuffer;
 		glm::vec3 m_ClearColor;
-
+		Ref<Texture2D> m_Texture;
 		Ref<Shader> m_Shader;
 	};
 }
