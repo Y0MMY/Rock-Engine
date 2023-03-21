@@ -14,6 +14,7 @@ namespace RockEngine
 		void OnUpdate() override;
 
 		// Windows attributes
+		virtual void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
 		uint32_t GetWidth() override { return m_Data.Width; }
 		uint32_t GetHeight() override { return m_Data.Height; }
 
@@ -26,6 +27,8 @@ namespace RockEngine
 			uint32_t Height;
 
 			bool VSync = false;
+
+			EventCallbackFn EventCallback;
 		};
 
 		WindowData m_Data;

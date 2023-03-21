@@ -1,5 +1,10 @@
 #pragma once
 
+#include <functional>
+
+#include "RockEngine/Core/Core.h"
+#include "RockEngine/Core/Events/Event.h"
+
 namespace RockEngine
 {
 	struct WindowProps{
@@ -13,11 +18,14 @@ namespace RockEngine
 	class Window
 	{
 	public:
+		using EventCallbackFn = std::function<void(Event&)>;
+
 		virtual ~Window(){}
 
 		virtual void OnUpdate() = 0;
 
 		// Windows attributes
+		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual unsigned int GetWidth() = 0;
 		virtual unsigned int GetHeight() = 0;
 

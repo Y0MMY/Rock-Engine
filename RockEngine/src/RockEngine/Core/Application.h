@@ -8,6 +8,8 @@
 
 #include <RockEngine/ImGui/ImGuiLayer.h>
 
+#include "RockEngine/Core/Events/ApplicationEvent.h"
+
 namespace RockEngine
 {
 	struct ApplicationProps {
@@ -25,6 +27,8 @@ namespace RockEngine
 		virtual void OnShutdown(){}
 		virtual void OnUpdate(){}
 
+		void OnEvent(Event& event);
+
 		void RenderImGui();
 
 		void PushLayer(Layer* layer);
@@ -34,6 +38,8 @@ namespace RockEngine
 
 		inline Window& GetWindow() { return *m_Window; }
 		inline static Application& Get() { return *s_Instance; }
+	private:
+		bool OnWindowClose(WindowCloseEvent& e);
 	private:
 		std::unique_ptr<Window> m_Window;
 		LayerStack m_LayerStack;

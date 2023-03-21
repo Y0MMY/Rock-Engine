@@ -690,7 +690,7 @@ namespace RockEngine
 		glUniformMatrix4fv(location, count, GL_FALSE, &(values[0].x));
 	}
 
-	/*void OpenGLShader::UploadUniformStruct(OpenGLShaderUniformDeclaration* uniform, byte* buffer, uint32_t offset)
+	/*void OpenGLShader::UploadUniformStruct(OpenGLShaderUniformDecl* uniform, byte* buffer, uint32_t offset)
 	{
 		const ShaderStruct& s = uniform->GetShaderUniformStruct();
 		const auto& fields = s.GetFields();

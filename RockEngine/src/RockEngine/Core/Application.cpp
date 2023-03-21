@@ -11,6 +11,7 @@ namespace RockEngine
 	{
 		s_Instance = this;
 		m_Window = std::unique_ptr<Window>( Window::Create({ props.Name, props.WindowWidth, props.WindowHeight }));
+		m_Window->SetEventCallback(BIND_FN(OnEvent));
 
 		m_ImGuiLayer = new ImGuiLayer("ImGuiLayer");
 		PushLayer(m_ImGuiLayer);
@@ -59,5 +60,19 @@ namespace RockEngine
 			layer->OnImGuiRender();
 
 		m_ImGuiLayer->End();
+	}
+
+	//---------------------------
+
+	void Application::OnEvent(Event& event)
+	{
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<WindowCloseEvent>(BIND_FN(OnWindowClose));
+	}
+
+	bool Application::OnWindowClose(WindowCloseEvent& e)
+	{
+		m_Running = false;
+		return true;
 	}
 }
