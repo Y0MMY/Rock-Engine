@@ -60,6 +60,6 @@ namespace RockEngine
 
 		virtual void SetIntArray(const std::string& name, int* values, uint32_t size) = 0;
 	
-		static Shader* Create(const std::string& path);
+		static Ref<Shader> Create(const std::string& path);
 	};
 }

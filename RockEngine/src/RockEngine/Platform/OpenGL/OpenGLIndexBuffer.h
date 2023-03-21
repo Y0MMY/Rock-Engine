@@ -17,6 +17,7 @@ namespace RockEngine
 		virtual void Bind() const override;
 
 		virtual u32 GetSize() const { return m_Size; }
+		virtual u32 GetCount() const { return m_Size / sizeof(u32); }
 	private:
 		u32 m_Size = 0;
 		RendererID m_RendererID = 0;

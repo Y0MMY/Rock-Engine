@@ -24,6 +24,13 @@ namespace RockEngine
 			});
 	}
 
+	void Renderer::SetViewport(u32 Width, u32 Height, u32 x, u32 y)
+	{
+		Renderer::Submit([=]() {
+			RendererAPI::SetViewport(Width,Height,x,y);
+			});
+	}
+
 	void Renderer::DrawIndexed(u32 count)
 	{
 		Renderer::Submit([=]() {

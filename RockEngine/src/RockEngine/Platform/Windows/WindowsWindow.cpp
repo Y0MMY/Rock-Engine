@@ -54,6 +54,14 @@ namespace RockEngine
 		WindowCloseEvent event;
 		data.EventCallback(event);
 			});
+
+		// Update window size to actual size
+		{
+			int width, height;
+			glfwGetWindowSize(m_Window, &width, &height);
+			m_Data.Width = width;
+			m_Data.Height = height;
+		}
 	}
 
 	void WindowsWindow::OnUpdate()

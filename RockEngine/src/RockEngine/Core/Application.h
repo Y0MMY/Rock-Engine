@@ -40,10 +40,12 @@ namespace RockEngine
 		inline static Application& Get() { return *s_Instance; }
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
+		bool OnWindowResize(WindowResizeEvent& e);
 	private:
-		std::unique_ptr<Window> m_Window;
+		Ref<Window> m_Window;
 		LayerStack m_LayerStack;
 		bool m_Running = true;
+		bool m_Minimized = false;
 		ImGuiLayer* m_ImGuiLayer;
 		static Application* s_Instance;
 	};

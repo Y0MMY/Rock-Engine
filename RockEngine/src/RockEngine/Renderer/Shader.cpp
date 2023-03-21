@@ -5,12 +5,12 @@
 
 namespace RockEngine
 {
-	Shader* Shader::Create(const std::string& path)
+	Ref<Shader> Shader::Create(const std::string& path)
 	{
 		switch (RendererAPI::Current())
 		{
 			case RendererAPIType::None: return nullptr;
-			case RendererAPIType::OpenGL: return new OpenGLShader(path);
+			case RendererAPIType::OpenGL: return  Ref<OpenGLShader>::Create(path);
 		}
 		RE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;

@@ -4,7 +4,7 @@
 
 namespace RockEngine
 {
-	class VertexBuffer
+	class VertexBuffer : public RefCounted
 	{
 	public:
 		virtual ~VertexBuffer() {}
@@ -14,7 +14,7 @@ namespace RockEngine
 
 		virtual u32 GetSize() const = 0;
 
-		static VertexBuffer* Create(void* data, u32 size);
-		static VertexBuffer* Create(u32 size);
+		static Ref<VertexBuffer> Create(void* data, u32 size);
+		static Ref<VertexBuffer> Create(u32 size);
 	};
 }

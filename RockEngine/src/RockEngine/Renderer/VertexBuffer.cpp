@@ -5,7 +5,7 @@
 
 namespace RockEngine
 {
-	VertexBuffer* VertexBuffer::Create(void* data, u32 size)
+	Ref<VertexBuffer> VertexBuffer::Create(void* data, u32 size)
 	{
 		switch (RendererAPI::Current())
 		{
@@ -13,14 +13,14 @@ namespace RockEngine
 			return nullptr;
 
 		case RendererAPIType::OpenGL:
-			return new OpenGLVertexBuffer(data, size);
+			return Ref<OpenGLVertexBuffer>::Create(data, size);
 		}
 
 		RE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
 
-	VertexBuffer* VertexBuffer::Create(u32 size)
+	Ref<VertexBuffer> VertexBuffer::Create(u32 size)
 	{
 		switch (RendererAPI::Current())
 		{
@@ -28,7 +28,7 @@ namespace RockEngine
 			return nullptr;
 
 		case RendererAPIType::OpenGL:
-			return new OpenGLVertexBuffer(size);
+			return  Ref<OpenGLVertexBuffer>::Create(size);
 		}
 
 		RE_CORE_ASSERT(false, "Unknown RendererAPI!");

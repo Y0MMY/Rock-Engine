@@ -5,7 +5,7 @@
 
 namespace RockEngine
 {
-	IndexBuffer* IndexBuffer::Create(void* data, u32 size)
+	Ref<IndexBuffer> IndexBuffer::Create(void* data, u32 size)
 	{
 		switch (RendererAPI::Current())
 		{
@@ -13,19 +13,19 @@ namespace RockEngine
 				return nullptr;
 			
 			case RendererAPIType::OpenGL:
-				return new OpenGLIndexBuffer(data, size);
+				return Ref<OpenGLIndexBuffer>::Create(data, size);
 		}
 
 		RE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
 	
-	IndexBuffer* IndexBuffer::Create(u32 size)
+	Ref<IndexBuffer> IndexBuffer::Create(u32 size)
 	{
 		switch (RendererAPI::Current())
 		{
 			case RendererAPIType::None:  return nullptr;
-			case RendererAPIType::OpenGL: return new OpenGLIndexBuffer(size);
+			case RendererAPIType::OpenGL: return Ref<OpenGLIndexBuffer>::Create(size);
 		}
 
 		RE_CORE_ASSERT(false, "Unknown RendererAPI!");

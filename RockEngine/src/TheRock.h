@@ -13,8 +13,9 @@
 #include "ImGui/imgui.h"
 
 #include "RockEngine/Renderer/Renderer.h"
-#include "RockEngine/Platform/OpenGL/OpenGLIndexBuffer.h"
-#include "RockEngine/Platform/OpenGL/OpenGLVertexBuffer.h"
+#include "RockEngine/Renderer/IndexBuffer.h"
+#include "RockEngine/Renderer/VertexBuffer.h"
 #include "RockEngine/Renderer/Shader.h"
+#include "RockEngine/Renderer/Framebuffer.h"
 
 //---------------------------------------------

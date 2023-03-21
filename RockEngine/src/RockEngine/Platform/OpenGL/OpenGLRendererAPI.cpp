@@ -20,6 +20,12 @@ namespace RockEngine
 	{
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}
+
+	void RendererAPI::SetViewport(u32 Width, u32 Height, u32 x, u32 y)
+	{
+		glViewport(x, y, Width, Height);
+	}
+
 	void RendererAPI::Init()
 	{
 		/*unsigned int vao;
