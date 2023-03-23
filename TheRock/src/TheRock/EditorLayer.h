@@ -13,41 +13,55 @@ namespace RockEngine
 	{
 		virtual void OnAttach() 
 		{
-			static float vertices[] = {
-			-0.5f, -0.5f, 0.0f,
-			 0.5f, -0.5f, 0.0f,
-			 0.0f,  0.5f, 0.0f
+			// Create Quad
+			float x = -1, y = -1;
+			float width = 2, height = 2;
+			struct QuadVertex
+			{
+				glm::vec3 Position;
+				glm::vec2 TexCoord;
 			};
 
-			static unsigned int indices[] = {
-				0, 1, 2
-			};
+			QuadVertex* data = new QuadVertex[4];
 
-			m_VB = VertexBuffer::Create(vertices, sizeof(vertices));
-		
+			data[0].Position = glm::vec3(x, y, 0);
+			data[0].TexCoord = glm::vec2(0, 0);
 
-			m_IB = IndexBuffer::Create(indices, sizeof(indices));
+			data[1].Position = glm::vec3(x + width, y, 0);
+			data[1].TexCoord = glm::vec2(1, 0);
+
+			data[2].Position = glm::vec3(x + width, y + height, 0);
+			data[2].TexCoord = glm::vec2(1, 1);
+
+			data[3].Position = glm::vec3(x, y + height, 0);
+			data[3].TexCoord = glm::vec2(0, 1);
+
+			m_VB = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+
+			uint32_t* indices = new uint32_t[6]{ 0, 1, 2, 2, 3, 0, };
+
+			m_IB = IndexBuffer::Create(indices, 6 * sizeof(unsigned int));
 
 			m_Shader = Shader::Create("assets/shaders/shader.glsl");
-			m_Shader->Bind();
 
 			FramebufferSpec spec;
 			spec.Width = Application::Get().GetWindow().GetWidth();
 			spec.Height = Application::Get().GetWindow().GetHeight();
 			m_Framebuffer = Framebuffer::Create(spec);
 
-			m_Texture = Texture2D::Create("assets/textures/logo.png",false);
+			m_Texture = TextureCube::Create("assets/textures/environments/Arches_E_PineTree_Radiance.tga");
 			
 		}
 		virtual void OnDetach() { }
 		virtual void OnUpdate() 
 		{
 			m_Framebuffer->Bind();
-			RockEngine::Renderer::Clear(1.0f,1.0f,1.0f,1.0f);
-			m_Shader->SetFloat3("u_Color", m_ClearColor);
+			RockEngine::Renderer::Clear(1.0f, 1.0f, 1.0f, 1.0f);
+			m_Shader->Bind();
+			m_Texture->Bind();
 			m_IB->Bind();
 			m_VB->Bind();
-			Renderer::DrawIndexed(3);
+			Renderer::DrawIndexed(m_IB->GetCount());
 			m_Framebuffer->Unbind();
 		}
 		virtual void OnImGuiRender()
@@ -104,7 +118,7 @@ namespace RockEngine
 		Ref<IndexBuffer> m_IB;
 		Ref<Framebuffer> m_Framebuffer;
 		glm::vec3 m_ClearColor;
-		Ref<Texture2D> m_Texture;
+		Ref<TextureCube> m_Texture;
 		Ref<Shader> m_Shader;
 	};
 }

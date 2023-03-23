@@ -51,8 +51,10 @@ namespace RockEngine
 		static Ref<Texture2D> Create(const std::string& path, bool srgb = false);
 	};
 
-	class TextureCube
+	class TextureCube : public Texture
 	{
-
+	public:
+		static Ref<TextureCube> Create(TextureFormat format, u32 width, u32 height);
+		static Ref<TextureCube> Create(const std::string& path);
 	};
 }

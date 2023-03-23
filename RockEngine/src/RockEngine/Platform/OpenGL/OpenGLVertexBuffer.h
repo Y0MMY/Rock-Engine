@@ -8,18 +8,24 @@ namespace RockEngine
 	class OpenGLVertexBuffer : public VertexBuffer
 	{
 	public:
-		OpenGLVertexBuffer(void* data, u32 size);
-		OpenGLVertexBuffer(u32 size);
-
-		~OpenGLVertexBuffer();
+		OpenGLVertexBuffer(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
+		OpenGLVertexBuffer(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
+		~OpenGLVertexBuffer() override;
 
 		virtual void SetData(void* data, u32 size, u32 offset) override;
 		virtual void Bind() const override;
 
+		virtual const VertexBufferLayout& GetLayout() const override { return m_Layout; }
+		virtual void SetLayout(const VertexBufferLayout& layout) override { m_Layout = layout; }
+
 		virtual u32 GetSize() const { return m_Size; }
+		virtual RendererID GetRendererID() const { return m_RendererID; }
 	private:
 		Buffer m_LocalData;
 		u32 m_Size = 0;
+
+		VertexBufferUsage m_Usage;
+		VertexBufferLayout m_Layout;
 
 		RendererID m_RendererID = 0;
 	};

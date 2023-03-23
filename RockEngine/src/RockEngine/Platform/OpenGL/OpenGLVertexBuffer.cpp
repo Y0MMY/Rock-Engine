@@ -5,7 +5,18 @@
 
 namespace RockEngine
 {
-	OpenGLVertexBuffer::OpenGLVertexBuffer(void* data, u32 size)
+	static GLenum OpenGLUsage(VertexBufferUsage usage)
+	{
+		switch (usage)
+		{
+		case VertexBufferUsage::Static:    return GL_STATIC_DRAW;
+		case VertexBufferUsage::Dynamic:   return GL_DYNAMIC_DRAW;
+		}
+		RE_CORE_ASSERT(false, "Unknown vertex buffer usage");
+		return 0;
+	}
+
+	OpenGLVertexBuffer::OpenGLVertexBuffer(void* data, u32 size, VertexBufferUsage usage)
 		: m_Size(size)
 	{
 		m_LocalData = Buffer::Copy(data, size);
@@ -16,13 +27,17 @@ namespace RockEngine
 				glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 				glBufferData(GL_ARRAY_BUFFER, m_LocalData.Size, m_LocalData.Data, GL_STATIC_DRAW);
 
+				// TODO: Extremely temp, by default provide positions and texcoord attributes
 				glEnableVertexAttribArray(0);
-				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);
+
+				glEnableVertexAttribArray(1);
+				glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (const void*)(3 * sizeof(float)));
 			}
 		);
 	}
 
-	OpenGLVertexBuffer::OpenGLVertexBuffer(u32 size)
+	OpenGLVertexBuffer::OpenGLVertexBuffer(u32 size, VertexBufferUsage usage)
 		: m_Size(size)
 	{
 		Renderer::Submit([this]() mutable
@@ -59,10 +74,10 @@ namespace RockEngine
 		Renderer::Submit([this]() mutable
 			{
 				glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-				glBufferData(GL_ARRAY_BUFFER, m_LocalData.Size, m_LocalData.Data, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, m_LocalData.Size, m_LocalData.Data, GL_STATIC_DRAW);
 
-				glEnableVertexAttribArray(0);
-				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 			}
 		);
 	}
