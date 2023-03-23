@@ -50,6 +50,12 @@ namespace RockEngine
 			m_Framebuffer = Framebuffer::Create(spec);
 
 			m_Texture = TextureCube::Create("assets/textures/environments/Arches_E_PineTree_Radiance.tga");
+			PipelineSpecification layout;
+			layout.Layout = {
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float2, "a_TexCoord" }
+			};
+			m_Pipeline = Pipeline::Create(layout);
 			
 		}
 		virtual void OnDetach() { }
@@ -59,6 +65,7 @@ namespace RockEngine
 			RockEngine::Renderer::Clear(1.0f, 1.0f, 1.0f, 1.0f);
 			m_Shader->Bind();
 			m_Texture->Bind();
+			m_Pipeline->Bind();
 			m_IB->Bind();
 			m_VB->Bind();
 			Renderer::DrawIndexed(m_IB->GetCount());
@@ -120,5 +127,6 @@ namespace RockEngine
 		glm::vec3 m_ClearColor;
 		Ref<TextureCube> m_Texture;
 		Ref<Shader> m_Shader;
+		Ref<Pipeline> m_Pipeline;
 	};
 }

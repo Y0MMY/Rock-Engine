@@ -15,9 +15,6 @@ namespace RockEngine
 		virtual void SetData(void* data, u32 size, u32 offset) override;
 		virtual void Bind() const override;
 
-		virtual const VertexBufferLayout& GetLayout() const override { return m_Layout; }
-		virtual void SetLayout(const VertexBufferLayout& layout) override { m_Layout = layout; }
-
 		virtual u32 GetSize() const { return m_Size; }
 		virtual RendererID GetRendererID() const { return m_RendererID; }
 	private:

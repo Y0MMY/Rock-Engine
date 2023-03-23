@@ -19,5 +19,6 @@
 #include "RockEngine/Renderer/Shader.h"
 #include "RockEngine/Renderer/Framebuffer.h"
 #include "RockEngine/Renderer/Texture.h"
+#include "RockEngine/Renderer/Pipeline.h"
 
 //---------------------------------------------

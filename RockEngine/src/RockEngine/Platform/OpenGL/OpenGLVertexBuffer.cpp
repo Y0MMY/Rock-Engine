@@ -26,13 +26,6 @@ namespace RockEngine
 
 				glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 				glBufferData(GL_ARRAY_BUFFER, m_LocalData.Size, m_LocalData.Data, GL_STATIC_DRAW);
-
-				// TODO: Extremely temp, by default provide positions and texcoord attributes
-				glEnableVertexAttribArray(0);
-				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);
-
-				glEnableVertexAttribArray(1);
-				glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (const void*)(3 * sizeof(float)));
 			}
 		);
 	}
