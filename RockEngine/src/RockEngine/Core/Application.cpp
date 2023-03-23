@@ -77,6 +77,12 @@ namespace RockEngine
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_FN(OnWindowClose));
 		dispatcher.Dispatch<WindowResizeEvent>(BIND_FN(OnWindowResize));
+		dispatcher.Dispatch<MouseMovedEvent>(BIND_FN(OnMouseMoved));
+	}
+
+	bool Application::OnMouseMoved(MouseMovedEvent& e)
+	{
+		return true;
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)

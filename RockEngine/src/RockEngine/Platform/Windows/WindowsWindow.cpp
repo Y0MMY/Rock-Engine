@@ -2,6 +2,7 @@
 #include "WindowsWindow.h"
 
 #include "RockEngine/Core/Events/ApplicationEvent.h"
+#include <RockEngine/Core/Events/MouseEvent.h>
 
 namespace RockEngine
 {
@@ -38,22 +39,30 @@ namespace RockEngine
 
 		// Set GLFW callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
-			{
-				auto& data = *((WindowData*)glfwGetWindowUserPointer(window));
+		{
+			auto& data = *((WindowData*)glfwGetWindowUserPointer(window));
 
-		WindowResizeEvent event((unsigned int)width, (unsigned int)height);
-		data.EventCallback(event);
-		data.Width = width;
-		data.Height = height;
-			});
+			WindowResizeEvent event((unsigned int)width, (unsigned int)height);
+			data.EventCallback(event);
+			data.Width = width;
+			data.Height = height;
+		});
 
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
-			{
-				auto& data = *((WindowData*)glfwGetWindowUserPointer(window));
+		{
+			auto& data = *((WindowData*)glfwGetWindowUserPointer(window));
 
-		WindowCloseEvent event;
-		data.EventCallback(event);
-			});
+			WindowCloseEvent event;
+			data.EventCallback(event);
+		});
+
+		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double x, double y)
+		{
+			auto& data = *((WindowData*)glfwGetWindowUserPointer(window));
+			MouseMovedEvent event((float)x, (float)y);
+			data.EventCallback(event);
+		});
+
 
 		// Update window size to actual size
 		{

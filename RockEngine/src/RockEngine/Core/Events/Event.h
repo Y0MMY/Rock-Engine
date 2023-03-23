@@ -1,4 +1,7 @@
 #pragma once
+
+#include <sstream>
+
 #include "pch.h"
 
 namespace RockEngine

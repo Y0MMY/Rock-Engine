@@ -9,6 +9,7 @@
 #include <RockEngine/ImGui/ImGuiLayer.h>
 
 #include "RockEngine/Core/Events/ApplicationEvent.h"
+#include "RockEngine/Core/Events/MouseEvent.h"
 
 namespace RockEngine
 {
@@ -41,6 +42,7 @@ namespace RockEngine
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
+		bool OnMouseMoved(MouseMovedEvent& e);
 	private:
 		Ref<Window> m_Window;
 		LayerStack m_LayerStack;

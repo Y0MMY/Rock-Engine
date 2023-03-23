@@ -42,7 +42,7 @@ namespace RockEngine
 
 			m_IB = IndexBuffer::Create(indices, 6 * sizeof(unsigned int));
 
-			m_Shader = Shader::Create("assets/shaders/shader.glsl");
+			m_Shader = Shader::Create("assets/shaders/quad.glsl");
 
 			FramebufferSpec spec;
 			spec.Width = Application::Get().GetWindow().GetWidth();
@@ -61,8 +61,12 @@ namespace RockEngine
 		virtual void OnDetach() { }
 		virtual void OnUpdate() 
 		{
+			m_Camera.Update();
+			auto viewProjection = m_Camera.GetProjectionMatrix() * m_Camera.GetViewMatrix();
+
 			m_Framebuffer->Bind();
 			RockEngine::Renderer::Clear(1.0f, 1.0f, 1.0f, 1.0f);
+			m_Shader->SetMat4("u_InverseVP", inverse(viewProjection));
 			m_Shader->Bind();
 			m_Texture->Bind();
 			m_Pipeline->Bind();
@@ -100,6 +104,7 @@ namespace RockEngine
 			ImGui::Begin("Viewport", &p_open, window_flags);
 			auto viewportSize = ImGui::GetContentRegionAvail();
 			m_Framebuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+			m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
 			ImGui::Image((void*)m_Framebuffer->GetColorAttachmentRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
 			ImGui::PopStyleVar();
 
@@ -116,10 +121,13 @@ namespace RockEngine
 
 			// Editor Panel ------------------------------------------------------------------------------
 			ImGui::Begin("Settings");
-			ImGui::ColorEdit3("Clear Color", glm::value_ptr(m_ClearColor));
+			//ImGui::ColorEdit3("Clear Color", glm::value_ptr(m_ClearColor));
+			auto cameraForward = m_Camera.GetForwardDirection();
+			ImGui::Text("Camera Forward: %.2f, %.2f, %.2f", cameraForward.x, cameraForward.y, cameraForward.z);
 			ImGui::End();
 			ImGui::End();
 		}
+
 	private:
 		Ref<VertexBuffer> m_VB;
 		Ref<IndexBuffer> m_IB;
@@ -128,5 +136,7 @@ namespace RockEngine
 		Ref<TextureCube> m_Texture;
 		Ref<Shader> m_Shader;
 		Ref<Pipeline> m_Pipeline;
+
+		Camera m_Camera = glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 10000.0f);
 	};
 }

@@ -5,6 +5,7 @@
 #include "RockEngine/Core/Log.h"
 #include "RockEngine/Core/Core.h"
 #include "RockEngine/Core/Buffer.h"
+#include "RockEngine/Core/Input.h"
 
 //---------------------------------------------
 
@@ -20,5 +21,6 @@
 #include "RockEngine/Renderer/Framebuffer.h"
 #include "RockEngine/Renderer/Texture.h"
 #include "RockEngine/Renderer/Pipeline.h"
+#include "RockEngine/Renderer/Camera.h"
 
 //---------------------------------------------
