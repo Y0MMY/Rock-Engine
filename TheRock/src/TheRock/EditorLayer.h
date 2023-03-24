@@ -13,6 +13,18 @@ namespace RockEngine
 	{
 		virtual void OnAttach() 
 		{
+			m_ModelShader = (RockEngine::Shader::Create("assets/shaders/shader.glsl"));
+			m_Shader = (RockEngine::Shader::Create("assets/shaders/quad.glsl"));
+			m_Model = (new RockEngine::Mesh("assets/meshes/Sphere1m.fbx"));
+
+			m_Texture = (RockEngine::TextureCube::Create("assets/textures/environments/Arches_E_PineTree_Irradiance.tga"));
+
+			FramebufferSpec spec;
+			spec.Width = 1920;
+			spec.Height = 1080;
+			spec.Format = FramebufferTextureFormat::RGBA8;
+			m_Framebuffer = Framebuffer::Create(spec);
+
 			// Create Quad
 			float x = -1, y = -1;
 			float width = 2, height = 2;
@@ -36,27 +48,18 @@ namespace RockEngine
 			data[3].Position = glm::vec3(x, y + height, 0);
 			data[3].TexCoord = glm::vec2(0, 1);
 
-			m_VB = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+			m_VB = (RockEngine::VertexBuffer::Create(data, 4 * sizeof(QuadVertex)));
 
 			uint32_t* indices = new uint32_t[6]{ 0, 1, 2, 2, 3, 0, };
+			m_IB = (RockEngine::IndexBuffer::Create(indices, 6 * sizeof(unsigned int)));
 
-			m_IB = IndexBuffer::Create(indices, 6 * sizeof(unsigned int));
-
-			m_Shader = Shader::Create("assets/shaders/quad.glsl");
-
-			FramebufferSpec spec;
-			spec.Width = Application::Get().GetWindow().GetWidth();
-			spec.Height = Application::Get().GetWindow().GetHeight();
-			m_Framebuffer = Framebuffer::Create(spec);
-
-			m_Texture = TextureCube::Create("assets/textures/environments/Arches_E_PineTree_Radiance.tga");
 			PipelineSpecification layout;
 			layout.Layout = {
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float2, "a_TexCoord" }
 			};
 			m_Pipeline = Pipeline::Create(layout);
-			
+
 		}
 		virtual void OnDetach() { }
 		virtual void OnUpdate() 
@@ -66,13 +69,19 @@ namespace RockEngine
 
 			m_Framebuffer->Bind();
 			RockEngine::Renderer::Clear(1.0f, 1.0f, 1.0f, 1.0f);
+
 			m_Shader->SetMat4("u_InverseVP", inverse(viewProjection));
 			m_Shader->Bind();
 			m_Texture->Bind();
-			m_Pipeline->Bind();
 			m_IB->Bind();
 			m_VB->Bind();
-			Renderer::DrawIndexed(m_IB->GetCount());
+			m_Pipeline->Bind();
+			Renderer::DrawIndexed(m_IB->GetCount(),false);
+
+			m_ModelShader->SetMat4("u_MVP", viewProjection);
+			m_Model->Render();
+			m_ModelShader->Bind();
+
 			m_Framebuffer->Unbind();
 		}
 		virtual void OnImGuiRender()
@@ -121,13 +130,11 @@ namespace RockEngine
 
 			// Editor Panel ------------------------------------------------------------------------------
 			ImGui::Begin("Settings");
-			//ImGui::ColorEdit3("Clear Color", glm::value_ptr(m_ClearColor));
 			auto cameraForward = m_Camera.GetForwardDirection();
 			ImGui::Text("Camera Forward: %.2f, %.2f, %.2f", cameraForward.x, cameraForward.y, cameraForward.z);
 			ImGui::End();
 			ImGui::End();
 		}
-
 	private:
 		Ref<VertexBuffer> m_VB;
 		Ref<IndexBuffer> m_IB;
@@ -135,6 +142,8 @@ namespace RockEngine
 		glm::vec3 m_ClearColor;
 		Ref<TextureCube> m_Texture;
 		Ref<Shader> m_Shader;
+		Ref<Shader> m_ModelShader;
+		Ref<Mesh> m_Model;
 		Ref<Pipeline> m_Pipeline;
 
 		Camera m_Camera = glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 10000.0f);

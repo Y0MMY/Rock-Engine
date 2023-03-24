@@ -155,22 +155,23 @@ namespace RockEngine
 	OpenGLTextureCube::OpenGLTextureCube(const std::string& path)
 		: m_FilePath(path)
 	{
+		
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(false);
 		m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb);
-		RE_CORE_ASSERT(m_ImageData.Data, "Could not read image!");
-		m_Width = width; 
+
+		m_Width = width;
 		m_Height = height;
 		m_Format = TextureFormat::RGB;
 
-		uint32_t faceWidth = m_Width / 4;
-		uint32_t faceHeight = m_Height / 3;
-		RE_CORE_ASSERT(faceWidth == faceHeight, "Non-square faces!");
-		
-		std::array<uint8_t*, 6> faces;
-		for (size_t i = 0; i < faces.size(); i++)
-			faces[i] = new uint8_t[faceWidth * faceHeight * Texture::GetBPP(m_Format)]; // 3 BPP
+		u32 faceWidth = m_Width / 4;
+		u32 faceHeight = m_Height / 3;
 
+		RE_CORE_ASSERT(faceWidth == faceHeight, "Non-square faces!");
+
+		std::array<byte*, 6> faces;
+		for (size_t i = 0; i < faces.size(); i++)
+			faces[i] = new byte[faceWidth * faceHeight * 3];
 		int faceIndex = 0;
 
 		for (size_t i = 0; i < 4; i++)
@@ -208,7 +209,6 @@ namespace RockEngine
 			}
 			faceIndex++;
 		}
-
 		Ref<OpenGLTextureCube> instance = this;
 		Renderer::Submit([instance, faceWidth, faceHeight, faces]() mutable
 		{
@@ -219,7 +219,6 @@ namespace RockEngine
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 			glTextureParameterf(instance->m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, RendererAPI::GetCapabilities().MaxAnisotropy);
 
 			auto format = OpenGLTextureFormat(instance->m_Format);
@@ -254,7 +253,8 @@ namespace RockEngine
 	void OpenGLTextureCube::Bind(uint32_t slot) const
 	{
 		Renderer::Submit([=]() {
-			glBindTextureUnit(slot, m_RendererID);
+			glActiveTexture(GL_TEXTURE0 + slot);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
 			});
 	}
 

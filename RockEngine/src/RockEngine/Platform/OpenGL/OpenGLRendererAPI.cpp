@@ -36,8 +36,13 @@ namespace RockEngine
 		glClearColor(r, g, b, a);
 	}
 	
-	void RendererAPI::DrawIndexed(u32 count)
+	void RendererAPI::DrawIndexed(u32 count, bool depthTest)
 	{
+		if (depthTest)
+			glEnable(GL_DEPTH_TEST);
+		else
+			glDisable(GL_DEPTH_TEST);
+
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}
 
@@ -49,6 +54,15 @@ namespace RockEngine
 	void RendererAPI::Init()
 	{
 		glDebugMessageCallback(OpenGLLogMessage,nullptr);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_CULL_FACE);
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+		glFrontFace(GL_CCW);
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		auto& caps = RendererAPI::GetCapabilities();
 

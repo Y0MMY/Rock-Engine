@@ -48,6 +48,7 @@ project "RockEngine"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.stb}",
+		"%{IncludeDir.assimp}",
 	}
 
 	links

@@ -14,7 +14,7 @@ namespace RockEngine
 
 	void Renderer::Init()
 	{
-
+		
 	}
 
 	void Renderer::Clear(float r, float g, float b, float a /* = 1.0f */)
@@ -31,10 +31,10 @@ namespace RockEngine
 			});
 	}
 
-	void Renderer::DrawIndexed(u32 count)
+	void Renderer::DrawIndexed(u32 count, bool depthTest)
 	{
 		Renderer::Submit([=]() {
-			RendererAPI::DrawIndexed(count);
+			RendererAPI::DrawIndexed(count, depthTest);
 		});
 	}
 

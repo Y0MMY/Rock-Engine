@@ -30,7 +30,7 @@ namespace RockEngine
 		static void SetClearColor(float r, float g, float b, float a);
 		static void SetViewport(u32 Width, u32 Height, u32 x, u32 y);
 
-		static void DrawIndexed(u32 count);
+		static void DrawIndexed(u32 count, bool depthTest);
 
 		static void Init();
 

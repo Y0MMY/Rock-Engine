@@ -31,7 +31,7 @@ namespace RockEngine
 
 	void Camera::Update()
 	{
-		if (Input::IsKeyPressed(KeyCode::LeftShift))
+		if (Input::IsKeyPressed(KeyCode::LeftAlt))
 		{
 			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 			glm::vec2 delta = mouse - m_InitialMousePosition;

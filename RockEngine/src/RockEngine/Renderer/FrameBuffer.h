@@ -28,7 +28,7 @@ namespace RockEngine
 		u32 Height;
 		u32 Samples = 1;
 
-		FramebufferTextureFormat format;
+		FramebufferTextureFormat Format;
 
 		bool SpawChainTarget = false;
 	};
