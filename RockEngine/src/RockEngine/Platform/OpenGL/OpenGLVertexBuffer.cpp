@@ -54,6 +54,7 @@ namespace RockEngine
 		Renderer::Submit([this]() mutable
 			{
 				glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+
 			}
 		);
 

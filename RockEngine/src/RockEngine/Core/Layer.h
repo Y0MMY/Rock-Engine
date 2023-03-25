@@ -3,6 +3,7 @@
 #include <string>
 
 #include "RockEngine/Core/Core.h"
+#include "RockEngine/Core/TimeStep.h"
 
 namespace RockEngine
 {
@@ -14,7 +15,7 @@ namespace RockEngine
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
-		virtual void OnUpdate() {}
+		virtual void OnUpdate(Timestep ts) {}
 
 		virtual void OnImGuiRender() {}
 

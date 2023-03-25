@@ -3,6 +3,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+#include <RockEngine/Platform/OpenGL/OpenGLPipeline.h>
+
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 
@@ -36,11 +38,15 @@ namespace RockEngine
 		~Mesh() {}
 
 		void Render();
+		const std::string& GetFilePath() { return m_FilePath; }
 	private:
 		std::vector<Vertex> m_Vertices;
 		std::vector<Index> m_Indices;
 
 		Ref<VertexBuffer> m_VertexBuffer;
 		Ref<IndexBuffer> m_IndexBuffer;
+
+		Ref<Pipeline> m_Pipeline;
+		std::string m_FilePath;
 	};
 }

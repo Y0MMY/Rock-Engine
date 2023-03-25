@@ -23,5 +23,6 @@
 #include "RockEngine/Renderer/Pipeline.h"
 #include "RockEngine/Renderer/Camera.h"
 #include "RockEngine/Renderer/Mesh.h"
+#include "RockEngine/Renderer/Material.h"
 
 //---------------------------------------------

@@ -5,6 +5,8 @@
 #include "RenderCommandQueue.h"
 #include "RockEngine/Core/Core.h"
 
+#include "Shader.h"
+
 namespace RockEngine
 {
 
@@ -20,6 +22,8 @@ namespace RockEngine
 		static void DrawIndexed(u32 count, bool depthTest = true);
 
 		static void Init();
+
+		//static Ref<ShaderLibrary> GetShaderLibrary();
 
 		static void WaitAndRender();
 

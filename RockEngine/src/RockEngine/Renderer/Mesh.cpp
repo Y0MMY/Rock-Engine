@@ -43,6 +43,7 @@ namespace RockEngine
 	};
 
 	Mesh::Mesh(const std::string& filename)
+		: m_FilePath(filename)
 	{
 		LogStream::Initialize();
 
@@ -90,6 +91,16 @@ namespace RockEngine
 		}
 
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size() * sizeof(Index));
+
+		PipelineSpecification pipelineSpecification;
+		pipelineSpecification.Layout = {
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float3, "a_Normal" },
+			{ ShaderDataType::Float3, "a_Tangent" },
+			{ ShaderDataType::Float3, "a_Binormal" },
+			{ ShaderDataType::Float2, "a_TexCoord" },
+		};
+		m_Pipeline = Pipeline::Create(pipelineSpecification);
 	}
 
 
@@ -97,25 +108,7 @@ namespace RockEngine
 	{
 		m_VertexBuffer->Bind();
 		m_IndexBuffer->Bind();
-
-		Renderer::Submit([=]()
-		{
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));
-
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Normal));
-
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Tangent));
-
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Binormal));
-
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Texcoord));
-		});
-
+		m_Pipeline->Bind();
 		Renderer::DrawIndexed(m_IndexBuffer->GetCount(),true);
 	}
 

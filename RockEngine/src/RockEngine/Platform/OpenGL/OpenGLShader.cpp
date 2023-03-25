@@ -47,7 +47,7 @@ namespace RockEngine
 
 	void OpenGLShader::Load(const std::string& source)
 	{
-		m_ShaderSource = PreProcess(source);
+		m_ShaderSource = PreProcess(source); 
 		Parse();
 
 		Renderer::Submit([=]()
@@ -58,6 +58,14 @@ namespace RockEngine
 				ResolveUniforms();
 				ValidateUniforms();
 			});
+
+		if (m_Loaded)
+		{
+			for (auto& e : m_ShaderReloadedCallbacks)
+				e();
+		}
+
+		m_Loaded = true;
 	}
 
 	const std::string OpenGLShader::ReadShaderFromFile(const std::string& filepath)
@@ -572,6 +580,84 @@ namespace RockEngine
 		return std::string(str, length);
 	}
 
+	void OpenGLShader::SetPSMaterialUniformBuffer(Buffer buffer)
+	{
+		Renderer::Submit([=]()
+		{
+			glUseProgram(m_RendererID);
+			ResolveAndSetUniforms(m_PSMaterialUniformBuffer, buffer);
+		});
+	}
+	
+	void OpenGLShader::SetVSMaterialUniformBuffer(Buffer buffer)
+	{
+		Renderer::Submit([=]()
+		{
+			glUseProgram(m_RendererID);
+			ResolveAndSetUniforms(m_VSMaterialUniformBuffer, buffer);
+		});
+	}
+
+	void OpenGLShader::ResolveAndSetUniforms(const Ref<OpenGLShaderUniformBufferDecl>& decl, Buffer buffer)
+	{
+		const ShaderUniformList& uniforms = decl->GetUniformDeclarations();
+		for (int i = 0; i < uniforms.size(); i++)
+		{
+			OpenGLShaderUniformDecl* uniform = (OpenGLShaderUniformDecl*)uniforms[i];
+
+			if (uniform->IsArray())
+			{
+				RE_CORE_ASSERT(false, "");
+			}
+
+			else
+				ResolveAndSetUniform(uniform, buffer);
+		}
+	}
+
+	void OpenGLShader::ResolveAndSetUniform(OpenGLShaderUniformDecl* uniform, Buffer buffer)
+	{
+		if (uniform->GetLocation() == -1)
+			return;
+
+		RE_CORE_ASSERT(uniform->GetLocation() != -1, "Uniform has invalid location!");
+
+		u32 offset = uniform->GetOffset();
+
+		switch (uniform->GetType())
+		{
+		case OpenGLShaderUniformDecl::Type::BOOL:
+			UploadUniformFloat(uniform->GetLocation(), *(bool*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::FLOAT32:
+			UploadUniformFloat(uniform->GetLocation(), *(float*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::INT32:
+			UploadUniformInt(uniform->GetLocation(), *(int32_t*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::VEC2:
+			UploadUniformFloat2(uniform->GetLocation(), *(glm::vec2*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::VEC3:
+			UploadUniformFloat3(uniform->GetLocation(), *(glm::vec3*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::VEC4:
+			UploadUniformFloat4(uniform->GetLocation(), *(glm::vec4*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::MAT3:
+			UploadUniformMat3(uniform->GetLocation(), *(glm::mat3*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::MAT4:
+			UploadUniformMat4(uniform->GetLocation(), *(glm::mat4*)&buffer.Data[offset]);
+			break;
+			/*case OpenGLShaderUniformDecl::Type::STRUCT:
+				UploadUniformStruct(uniform, buffer.Data, offset);*/
+			//break;
+		default:
+			RE_CORE_ASSERT(false, "Unknown uniform type!");
+		}
+	}
+
 	// Shaders functions
 	int32_t OpenGLShader::GetUniformLocation(const std::string& name) const
 	{
@@ -696,7 +782,7 @@ namespace RockEngine
 		const auto& fields = s.GetFields();
 		for (size_t k = 0; k < fields.size(); k++)
 		{
-			OpenGLShaderUniformDeclaration* field = (OpenGLShaderUniformDeclaration*)fields[k];
+			OpenGLShaderUniformDecl* field = (OpenGLShaderUniformDecl*)fields[k];
 			ResolveAndSetUniformField(*field, buffer, offset);
 			offset += field->m_Size;
 		}

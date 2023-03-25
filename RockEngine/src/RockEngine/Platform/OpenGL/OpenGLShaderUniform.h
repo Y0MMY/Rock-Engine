@@ -23,6 +23,7 @@ namespace RockEngine
 
 		inline const ShaderStruct& GetShaderUniformStruct() const { RE_CORE_ASSERT(m_Struct, ""); return *m_Struct; }
 
+		inline int32_t GetLocation() const { return m_Location; }
 		inline Type GetType() const { return m_Type; }
 		inline bool IsArray() const { return m_Count > 1; }
 	protected:

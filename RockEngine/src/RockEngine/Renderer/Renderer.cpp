@@ -8,14 +8,21 @@ namespace RockEngine
 	struct RendererData
 	{
 		RenderCommandQueue m_CommandQueue;
+		Ref<ShaderLibrary> m_ShaderLibrary;
 	};
 
 	RendererData s_Data;
 
 	void Renderer::Init()
 	{
-		
+		s_Data.m_ShaderLibrary = Ref<ShaderLibrary>::Create();
+		Renderer::Submit([=]() {
+			RendererAPI::Init();
+			});
+
+		s_Data.m_ShaderLibrary->Load("assets/shaders/shader.glsl");
 	}
+
 
 	void Renderer::Clear(float r, float g, float b, float a /* = 1.0f */)
 	{

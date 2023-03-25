@@ -64,6 +64,10 @@ namespace RockEngine
 			return (T*)(Data);
 		}
 
+		operator bool() const {
+			return Data;
+		}
+
 		inline u32 GetSize() { return Size; }
 
 	};

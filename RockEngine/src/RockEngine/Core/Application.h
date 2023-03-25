@@ -26,7 +26,7 @@ namespace RockEngine
 
 		virtual void OnInit(){}
 		virtual void OnShutdown(){}
-		virtual void OnUpdate(){}
+		virtual void OnUpdate(Timestep ts){}
 
 		void OnEvent(Event& event);
 
@@ -34,6 +34,8 @@ namespace RockEngine
 
 		void PushLayer(Layer* layer);
 		void PopLayer(Layer* layer);
+
+		std::string OpenFile(const char* filter = "All\0*.*\0") ;
 
 		virtual void Run();
 
@@ -50,6 +52,9 @@ namespace RockEngine
 		bool m_Minimized = false;
 		ImGuiLayer* m_ImGuiLayer;
 		static Application* s_Instance;
+
+		Timestep m_TimeStep;
+		float m_LastFrameTime = 0.0f;
 	};
 
 	//Iml. by client

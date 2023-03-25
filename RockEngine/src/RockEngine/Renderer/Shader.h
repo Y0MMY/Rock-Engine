@@ -4,6 +4,9 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "RockEngine/Renderer/Renderer.h"
+#include "ShaderUniform.h"
+
+#include <RockEngine/Core/Buffer.h>
 
 namespace RockEngine
 {
@@ -49,6 +52,8 @@ namespace RockEngine
 		virtual RendererID GetRendererID() const = 0;
 		virtual void UploadUniformBuffer(const UniformBufferBase& uniformBuffer) = 0;
 
+		virtual const std::string& GetName() const = 0;
+
 		// Temporary while we don't have materials
 		virtual void SetFloat(const std::string& name, float value) = 0;
 		virtual void SetInt(const std::string& name, int value) = 0;
@@ -58,8 +63,40 @@ namespace RockEngine
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
 		virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) = 0;
 
+		virtual const ShaderUniformBufferList& GetVSRendererUniforms() const = 0;
+		virtual const ShaderUniformBufferList& GetPSRendererUniforms() const = 0;
+		virtual bool HasVSMaterialUniformBuffer() const = 0;
+		virtual bool HasPSMaterialUniformBuffer() const = 0;
+		virtual const ShaderUniformBufferDecl& GetVSMaterialUniformBuffer() const = 0;
+		virtual const ShaderUniformBufferDecl& GetPSMaterialUniformBuffer() const = 0;
+
+		virtual void SetVSMaterialUniformBuffer(Buffer buffer) = 0;
+		virtual void SetPSMaterialUniformBuffer(Buffer buffer) = 0;
+
+		virtual const ShaderResourceList& GetResources() const = 0;
+
 		virtual void SetIntArray(const std::string& name, int* values, uint32_t size) = 0;
-	
+
 		static Ref<Shader> Create(const std::string& path);
+
+		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) = 0;
+
+		// Temporary, before we have an asset manager
+		static std::vector<Ref<Shader>> s_AllShaders;
+	};
+
+	class ShaderLibrary : public RefCounted
+	{
+	public:
+		ShaderLibrary() = default;
+		~ShaderLibrary() = default;
+
+		void Add(const Ref<Shader>& shader);
+		void Load(const std::string& name, const std::string& filepath);
+		void Load(const std::string& filepath);
+
+		const Ref<Shader>& Get(const std::string& name) const;
+	private:
+		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 	};
 }

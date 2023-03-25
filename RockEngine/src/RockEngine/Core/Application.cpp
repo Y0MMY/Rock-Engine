@@ -5,6 +5,10 @@
 #include "RockEngine/Renderer/Framebuffer.h"
 
 #include "ImGui/imgui.h"
+#include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#include <Windows.h>
 
 namespace RockEngine
 {
@@ -18,6 +22,7 @@ namespace RockEngine
 
 		m_ImGuiLayer = new ImGuiLayer("ImGuiLayer");
 		PushLayer(m_ImGuiLayer);
+		Renderer::Init();
 	}
 
 	Application::~Application()
@@ -35,14 +40,39 @@ namespace RockEngine
 			{
 
 				for (Layer* layer : m_LayerStack)
-					layer->OnUpdate();
+					layer->OnUpdate(m_TimeStep);
 
 				Application* app = this;
 				Renderer::Submit([app]() { app->RenderImGui(); });
 				Renderer::WaitAndRender();
 			}
 			m_Window->OnUpdate();
+			float time = (float)glfwGetTime();
+			m_TimeStep = time - m_LastFrameTime;
+			m_LastFrameTime = time;
 		}
+	}
+
+	std::string Application::OpenFile(const char* filter) 
+	{
+		OPENFILENAMEA ofn;       // common dialog box structure
+		CHAR szFile[260] = { 0 };       // if using TCHAR macros
+
+		// Initialize OPENFILENAME
+		ZeroMemory(&ofn, sizeof(OPENFILENAME));
+		ofn.lStructSize = sizeof(OPENFILENAME);
+		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetNativeWindow());
+		ofn.lpstrFile = szFile;
+		ofn.nMaxFile = sizeof(szFile);
+		ofn.lpstrFilter = filter;
+		ofn.nFilterIndex = 1;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+		if (GetOpenFileNameA(&ofn) == TRUE)
+		{
+			return ofn.lpstrFile;
+		}
+		return std::string();
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -60,8 +90,12 @@ namespace RockEngine
 	void Application::RenderImGui()
 	{
 		m_ImGuiLayer->Begin();
-
 		ImGui::Begin("Renderer");
+		auto& caps = RendererAPI::GetCapabilities();
+		ImGui::Text("Vendor: %s", caps.Vendor.c_str());
+		ImGui::Text("Renderer: %s", caps.Renderer.c_str());
+		ImGui::Text("Version: %s", caps.Version.c_str());
+		ImGui::Text("Frame Time: %.2fms\n", m_TimeStep.GetMilliseconds());
 		ImGui::End();
 
 		for (Layer* layer : m_LayerStack)
