@@ -9,6 +9,8 @@
 #include <string>
 #include <array>
 #include <memory>
+#include <filesystem>
+
 
 // Core
 #include "RockEngine/Core/Log.h"

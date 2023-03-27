@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "OpenGLTexture.h"
 
+#include "RockEngine/Renderer/Renderer.h"
+
 #include <glad/glad.h>
 
 #include "stb_image.h"

@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "RockEngine/Renderer/Renderer.h"
+#include "RockEngine/Renderer/RendererAPI.h"
 #include "ShaderUniform.h"
 
 #include <RockEngine/Core/Buffer.h>
@@ -88,8 +88,15 @@ namespace RockEngine
 	class ShaderLibrary : public RefCounted
 	{
 	public:
-		ShaderLibrary() = default;
-		~ShaderLibrary() = default;
+		ShaderLibrary()
+		{
+
+		}
+
+		~ShaderLibrary()
+		{
+
+		}
 
 		void Add(const Ref<Shader>& shader);
 		void Load(const std::string& name, const std::string& filepath);

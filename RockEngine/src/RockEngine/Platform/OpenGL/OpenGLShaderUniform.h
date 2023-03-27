@@ -103,7 +103,7 @@ namespace RockEngine
 		static std::string TypeToString(Type type);
 	private:
 		std::string m_Name;
-		uint32_t m_Register;
+		uint32_t m_Register = 0;
 		uint32_t m_Count;
 		Type m_Type;
 	private:

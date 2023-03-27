@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "OpenGLIndexBuffer.h"
 
+#include "RockEngine/Renderer/Renderer.h"
+
 #include <glad/glad.h>
 
 namespace RockEngine

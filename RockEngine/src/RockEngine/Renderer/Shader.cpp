@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "Shader.h"
-
 #include "RockEngine/Platform/OpenGL/OpenGLShader.h"
 
 namespace RockEngine

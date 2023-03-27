@@ -24,6 +24,8 @@ namespace RockEngine
 
 		virtual RendererID GetRendererID() const override { return m_RendererID;  }
 
+		virtual bool Loaded() const override { return m_Loaded; }
+
 		virtual bool operator==(const Texture& other) const override
 		{
 			return m_RendererID == ((OpenGLTexture2D&)other).m_RendererID;
@@ -59,6 +61,8 @@ namespace RockEngine
 		const Buffer& GetBuffer() const override { return m_ImageData; }
 
 		virtual RendererID GetRendererID() const override { return m_RendererID; }
+
+		virtual bool Loaded() const override { return false; }
 
 		virtual bool operator==(const Texture& other) const override
 		{

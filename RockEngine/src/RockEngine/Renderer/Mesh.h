@@ -3,7 +3,12 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include <RockEngine/Platform/OpenGL/OpenGLPipeline.h>
+#include "RockEngine/Renderer/RendererAPI.h"
+
+#include <RockEngine/Renderer/Pipeline.h>
+#include <RockEngine/Renderer/Texture.h>
+#include <RockEngine/Renderer/Texture.h>
+#include <RockEngine/Renderer/Material.h>
 
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
@@ -38,6 +43,12 @@ namespace RockEngine
 		~Mesh() {}
 
 		void Render();
+
+
+		Ref<Shader> GetMeshShader() { return m_MeshShader; }
+		Ref<Material> GetMaterial() { return m_BaseMaterial; }
+		std::vector<Ref<MaterialInstance>> GetMaterials() { return m_Materials; }
+		const std::vector<Ref<Texture2D>>& GetTextures() const { return m_Textures; }
 		const std::string& GetFilePath() { return m_FilePath; }
 	private:
 		std::vector<Vertex> m_Vertices;
@@ -48,5 +59,11 @@ namespace RockEngine
 
 		Ref<Pipeline> m_Pipeline;
 		std::string m_FilePath;
+
+		std::vector<Ref<Texture2D>> m_Textures;
+		std::vector<Ref<MaterialInstance>> m_Materials;
+
+		Ref<Material> m_BaseMaterial;
+		Ref<Shader> m_MeshShader;
 	};
 }

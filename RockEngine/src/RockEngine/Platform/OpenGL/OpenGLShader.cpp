@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "OpenGLShader.h"
 
+#include "RockEngine/Renderer/Renderer.h"
+
 namespace RockEngine
 {
 #define UNIFORM_LOGGING 1
@@ -48,15 +50,20 @@ namespace RockEngine
 	void OpenGLShader::Load(const std::string& source)
 	{
 		m_ShaderSource = PreProcess(source); 
-		Parse();
+		if (!m_IsCompute)
+			Parse();
 
 		Renderer::Submit([=]()
 			{
 				if (m_RendererID)
 					glDeleteProgram(m_RendererID);
+
 				CompileAndUploadShader();
-				ResolveUniforms();
-				ValidateUniforms();
+				if (!m_IsCompute)
+				{
+					ResolveUniforms();
+					ValidateUniforms();
+				}
 			});
 
 		if (m_Loaded)
@@ -112,12 +119,19 @@ namespace RockEngine
 
 			auto begin = pos + typeTokenLength + 1;
 			std::string type = source.substr(begin, eol - begin);
-			RE_CORE_ASSERT(type == "vertex" || type == "fragment" || type == "pixel", "Invalid shader type specified");
+			RE_CORE_ASSERT(type == "vertex" || type == "fragment" || type == "pixel" || type == "compute", "Invalid shader type specified");
 			
 			auto nextLinePos = source.find_first_not_of("\r\n", eol);
 			pos = source.find(TypeToken, nextLinePos);
+			auto shaderType = ShaderTypeFromString(type);
+			shaderSources[shaderType] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
 
-			shaderSources[ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
+			// Compute shaders cannot contain other types
+			if (shaderType == GL_COMPUTE_SHADER)
+			{
+				m_IsCompute = true;
+				break;
+			}
 		}
 
 		return shaderSources;
@@ -650,9 +664,9 @@ namespace RockEngine
 		case OpenGLShaderUniformDecl::Type::MAT4:
 			UploadUniformMat4(uniform->GetLocation(), *(glm::mat4*)&buffer.Data[offset]);
 			break;
-			/*case OpenGLShaderUniformDecl::Type::STRUCT:
-				UploadUniformStruct(uniform, buffer.Data, offset);*/
-			//break;
+			case OpenGLShaderUniformDecl::Type::STRUCT:
+				UploadUniformStruct(uniform, buffer.Data, offset);
+			break;
 		default:
 			RE_CORE_ASSERT(false, "Unknown uniform type!");
 		}
@@ -776,7 +790,37 @@ namespace RockEngine
 		glUniformMatrix4fv(location, count, GL_FALSE, &(values[0].x));
 	}
 
-	/*void OpenGLShader::UploadUniformStruct(OpenGLShaderUniformDecl* uniform, byte* buffer, uint32_t offset)
+	void OpenGLShader::ResolveAndSetUniformField(const OpenGLShaderUniformDecl& field, byte* data, int32_t offset)
+	{
+		switch (field.GetType())
+		{
+		case OpenGLShaderUniformDecl::Type::FLOAT32:
+			UploadUniformFloat(field.GetLocation(), *(float*)&data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::INT32:
+			UploadUniformInt(field.GetLocation(), *(int32_t*)&data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::VEC2:
+			UploadUniformFloat2(field.GetLocation(), *(glm::vec2*)&data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::VEC3:
+			UploadUniformFloat3(field.GetLocation(), *(glm::vec3*)&data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::VEC4:
+			UploadUniformFloat4(field.GetLocation(), *(glm::vec4*)&data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::MAT3:
+			UploadUniformMat3(field.GetLocation(), *(glm::mat3*)&data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::MAT4:
+			UploadUniformMat4(field.GetLocation(), *(glm::mat4*)&data[offset]);
+			break;
+		default:
+			RE_CORE_ASSERT(false, "Unknown uniform type!");
+		}
+	}
+
+	void OpenGLShader::UploadUniformStruct(OpenGLShaderUniformDecl* uniform, byte* buffer, uint32_t offset)
 	{
 		const ShaderStruct& s = uniform->GetShaderUniformStruct();
 		const auto& fields = s.GetFields();
@@ -786,7 +830,7 @@ namespace RockEngine
 			ResolveAndSetUniformField(*field, buffer, offset);
 			offset += field->m_Size;
 		}
-	}*/
+	}
 
 	void OpenGLShader::UploadUniformInt(const std::string& name, int32_t value)
 	{

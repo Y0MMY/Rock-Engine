@@ -1,15 +1,12 @@
 #pragma once
 
-#include "RendererAPI.h"
-
 #include "RenderCommandQueue.h"
-#include "RockEngine/Core/Core.h"
 
-#include "Shader.h"
+#include "Mesh.h"
+#include "RenderPass.h"
 
 namespace RockEngine
 {
-
 	class Renderer
 	{
 	public:
@@ -23,7 +20,14 @@ namespace RockEngine
 
 		static void Init();
 
-		//static Ref<ShaderLibrary> GetShaderLibrary();
+		static Ref<ShaderLibrary> GetShaderLibrary();
+
+		static void SubmitQuad(Ref<MaterialInstance> material, const glm::mat4& transform = glm::mat4(1.0f));
+		static void SubmitFullscreenQuad(Ref<MaterialInstance> material);
+
+
+		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear = true);
+		static void EndRenderPass();
 
 		static void WaitAndRender();
 

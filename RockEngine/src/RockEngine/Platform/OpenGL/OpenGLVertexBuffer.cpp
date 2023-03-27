@@ -3,6 +3,8 @@
 
 #include <glad/glad.h>
 
+#include "RockEngine/Renderer/Renderer.h"
+
 namespace RockEngine
 {
 	static GLenum OpenGLUsage(VertexBufferUsage usage)

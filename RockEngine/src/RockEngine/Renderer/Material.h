@@ -1,6 +1,6 @@
 #pragma once
 
-#include <RockEngine/Renderer/Renderer.h>
+#include <RockEngine/Renderer/RendererAPI.h>
 #include <RockEngine/Renderer/Shader.h>
 #include "Texture.h"
 
@@ -8,25 +8,37 @@
 
 #include <unordered_set>
 
-namespace RockEngine
+
+
+namespace RockEngine 
 {
+	enum class MaterialFlag
+	{
+		None = BIT(0),
+		DepthTest = BIT(1),
+		Blend = BIT(2),
+		TwoSided = BIT(3)
+	};
+
 	class Material : public RefCounted
 	{
 		friend class MaterialInstance;
 	public:
 		Material(const Ref<Shader>& shader);
-
-		Ref<Shader> GetShader() { return m_Shader; }
+		virtual ~Material();
 
 		void Bind();
 
-		static Ref<Material> Create(const Ref<Shader>& shader);
+		uint32_t GetFlags() const { return m_MaterialFlags; }
+		void SetFlag(MaterialFlag flag) { m_MaterialFlags |= (uint32_t)flag; }
+
+		Ref<Shader> GetShader() { return m_Shader; }
 
 		template <typename T>
 		void Set(const std::string& name, const T& value)
 		{
 			auto decl = FindUniformDeclaration(name);
-			RE_CORE_ASSERT(decl, "Could not find uniform with name {}", name);
+			RE_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
 			auto& buffer = GetUniformBufferTarget(decl);
 			buffer.Write((byte*)&value, decl->GetSize(), decl->GetOffset());
 
@@ -72,21 +84,24 @@ namespace RockEngine
 		}
 
 		ShaderResourceDecl* FindResourceDeclaration(const std::string& name);
+	public:
+		static Ref<Material> Create(const Ref<Shader>& shader);
+		void BindTextures();
 	private:
 		void AllocateStorage();
-		void OnShaderReloaded() const;
-		void BindTextures();
+		void OnShaderReloaded();
 
 		ShaderUniformDecl* FindUniformDeclaration(const std::string& name);
 		Buffer& GetUniformBufferTarget(ShaderUniformDecl* uniformDeclaration);
 	private:
-		Buffer m_VSUniformStorageBuffer;
-		Buffer m_PSUniformStorageBuffer;
-
+		Ref<Shader> m_Shader;
 		std::unordered_set<MaterialInstance*> m_MaterialInstances;
 
+		Buffer m_VSUniformStorageBuffer;
+		Buffer m_PSUniformStorageBuffer;
 		std::vector<Ref<Texture>> m_Textures;
-		Ref<Shader> m_Shader;
+
+		uint32_t m_MaterialFlags;
 	};
 
 	class MaterialInstance : public RefCounted
@@ -94,7 +109,7 @@ namespace RockEngine
 		friend class Material;
 	public:
 		MaterialInstance(const Ref<Material>& material, const std::string& name = "");
-		~MaterialInstance();
+		virtual ~MaterialInstance();
 
 		template <typename T>
 		void Set(const std::string& name, const T& value)
@@ -167,13 +182,17 @@ namespace RockEngine
 			return Ref<T>(m_Textures[slot]);
 		}
 
+
 		void Bind();
+
+		uint32_t GetFlags() const { return m_Material->m_MaterialFlags; }
+		bool GetFlag(MaterialFlag flag) const { return (uint32_t)flag & m_Material->m_MaterialFlags; }
+		void SetFlag(MaterialFlag flag, bool value = true);
 
 		Ref<Shader> GetShader() { return m_Material->m_Shader; }
 
 		const std::string& GetName() const { return m_Name; }
-
-
+	public:
 		static Ref<MaterialInstance> Create(const Ref<Material>& material);
 	private:
 		void AllocateStorage();
@@ -181,13 +200,15 @@ namespace RockEngine
 		Buffer& GetUniformBufferTarget(ShaderUniformDecl* uniformDeclaration);
 		void OnMaterialValueUpdated(ShaderUniformDecl* decl);
 	private:
-		std::string m_Name;
 		Ref<Material> m_Material;
+		std::string m_Name;
 
 		Buffer m_VSUniformStorageBuffer;
 		Buffer m_PSUniformStorageBuffer;
 		std::vector<Ref<Texture>> m_Textures;
 
+		// TODO: This is temporary; come up with a proper system to track overrides
 		std::unordered_set<std::string> m_OverriddenValues;
 	};
+
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RockEngine/Core/Buffer.h"
-#include "RockEngine/Renderer/Renderer.h"
+#include "RockEngine/Renderer/RendererAPI.h"
 
 namespace RockEngine
 {
@@ -38,6 +38,8 @@ namespace RockEngine
 
 		static u32 GetBPP(TextureFormat format);
 		static u32 CalculateMipMapCount(u32 width, u32 height);
+
+		virtual bool Loaded() const = 0;
 
 		virtual bool operator==(const Texture& other) const = 0;
 

@@ -24,5 +24,12 @@
 #include "RockEngine/Renderer/Camera.h"
 #include "RockEngine/Renderer/Mesh.h"
 #include "RockEngine/Renderer/Material.h"
+#include "RockEngine/Renderer/RenderPass.h"
+#include "RockEngine/Renderer/SceneRenderer.h"
 
 //---------------------------------------------
+
+
+// Scenes
+#include "RockEngine/Scene/Scene.h"
+#include "RockEngine/Scene/Entity.h"

@@ -43,6 +43,8 @@ namespace RockEngine
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 		virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) override;
 
+		void UploadUniformStruct(OpenGLShaderUniformDecl* uniform, byte* buffer, uint32_t offset);
+
 		void ResolveAndSetUniforms(const Ref<OpenGLShaderUniformBufferDecl>& decl, Buffer buffer);
 		void ResolveAndSetUniform(OpenGLShaderUniformDecl* uniform, Buffer buffer);
 		void ResolveAndSetUniformArray(OpenGLShaderUniformDecl* uniform, Buffer buffer);
@@ -95,6 +97,7 @@ namespace RockEngine
 		std::string m_AssetPath;
 		std::string m_Name;
 
+		bool m_IsCompute = false;
 		bool m_Loaded = false;
 
 		ShaderResourceList m_Resources;

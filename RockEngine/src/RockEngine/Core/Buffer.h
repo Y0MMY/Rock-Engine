@@ -45,7 +45,7 @@ namespace RockEngine
 
 		void Write(void* data, u32 size, u32 offset = 0)
 		{
-			RE_CORE_ASSERT(size + offset >= Size, "Buffer overflow!");
+			RE_CORE_ASSERT(size + offset <= Size, "Buffer overflow!");
 			memcpy(Data + offset, data, size);
 		}
 

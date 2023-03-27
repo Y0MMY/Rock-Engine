@@ -13,162 +13,29 @@ namespace RockEngine
 	{
 		virtual void OnAttach() 
 		{
-			m_SimplePBRShader = (RockEngine::Shader::Create("assets/shaders/shader.glsl"));
-			m_QuadShader = (RockEngine::Shader::Create("assets/shaders/quad.glsl"));
-			m_HDRShader = (RockEngine::Shader::Create("assets/shaders/hdr.glsl"));
-			m_Mesh = (Ref<Mesh>::Create("assets/meshes/cerberus.fbx"));
-			m_SphereMesh = (Ref<Mesh>::Create(("assets/models/Sphere.fbx")));
+			auto environment = Environment::Load("assets/env/birchwood_4k.hdr");
 
-			// Editor
-			m_CheckerboardTex = (RockEngine::Texture2D::Create("assets/editor/Checkerboard.tga"));
-
-			// Environment
-			m_EnvironmentCubeMap = (RockEngine::TextureCube::Create("assets/textures/environments/Arches_E_PineTree_Radiance.tga"));
-			m_EnvironmentIrradiance = (RockEngine::TextureCube::Create("assets/textures/environments/Arches_E_PineTree_Irradiance.tga"));
-			m_BRDFLUT = (RockEngine::Texture2D::Create("assets/textures/BRDF_LUT.tga"));
-
-			FramebufferSpec spec;
-			spec.Width = 1920;
-			spec.Height = 1080;
-			spec.Format = FramebufferTextureFormat::RGBA16F;
-			m_Framebuffer = Framebuffer::Create(spec);
-			spec.Format = FramebufferTextureFormat::RGBA8;
-			m_FinalPresentBuffer = Framebuffer::Create(spec);
-
-			// Create Quad
-			float x = -1, y = -1;
-			float width = 2, height = 2;
-			struct QuadVertex
+			// Model Scene
 			{
-				glm::vec3 Position;
-				glm::vec2 TexCoord;
-			};
+				m_Scene = Ref<Scene>::Create("Model Scene");
+				m_Scene->SetCamera(Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 10000.0f)));
 
-			QuadVertex* data = new QuadVertex[4];
+				m_Scene->SetEnvironment(environment);
 
-			data[0].Position = glm::vec3(x, y, 0);
-			data[0].TexCoord = glm::vec2(0, 0);
+				// Editor
+				m_CheckerboardTex = Texture2D::Create("assets/editor/Checkerboard.tga");
 
-			data[1].Position = glm::vec3(x + width, y, 0);
-			data[1].TexCoord = glm::vec2(1, 0);
-
-			data[2].Position = glm::vec3(x + width, y + height, 0);
-			data[2].TexCoord = glm::vec2(1, 1);
-
-			data[3].Position = glm::vec3(x, y + height, 0);
-			data[3].TexCoord = glm::vec2(0, 1);
-
-			m_VertexBuffer = (RockEngine::VertexBuffer::Create(data, 4 * sizeof(QuadVertex)));
-
-			uint32_t* indices = new uint32_t[6]{ 0, 1, 2, 2, 3, 0, };
-			m_IndexBuffer = (RockEngine::IndexBuffer::Create(indices, 6 * sizeof(unsigned int)));
-
-			PipelineSpecification layout;
-			layout.Layout = {
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float2, "a_TexCoord" }
-			};
-			m_Pipeline = Pipeline::Create(layout);
-
-			m_Light.Direction = { -0.5f, -0.5f, 1.0f };
-			m_Light.Radiance = { 1.0f, 1.0f, 1.0f };
+				// Set lights
+				m_Light.Direction = { -0.5f, -0.5f, 1.0f };
+				m_Light.Radiance = { 1.0f, 1.0f, 1.0f };
+			}
 		}
+
 		virtual void OnDetach() { }
 		virtual void OnUpdate(Timestep ts) override
 		{
-		
-			using namespace glm;
-
-			m_Camera.Update();
-			auto viewProjection = m_Camera.GetProjectionMatrix() * m_Camera.GetViewMatrix();
-
-			m_Framebuffer->Bind();
-			Renderer::Clear(m_ClearColor[0], m_ClearColor[1], m_ClearColor[2], m_ClearColor[3]);
-
-			m_QuadShader->SetMat4("u_InverseVP", inverse(viewProjection));
-
-			m_QuadShader->Bind();
-			m_EnvironmentIrradiance->Bind();
-			m_VertexBuffer->Bind();
-			m_IndexBuffer->Bind();
-			m_Pipeline->Bind();
-
-			Renderer::DrawIndexed(m_IndexBuffer->GetCount(), false);
-
-			m_SimplePBRShader->SetMat4("u_ViewProjectionMatrix", glm::scale(viewProjection, glm::vec3(m_MeshScale)));
-			m_SimplePBRShader->SetMat4("u_ModelMatrix", mat4(1.0f));
-			m_SimplePBRShader->SetFloat3("u_AlbedoColor", m_AlbedoInput.Color);
-			m_SimplePBRShader->SetFloat("u_Metalness", m_MetalnessInput.Value);
-			m_SimplePBRShader->SetFloat("u_Roughness", m_RoughnessInput.Value);
-			m_SimplePBRShader->SetFloat3("lights.Direction", m_Light.Direction);
-			m_SimplePBRShader->SetFloat3("lights.Radiance", m_Light.Radiance * m_LightMultiplier);
-			m_SimplePBRShader->SetFloat3("u_CameraPosition", m_Camera.GetPosition());
-			m_SimplePBRShader->SetFloat("u_RadiancePrefilter", m_RadiancePrefilter ? 1.0f : 0.0f);
-			m_SimplePBRShader->SetFloat("u_AlbedoTexToggle", m_AlbedoInput.UseTexture ? 1.0f : 0.0f);
-			m_SimplePBRShader->SetFloat("u_NormalTexToggle", m_NormalInput.UseTexture ? 1.0f : 0.0f);
-			m_SimplePBRShader->SetFloat("u_MetalnessTexToggle", m_MetalnessInput.UseTexture ? 1.0f : 0.0f);
-			m_SimplePBRShader->SetFloat("u_RoughnessTexToggle", m_RoughnessInput.UseTexture ? 1.0f : 0.0f);
-			m_SimplePBRShader->SetFloat("u_EnvMapRotation", m_EnvMapRotation);
-
-			m_EnvironmentCubeMap->Bind();
-			m_EnvironmentIrradiance->Bind();
-			m_BRDFLUT->Bind();
-
-			m_SimplePBRShader->Bind();
-			if (m_AlbedoInput.TextureMap)
-				m_AlbedoInput.TextureMap->Bind();
-			if (m_NormalInput.TextureMap)
-				m_NormalInput.TextureMap->Bind();
-			if (m_MetalnessInput.TextureMap)
-				m_MetalnessInput.TextureMap->Bind();
-			if (m_RoughnessInput.TextureMap)
-				m_RoughnessInput.TextureMap->Bind();
-
-			{
-				// Metals
-				float roughness = 0.0f;
-				float x = -88.0f;
-				for (int i = 0; i < 8; i++)
-				{
-					m_SimplePBRShader->SetMat4("u_ModelMatrix", translate(mat4(1.0f), vec3(x, 0.0f, 0.0f)));
-					m_SimplePBRShader->SetFloat("u_Roughness", roughness);
-					m_SimplePBRShader->SetFloat("u_Metalness", 1.0f);
-					m_SphereMesh->Render();
-
-					roughness += 0.15f;
-					x += 22.0f;
-				}
-
-				// Dielectrics
-				roughness = 0.0f;
-				x = -88.0f;
-				for (int i = 0; i < 8; i++)
-				{
-					m_SimplePBRShader->SetMat4("u_ModelMatrix", translate(mat4(1.0f), vec3(x, 22.0f, 0.0f)));
-					m_SimplePBRShader->SetFloat("u_Roughness", roughness);
-					m_SimplePBRShader->SetFloat("u_Metalness", 0.0f);
-					m_SphereMesh->Render();
-
-					roughness += 0.15f;
-					x += 22.0f;
-				}
-
-			}
 			
-
-			m_Framebuffer->Unbind();
-
-			m_FinalPresentBuffer->Bind();
-			m_HDRShader->Bind();
-			m_HDRShader->SetFloat("u_Exposure", m_Exposure);
-
-			m_Framebuffer->BindTexture();
-			m_VertexBuffer->Bind();
-			m_IndexBuffer->Bind();
-			m_Pipeline->Bind();
-
-			Renderer::DrawIndexed(m_IndexBuffer->GetCount(), false);
-			m_FinalPresentBuffer->Unbind();
+			m_Scene->OnUpdate(ts);
 		}
 		virtual void OnImGuiRender()
 		{
@@ -262,7 +129,7 @@ namespace RockEngine
 					if (filename != "")
 					{
 						auto newMesh = Ref<Mesh>::Create(filename);
-						m_SphereMesh = newMesh;
+						m_Mesh = newMesh;
 					}
 				}
 			}
@@ -345,12 +212,18 @@ namespace RockEngine
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 			ImGui::Begin("Viewport");
 			auto viewportSize = ImGui::GetContentRegionAvail();
-			m_Framebuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-			m_FinalPresentBuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-			m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
-			ImGui::Image((void*)m_FinalPresentBuffer->GetColorAttachmentRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
-			ImGui::Image((void*)m_Framebuffer->GetColorAttachmentRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
+
+			SceneRenderer::SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+			m_Scene->GetCamera().SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
+			m_Scene->GetCamera().SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+			ImGui::Image((void*)SceneRenderer::GetFinalColorBufferRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
 			ImGui::End();
+
+			/*ImGui::Begin("Viewport 2");
+			m_FinalPresentBuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+			ImGui::Image((void*)m_FinalPresentBuffer->GetColorAttachmentRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
+			ImGui::End();*/
+
 			ImGui::PopStyleVar();
 
 			if (ImGui::BeginMenuBar())
@@ -445,5 +318,9 @@ namespace RockEngine
 		bool m_RadiancePrefilter = false;
 
 		float m_EnvMapRotation = 0.0f;
+
+		Ref<Material> m_MeshMaterial;
+
+		Ref<Scene> m_Scene;
 	};
 }

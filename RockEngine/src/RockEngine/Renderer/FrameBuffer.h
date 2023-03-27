@@ -1,6 +1,8 @@
 #pragma once
 
-#include "RockEngine/Renderer/Renderer.h"
+#include <glm/glm.hpp>
+
+#include "RockEngine/Renderer/RendererAPI.h"
 
 namespace RockEngine
 {
@@ -24,8 +26,10 @@ namespace RockEngine
 
 	struct FramebufferSpec
 	{
-		u32 Width;
-		u32 Height;
+		uint32_t Width = 1280;
+		uint32_t Height = 720;
+		glm::vec4 ClearColor;
+
 		u32 Samples = 1;
 
 		FramebufferTextureFormat Format;
