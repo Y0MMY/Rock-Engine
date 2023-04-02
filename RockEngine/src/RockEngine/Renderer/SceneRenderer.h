@@ -16,11 +16,13 @@ namespace RockEngine
 	{
 	public:
 		static void Init();
+		static void Shutdown();
 
 		static void SetViewportSize(u32 width, u32 height);
 
 		static void BeginScene(const Scene*	scene);
 		static void EndScene();
+
 
 		static void SubmitEntity(Entity* entity);
 

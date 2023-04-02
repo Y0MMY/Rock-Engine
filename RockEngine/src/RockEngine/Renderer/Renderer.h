@@ -31,6 +31,7 @@ namespace RockEngine
 		static void EndRenderPass();
 
 		static void WaitAndRender();
+		static void Shutdown();
 
 		template <typename FuncT>
 		static void Submit(FuncT&& func)

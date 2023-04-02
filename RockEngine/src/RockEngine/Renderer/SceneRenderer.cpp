@@ -39,10 +39,11 @@ namespace RockEngine
 		Ref<MaterialInstance> GridMaterial;
 	};
 
-	static SceneRendererData s_Data;
+	SceneRendererData* s_Data = nullptr;
 
 	void SceneRenderer::Init()
 	{
+		s_Data = new SceneRendererData();
 		FramebufferSpec geoFramebufferSpec;
 		geoFramebufferSpec.Width = 1280;
 		geoFramebufferSpec.Height = 720;
@@ -52,7 +53,7 @@ namespace RockEngine
 
 		RenderPassSpecification geoRenderPassSpec;
 		geoRenderPassSpec.TargetFramebuffer = Framebuffer::Create(geoFramebufferSpec);
-		s_Data.GeoPass = RenderPass::Create(geoRenderPassSpec);
+		s_Data->GeoPass = RenderPass::Create(geoRenderPassSpec);
 
 		FramebufferSpec compFramebufferSpec;
 		compFramebufferSpec.Width = 1280;
@@ -62,46 +63,51 @@ namespace RockEngine
 
 		RenderPassSpecification compRenderPassSpec;
 		compRenderPassSpec.TargetFramebuffer = Framebuffer::Create(compFramebufferSpec);
-		s_Data.CompositePass = RenderPass::Create(compRenderPassSpec);
+		s_Data->CompositePass = RenderPass::Create(compRenderPassSpec);
 
-		s_Data.BRDFLUT = Texture2D::Create("assets/textures/BRDF_LUT.tga");
-		s_Data.CompositeShader = Shader::Create("assets/shaders/hdr.glsl");
+		s_Data->BRDFLUT = Texture2D::Create("assets/textures/BRDF_LUT.tga");
+		s_Data->CompositeShader = Shader::Create("assets/shaders/hdr.glsl");
 
 		// Grid
 		auto gridShader = Shader::Create("assets/shaders/Grid.glsl");
-		s_Data.GridMaterial = MaterialInstance::Create(Material::Create(gridShader));
+		s_Data->GridMaterial = MaterialInstance::Create(Material::Create(gridShader));
 		float gridScale = 16.025f, gridSize = 0.025f;
-		s_Data.GridMaterial->Set("u_Scale", gridScale);
-		s_Data.GridMaterial->Set("u_Res", gridSize);
+		s_Data->GridMaterial->Set("u_Scale", gridScale);
+		s_Data->GridMaterial->Set("u_Res", gridSize);
 	}
 
 	void SceneRenderer::SetViewportSize(u32 width, u32 height)
 	{
-		s_Data.GeoPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-		s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
+		s_Data->GeoPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+		s_Data->CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
+	}
+
+	void SceneRenderer::Shutdown()
+	{
+		delete s_Data;
 	}
 
 	void SceneRenderer::BeginScene(const Scene* scene)
 	{
-		RE_CORE_ASSERT(!s_Data.ActiveScene, "");
-		s_Data.ActiveScene = scene;
+		RE_CORE_ASSERT(!s_Data->ActiveScene, "");
+		s_Data->ActiveScene = scene;
 
-		s_Data.SceneData.SceneCamera = scene->m_Camera;
-		s_Data.SceneData.SkyboxMaterial = scene->m_SkyboxMaterial;
-		s_Data.SceneData.SceneEnvironment = scene->m_Environment;
+		s_Data->SceneData.SceneCamera = scene->m_Camera;
+		s_Data->SceneData.SkyboxMaterial = scene->m_SkyboxMaterial;
+		s_Data->SceneData.SceneEnvironment = scene->m_Environment;
 	}
 
 	void SceneRenderer::EndScene()
 	{
-		RE_CORE_ASSERT(s_Data.ActiveScene, "");
-		s_Data.ActiveScene = nullptr;
+		RE_CORE_ASSERT(s_Data->ActiveScene, "");
+		s_Data->ActiveScene = nullptr;
 
 		FlushDrawList();
 	}
 
 	SceneRendererOptions& SceneRenderer::GetOptions()
 	{
-		return s_Data.Options;
+		return s_Data->Options;
 	}
 
 	void SceneRenderer::SubmitEntity(Entity* entity)
@@ -110,7 +116,7 @@ namespace RockEngine
 		if (!mesh)
 			return;
 		auto& a = entity->GetMaterial();
-		s_Data.DrawList.push_back({ mesh, entity->GetMaterial(), entity->GetTransform() });
+		s_Data->DrawList.push_back({ mesh, entity->GetMaterial(), entity->GetTransform() });
 	}
 
 	static Ref<Shader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
@@ -187,40 +193,40 @@ namespace RockEngine
 
 	uint32_t SceneRenderer::GetFinalColorBufferRendererID()
 	{
-		return s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID();
+		return s_Data->CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID();
 	}
 
 	void SceneRenderer::FlushDrawList()
 	{
-		RE_CORE_ASSERT(!s_Data.ActiveScene, "");
+		RE_CORE_ASSERT(!s_Data->ActiveScene, "");
 		GeometryPass();
 		CompositePass();
 
-		s_Data.DrawList.clear();
-		s_Data.SceneData = { };
+		s_Data->DrawList.clear();
+		s_Data->SceneData = { };
 	}
 
 	void SceneRenderer::GeometryPass()
 	{
-		Renderer::BeginRenderPass(s_Data.GeoPass);
-		auto viewProjection = s_Data.SceneData.SceneCamera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.GetViewMatrix();
+		Renderer::BeginRenderPass(s_Data->GeoPass);
+		auto viewProjection = s_Data->SceneData.SceneCamera.GetProjectionMatrix() * s_Data->SceneData.SceneCamera.GetViewMatrix();
 
 		// Skybox
-		auto skyboxShader = s_Data.SceneData.SkyboxMaterial->GetShader();
-		s_Data.SceneData.SkyboxMaterial->Set("u_InverseVP", glm::inverse(viewProjection));
-		Renderer::SubmitFullscreenQuad(s_Data.SceneData.SkyboxMaterial);
+		auto skyboxShader = s_Data->SceneData.SkyboxMaterial->GetShader();
+		s_Data->SceneData.SkyboxMaterial->Set("u_InverseVP", glm::inverse(viewProjection));
+		Renderer::SubmitFullscreenQuad(s_Data->SceneData.SkyboxMaterial);
 
 		// Render entities
-		for (auto& dc : s_Data.DrawList)
+		for (auto& dc : s_Data->DrawList)
 		{
 			auto baseMaterial = dc.Mesh->GetMaterial();
 			baseMaterial->Set("u_ViewProjectionMatrix", viewProjection);
-			baseMaterial->Set("u_CameraPosition", s_Data.SceneData.SceneCamera.GetPosition());
+			baseMaterial->Set("u_CameraPosition", s_Data->SceneData.SceneCamera.GetPosition());
 
 			// Environment (TODO: don't do this per mesh)
-			baseMaterial->Set("u_EnvRadianceTex", s_Data.SceneData.SceneEnvironment.RadianceMap);
-			baseMaterial->Set("u_EnvIrradianceTex", s_Data.SceneData.SceneEnvironment.IrradianceMap);
-			baseMaterial->Set("u_BRDFLUTTexture", s_Data.BRDFLUT);
+			baseMaterial->Set("u_EnvRadianceTex", s_Data->SceneData.SceneEnvironment.RadianceMap);
+			baseMaterial->Set("u_EnvIrradianceTex", s_Data->SceneData.SceneEnvironment.IrradianceMap);
+			baseMaterial->Set("u_BRDFLUTTexture", s_Data->BRDFLUT);
 
 			auto overrideMaterial = nullptr; // dc.Material;
 			Renderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
@@ -229,8 +235,8 @@ namespace RockEngine
 		// Grid
 		if (GetOptions().ShowGrid)
 		{
-			s_Data.GridMaterial->Set("u_ViewProjection", viewProjection);
-			Renderer::SubmitQuad(s_Data.GridMaterial, glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f)));
+			s_Data->GridMaterial->Set("u_ViewProjection", viewProjection);
+			Renderer::SubmitQuad(s_Data->GridMaterial, glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f)));
 		}
 
 		Renderer::EndRenderPass();
@@ -238,11 +244,11 @@ namespace RockEngine
 
 	void SceneRenderer::CompositePass()
 	{
-		Renderer::BeginRenderPass(s_Data.CompositePass);
-		s_Data.CompositeShader->Bind();
-		s_Data.CompositeShader->SetFloat("u_Exposure", s_Data.SceneData.SceneCamera.GetExposure());
+		Renderer::BeginRenderPass(s_Data->CompositePass);
+		s_Data->CompositeShader->Bind();
+		s_Data->CompositeShader->SetFloat("u_Exposure", s_Data->SceneData.SceneCamera.GetExposure());
 
-		s_Data.GeoPass->GetSpecification().TargetFramebuffer->BindTexture();
+		s_Data->GeoPass->GetSpecification().TargetFramebuffer->BindTexture();
 		Renderer::SubmitFullscreenQuad(nullptr);
 		Renderer::EndRenderPass();
 	}

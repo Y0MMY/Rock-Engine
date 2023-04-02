@@ -14,7 +14,6 @@ namespace RockEngine
 
 	struct RendererData
 	{
-		RenderCommandQueue m_CommandQueue;
 
 		Ref<ShaderLibrary> m_ShaderLibrary;
 
@@ -25,14 +24,15 @@ namespace RockEngine
 		Ref<Pipeline> m_FullscreenQuadPipeline;
 	};
 
-	static RendererData s_Data;
+	RenderCommandQueue* s_CommandQueue = nullptr;
+	RendererData* s_Data = nullptr;
 
 	void Renderer::BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear)
 	{
 		RE_CORE_ASSERT(renderPass, "Render pass cannot be null!");
 
 		// TODO: Convert all of this into a render command buffer
-		s_Data.m_ActiveRenderPass = renderPass;
+		s_Data->m_ActiveRenderPass = renderPass;
 
 		renderPass->GetSpecification().TargetFramebuffer->Bind();
 		if (clear)
@@ -90,19 +90,21 @@ namespace RockEngine
 
 	void Renderer::EndRenderPass()
 	{
-		RE_CORE_ASSERT(s_Data.m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
-		s_Data.m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
-		s_Data.m_ActiveRenderPass = nullptr;
+		RE_CORE_ASSERT(s_Data->m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
+		s_Data->m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
+		s_Data->m_ActiveRenderPass = nullptr;
 	}
 
 	void Renderer::Init()
 	{
-		s_Data.m_ShaderLibrary = Ref<ShaderLibrary>::Create();
+		s_Data = new RendererData();
+		s_CommandQueue = new RenderCommandQueue();
+		s_Data->m_ShaderLibrary = Ref<ShaderLibrary>::Create();
 		Renderer::Submit([=]() {
 			RendererAPI::Init();
 			});
 
-		s_Data.m_ShaderLibrary->Load("assets/shaders/ShaderPBR.glsl");
+		s_Data->m_ShaderLibrary->Load("assets/shaders/ShaderPBR.glsl");
 		SceneRenderer::Init();
 
 		// Create fullscreen quad
@@ -134,17 +136,17 @@ namespace RockEngine
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoord" }
 		};
-		s_Data.m_FullscreenQuadPipeline = Pipeline::Create(pipelineSpecification);
+		s_Data->m_FullscreenQuadPipeline = Pipeline::Create(pipelineSpecification);
 
-		s_Data.m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		s_Data->m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
-		s_Data.m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+		s_Data->m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 
 	}
 
 	Ref<ShaderLibrary> Renderer::GetShaderLibrary()
 	{
-		return s_Data.m_ShaderLibrary;
+		return s_Data->m_ShaderLibrary;
 	}
 
 	void Renderer::SubmitQuad(Ref<MaterialInstance> material, const glm::mat4& transform)
@@ -159,9 +161,9 @@ namespace RockEngine
 			shader->SetMat4("u_Transform", transform);
 		}
 
-		s_Data.m_FullscreenQuadVertexBuffer->Bind();
-		s_Data.m_FullscreenQuadPipeline->Bind();
-		s_Data.m_FullscreenQuadIndexBuffer->Bind();
+		s_Data->m_FullscreenQuadVertexBuffer->Bind();
+		s_Data->m_FullscreenQuadPipeline->Bind();
+		s_Data->m_FullscreenQuadIndexBuffer->Bind();
 		Renderer::DrawIndexed(6, depthTest);
 	}
 
@@ -174,9 +176,9 @@ namespace RockEngine
 			depthTest = material->GetFlag(MaterialFlag::DepthTest);
 		}
 
-		s_Data.m_FullscreenQuadVertexBuffer->Bind();
-		s_Data.m_FullscreenQuadPipeline->Bind();
-		s_Data.m_FullscreenQuadIndexBuffer->Bind();
+		s_Data->m_FullscreenQuadVertexBuffer->Bind();
+		s_Data->m_FullscreenQuadPipeline->Bind();
+		s_Data->m_FullscreenQuadIndexBuffer->Bind();
 		Renderer::DrawIndexed(6, depthTest);
 
 	}
@@ -204,11 +206,19 @@ namespace RockEngine
 
 	void Renderer::WaitAndRender()
 	{
-		s_Data.m_CommandQueue.Execute();
+		s_CommandQueue->Execute();
 	}
 
 	RenderCommandQueue& Renderer::GetRenderCommandQueue()
 	{
-		return s_Data.m_CommandQueue;
+		return *s_CommandQueue;
+	}
+
+	void Renderer::Shutdown()
+	{
+		SceneRenderer::Shutdown();
+
+		delete s_Data;
+		delete s_CommandQueue;
 	}
 }

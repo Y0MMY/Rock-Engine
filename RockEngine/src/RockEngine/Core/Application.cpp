@@ -29,7 +29,14 @@ namespace RockEngine
 	Application::~Application()
 	{
 		for (Layer* layer : m_LayerStack)
+		{
 			layer->OnDetach();
+			delete layer;
+		}
+
+		FramebufferPool::GetGlobal()->GetAll().clear();
+		Renderer::WaitAndRender();
+		Renderer::Shutdown();
 	}
 
 	void Application::Run()
