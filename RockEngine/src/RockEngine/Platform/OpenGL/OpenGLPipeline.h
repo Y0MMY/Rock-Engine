@@ -8,13 +8,14 @@ namespace RockEngine
 	{
 	public:
 		OpenGLPipeline(const PipelineSpecification& spec);
-		~OpenGLPipeline() override;
+		virtual ~OpenGLPipeline();
 
-		virtual PipelineSpecification& GetSpecification() override { return m_Specification; }
+		virtual PipelineSpecification& GetSpecification() { return m_Specification; }
+		virtual const PipelineSpecification& GetSpecification() const { return m_Specification; }
 
 		virtual void Invalidate() override;
 
-		virtual void Bind()override;
+		virtual void Bind() override;
 	private:
 		PipelineSpecification m_Specification;
 		RendererID m_RendererID;

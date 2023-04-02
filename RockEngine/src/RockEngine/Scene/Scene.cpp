@@ -5,6 +5,7 @@
 
 namespace RockEngine
 {
+	static const std::string DefaultEntityName = "Entity";
 
 	Environment Environment::Load(const std::string& filepath)
 	{
@@ -34,7 +35,7 @@ namespace RockEngine
 	void Scene::OnUpdate(Timestep ts)
 	{
 		m_Camera.Update(ts);
-		m_SkyboxMaterial->Set("u_TextureLod", 0.0);
+		m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
 
 		// Update all entities
 		for (auto entity : m_Entities)
@@ -77,9 +78,10 @@ namespace RockEngine
 		m_Entities.push_back(entity);
 	}
 
-	Entity* Scene::CreateEntity()
+	Entity* Scene::CreateEntity(const std::string& name /* = "" */)
 	{
-		auto entity = new Entity();
+		const std::string& entityName = name.empty() ? DefaultEntityName : name;
+		Entity* entity = new Entity(entityName);
 		AddEntity(entity);
 		return entity;
 	}

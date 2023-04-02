@@ -33,6 +33,7 @@ namespace RockEngine
 			glm::mat4 Transform;
 		};
 		std::vector<DrawCommand> DrawList;
+		SceneRendererOptions Options;
 
 		// Grid
 		Ref<MaterialInstance> GridMaterial;
@@ -47,6 +48,7 @@ namespace RockEngine
 		geoFramebufferSpec.Height = 720;
 		geoFramebufferSpec.Format = FramebufferTextureFormat::RGBA16F;
 		geoFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+		geoFramebufferSpec.Samples = 8;
 
 		RenderPassSpecification geoRenderPassSpec;
 		geoRenderPassSpec.TargetFramebuffer = Framebuffer::Create(geoFramebufferSpec);
@@ -62,8 +64,8 @@ namespace RockEngine
 		compRenderPassSpec.TargetFramebuffer = Framebuffer::Create(compFramebufferSpec);
 		s_Data.CompositePass = RenderPass::Create(compRenderPassSpec);
 
-		s_Data.CompositeShader = Shader::Create("assets/shaders/hdr.glsl");
 		s_Data.BRDFLUT = Texture2D::Create("assets/textures/BRDF_LUT.tga");
+		s_Data.CompositeShader = Shader::Create("assets/shaders/hdr.glsl");
 
 		// Grid
 		auto gridShader = Shader::Create("assets/shaders/Grid.glsl");
@@ -71,7 +73,6 @@ namespace RockEngine
 		float gridScale = 16.025f, gridSize = 0.025f;
 		s_Data.GridMaterial->Set("u_Scale", gridScale);
 		s_Data.GridMaterial->Set("u_Res", gridSize);
-
 	}
 
 	void SceneRenderer::SetViewportSize(u32 width, u32 height)
@@ -98,12 +99,17 @@ namespace RockEngine
 		FlushDrawList();
 	}
 
+	SceneRendererOptions& SceneRenderer::GetOptions()
+	{
+		return s_Data.Options;
+	}
+
 	void SceneRenderer::SubmitEntity(Entity* entity)
 	{
 		auto mesh = entity->GetMesh();
 		if (!mesh)
 			return;
-
+		auto& a = entity->GetMaterial();
 		s_Data.DrawList.push_back({ mesh, entity->GetMaterial(), entity->GetTransform() });
 	}
 
@@ -165,9 +171,9 @@ namespace RockEngine
 		Renderer::Submit([irradianceMap]()
 			{
 				glBindImageTexture(0, irradianceMap->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-		glDispatchCompute(irradianceMap->GetWidth() / 32, irradianceMap->GetHeight() / 32, 6);
+				glDispatchCompute(irradianceMap->GetWidth() / 32, irradianceMap->GetHeight() / 32, 6);
+				glGenerateTextureMipmap(irradianceMap->GetRendererID());
 			});
-
 		return { envFiltered, irradianceMap };
 
 	}
@@ -203,6 +209,7 @@ namespace RockEngine
 		auto skyboxShader = s_Data.SceneData.SkyboxMaterial->GetShader();
 		s_Data.SceneData.SkyboxMaterial->Set("u_InverseVP", glm::inverse(viewProjection));
 		Renderer::SubmitFullscreenQuad(s_Data.SceneData.SkyboxMaterial);
+
 		// Render entities
 		for (auto& dc : s_Data.DrawList)
 		{
@@ -216,12 +223,15 @@ namespace RockEngine
 			baseMaterial->Set("u_BRDFLUTTexture", s_Data.BRDFLUT);
 
 			auto overrideMaterial = nullptr; // dc.Material;
-			//Renderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
+			Renderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
 		}
 
 		// Grid
-		s_Data.GridMaterial->Set("u_ViewProjection", viewProjection);
-		Renderer::SubmitQuad(s_Data.GridMaterial, glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f)));
+		if (GetOptions().ShowGrid)
+		{
+			s_Data.GridMaterial->Set("u_ViewProjection", viewProjection);
+			Renderer::SubmitQuad(s_Data.GridMaterial, glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f)));
+		}
 
 		Renderer::EndRenderPass();
 	}
@@ -231,6 +241,7 @@ namespace RockEngine
 		Renderer::BeginRenderPass(s_Data.CompositePass);
 		s_Data.CompositeShader->Bind();
 		s_Data.CompositeShader->SetFloat("u_Exposure", s_Data.SceneData.SceneCamera.GetExposure());
+
 		s_Data.GeoPass->GetSpecification().TargetFramebuffer->BindTexture();
 		Renderer::SubmitFullscreenQuad(nullptr);
 		Renderer::EndRenderPass();

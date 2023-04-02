@@ -22,12 +22,13 @@ namespace RockEngine
 		: m_Size(size)
 	{
 		m_LocalData = Buffer::Copy(data, size);
-		Renderer::Submit([this]() mutable
+		Ref<OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
 			{
-				glGenBuffers(1, &m_RendererID);
+				glGenBuffers(1, &instance->m_RendererID);
 
-				glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-				glBufferData(GL_ARRAY_BUFFER, m_LocalData.Size, m_LocalData.Data, GL_STATIC_DRAW);
+				glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
+				glBufferData(GL_ARRAY_BUFFER, instance->m_LocalData.Size, instance->m_LocalData.Data, GL_STATIC_DRAW);
 			}
 		);
 	}
@@ -35,27 +36,30 @@ namespace RockEngine
 	OpenGLVertexBuffer::OpenGLVertexBuffer(u32 size, VertexBufferUsage usage)
 		: m_Size(size)
 	{
-		Renderer::Submit([this]() mutable
+		Ref<OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
 			{
-				glGenBuffers(1, &m_RendererID);
+				glGenBuffers(1, &instance->m_RendererID);
 			}
 		);
 	}
 
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
-		Renderer::Submit([this]() mutable
+		Ref<OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
 			{
-				glDeleteBuffers(1, &m_RendererID);
+				glDeleteBuffers(1, &instance->m_RendererID);
 			}
 		);
 	}
 
 	void OpenGLVertexBuffer::Bind() const {
 
-		Renderer::Submit([this]() mutable
+		Ref<const OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
 			{
-				glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+				glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
 
 			}
 		);
@@ -67,10 +71,11 @@ namespace RockEngine
 		m_LocalData = Buffer::Copy(data, size);
 		m_Size = size;
 
-		Renderer::Submit([this]() mutable
+		Ref<OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
 			{
-				glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-				glBufferData(GL_ARRAY_BUFFER, m_LocalData.Size, m_LocalData.Data, GL_STATIC_DRAW);
+				glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
+				glBufferData(GL_ARRAY_BUFFER, instance->m_LocalData.Size, instance->m_LocalData.Data, GL_STATIC_DRAW);
 			}
 		);
 	}

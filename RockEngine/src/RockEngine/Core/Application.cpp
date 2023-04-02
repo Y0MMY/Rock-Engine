@@ -23,6 +23,7 @@ namespace RockEngine
 		m_ImGuiLayer = new ImGuiLayer("ImGuiLayer");
 		PushLayer(m_ImGuiLayer);
 		Renderer::Init();
+		Renderer::WaitAndRender();
 	}
 
 	Application::~Application()

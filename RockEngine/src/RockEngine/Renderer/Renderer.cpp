@@ -35,11 +35,57 @@ namespace RockEngine
 		s_Data.m_ActiveRenderPass = renderPass;
 
 		renderPass->GetSpecification().TargetFramebuffer->Bind();
-		const glm::vec4& clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
-		Renderer::Submit([=]() {
-			RendererAPI::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-			});
+		if (clear)
+		{
+			const glm::vec4& clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
+			Renderer::Submit([=]() {
+				RendererAPI::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+				});
+		}
 
+	}
+
+	void Renderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance> overrideMaterial)
+	{
+	// auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
+		// auto shader = material->GetShader();
+		// TODO: Sort this out
+		mesh->m_VertexBuffer->Bind();
+		mesh->m_Pipeline->Bind();
+		mesh->m_IndexBuffer->Bind();
+
+		auto& materials = mesh->GetMaterials();
+		for (Submesh& submesh : mesh->m_Submeshes)
+		{
+			// Material
+			auto material = overrideMaterial ? overrideMaterial : materials[submesh.MaterialIndex];
+			auto shader = material->GetShader();
+			material->Bind();
+
+			if (mesh->m_IsAnimated)
+			{
+				for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
+				{
+					std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+					shader->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
+				}
+			}
+			shader->SetMat4("u_Transform", transform * submesh.Transform);
+
+			Renderer::Submit([submesh, material]() {
+				if (material->GetFlag(MaterialFlag::DepthTest))	
+					glEnable(GL_DEPTH_TEST);
+				else
+					glDisable(GL_DEPTH_TEST);
+
+				if (!material->GetFlag(MaterialFlag::TwoSided))
+					Renderer::Submit([]() { glEnable(GL_CULL_FACE); });
+				else
+					Renderer::Submit([]() { glDisable(GL_CULL_FACE); });
+
+				glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+			});
+		}
 	}
 
 	void Renderer::EndRenderPass()
@@ -56,7 +102,7 @@ namespace RockEngine
 			RendererAPI::Init();
 			});
 
-		s_Data.m_ShaderLibrary->Load("assets/shaders/shader.glsl");
+		s_Data.m_ShaderLibrary->Load("assets/shaders/ShaderPBR.glsl");
 		SceneRenderer::Init();
 
 		// Create fullscreen quad

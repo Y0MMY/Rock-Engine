@@ -25,6 +25,7 @@ namespace RockEngine
 		static void SubmitQuad(Ref<MaterialInstance> material, const glm::mat4& transform = glm::mat4(1.0f));
 		static void SubmitFullscreenQuad(Ref<MaterialInstance> material);
 
+		static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance> overrideMaterial);
 
 		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear = true);
 		static void EndRenderPass();

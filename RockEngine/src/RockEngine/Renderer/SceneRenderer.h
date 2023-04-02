@@ -6,6 +6,12 @@
 
 namespace RockEngine
 {
+	struct SceneRendererOptions
+	{
+		bool ShowGrid = true;
+		bool ShowBoundingBoxes = false;
+	};
+
 	class SceneRenderer
 	{
 	public:
@@ -18,6 +24,8 @@ namespace RockEngine
 
 		static void SubmitEntity(Entity* entity);
 
+		static SceneRendererOptions& GetOptions();
+
 		static std::pair<Ref<TextureCube>, Ref<TextureCube>> CreateEnvironmentMap(const std::string& filepath);
 
 		static Ref<Texture2D> GetFinalColorBuffer();
@@ -28,5 +36,7 @@ namespace RockEngine
 		static void FlushDrawList();
 		static void GeometryPass();
 		static void CompositePass();
+		Ref<Texture2D> BRDFLUT;
+
 	};
 }

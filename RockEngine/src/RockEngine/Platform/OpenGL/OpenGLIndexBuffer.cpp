@@ -11,12 +11,14 @@ namespace RockEngine
 		: m_Size(size)
 	{
 		m_LocalData = Buffer::Copy(data, size);
-		Renderer::Submit([this]() mutable
-			{
-				glGenBuffers(1, &m_RendererID);
 
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-				glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_LocalData.Size, m_LocalData.Data, GL_STATIC_DRAW);
+		Ref<OpenGLIndexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
+			{
+				glGenBuffers(1, &instance->m_RendererID);
+
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance->m_RendererID);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, instance->m_LocalData.Size, instance->m_LocalData.Data, GL_STATIC_DRAW);
 			}
 		);
 	}
@@ -24,27 +26,32 @@ namespace RockEngine
 	OpenGLIndexBuffer::OpenGLIndexBuffer(u32 size)
 		: m_Size(size)
 	{
-		Renderer::Submit([this]() mutable
+
+		Ref<OpenGLIndexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
 			{
-				glGenBuffers(1, &m_RendererID);
+				glGenBuffers(1, &instance->m_RendererID);
 			}
 		);
 	}
 
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
-		Renderer::Submit([this]() mutable
+
+		Ref<OpenGLIndexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
 			{
-				glDeleteBuffers(1, &m_RendererID);
+				glDeleteBuffers(1, &instance->m_RendererID);
 			}
 		);
 	}
 
 	void OpenGLIndexBuffer::Bind() const {
 
-		Renderer::Submit([this]() mutable
+		Ref<const OpenGLIndexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
 			{
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance->m_RendererID);
 			}
 		);
 
@@ -55,10 +62,11 @@ namespace RockEngine
 		m_LocalData = Buffer::Copy(data, size);
 		m_Size = size;
 
-		Renderer::Submit([this]() mutable
+		Ref<OpenGLIndexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
 			{
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-				glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_LocalData.Size, m_LocalData.Data, GL_STATIC_DRAW);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance->m_RendererID);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, instance->m_LocalData.Size, instance->m_LocalData.Data, GL_STATIC_DRAW);
 			}
 		);
 	}

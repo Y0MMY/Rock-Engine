@@ -10,7 +10,7 @@ namespace RockEngine
 		OpenGLFramebuffer(const FramebufferSpec& spec);
 		~OpenGLFramebuffer() override;
 
-		virtual void Resize(uint32_t width, uint32_t height) override;
+		virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) override;
 
 		void Bind() const override;
 		void Unbind() const override;
@@ -27,7 +27,7 @@ namespace RockEngine
 		const FramebufferSpec& GetSpecification() const override { return m_Spec; }
 	private:
 		RendererID m_RendererID;
-		RendererID m_ColorAttachment, m_DepthAttachment;
+		RendererID m_ColorAttachment = 0, m_DepthAttachment = 0;
 		FramebufferSpec m_Spec;
 
 		u32 m_Width, m_Height;
