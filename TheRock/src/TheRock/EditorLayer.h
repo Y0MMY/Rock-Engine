@@ -77,6 +77,7 @@ namespace RockEngine
 				// Editor
 				m_CheckerboardTex = Texture2D::Create("assets/editor/Checkerboard.tga");
 
+				m_SceneHierarchyPanel = std::make_unique<SceneHierarchyPanel>(m_Scene);
 
 				m_MeshMaterial = m_Mesh->GetMaterial();
 
@@ -179,6 +180,14 @@ namespace RockEngine
 			ImGui::Begin("Environment");
 			//ImGui::SliderFloat("Mesh Scale", &m_Mesh->m_Scale, 0.0f, 2.0f);
 			ImGui::Checkbox("Display Grid", &SceneRenderer::GetOptions().ShowGrid);
+			auto a = SceneRenderer::GetOptions().ShowBoundingBoxes;
+			ImGui::Checkbox("Display Bounded Box", &SceneRenderer::GetOptions().ShowBoundingBoxes);
+			ImGui::End();
+
+			ImGui::Begin("Statistic");
+			ImGui::Text("Draw Calls %d", Renderer2D::GetStats().DrawCalls);
+			ImGui::Text("Quad Count %d", Renderer2D::GetStats().QuadCount);
+			ImGui::Text("Line Count %d", Renderer2D::GetStats().LineCount);
 			ImGui::End();
 
 			ImGui::Separator();
@@ -312,6 +321,7 @@ namespace RockEngine
 
 				ImGui::EndMenuBar();
 			}
+			m_SceneHierarchyPanel->OnImGuiRender();
 
 			ImGui::End();
 		}
@@ -387,5 +397,6 @@ namespace RockEngine
 		Ref<Material> m_MeshMaterial;
 
 		Ref<Scene> m_Scene;
+		std::unique_ptr<SceneHierarchyPanel> m_SceneHierarchyPanel;
 	};
 }
