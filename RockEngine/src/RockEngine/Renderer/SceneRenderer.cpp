@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "SceneRenderer.h"
 #include "Renderer.h"
+#include "Renderer2D.h"
 
 #include <glad/glad.h>
 
@@ -237,6 +238,15 @@ namespace RockEngine
 		{
 			s_Data->GridMaterial->Set("u_ViewProjection", viewProjection);
 			Renderer::SubmitQuad(s_Data->GridMaterial, glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f)));
+		}
+
+		// Show Bounding Boxes
+		if (GetOptions().ShowBoundingBoxes)
+		{
+			Renderer2D::BeginScene(viewProjection);
+			for (auto& dc : s_Data->DrawList)
+				Renderer::DrawAABB(dc.Mesh, glm::mat4(1));
+			Renderer2D::EndScene();
 		}
 
 		Renderer::EndRenderPass();

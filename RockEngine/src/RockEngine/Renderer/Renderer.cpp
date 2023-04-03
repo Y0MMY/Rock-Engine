@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Renderer.h"
+#include "Renderer2D.h"
 
 #include "Shader.h"
 
@@ -88,6 +89,44 @@ namespace RockEngine
 		}
 	}
 
+	void Renderer::DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color /*= glm::vec4(1.0f)*/)
+	{
+		glm::vec4 min = { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f };
+		glm::vec4 max = { aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f };
+
+		glm::vec4 corners[8] =
+		{
+			transform * glm::vec4 { aabb.Min.x, aabb.Min.y, aabb.Max.z, 1.0f },
+			transform * glm::vec4 { aabb.Min.x, aabb.Max.y, aabb.Max.z, 1.0f },
+			transform * glm::vec4 { aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f },
+			transform * glm::vec4 { aabb.Max.x, aabb.Min.y, aabb.Max.z, 1.0f },
+
+			transform * glm::vec4 { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f },
+			transform * glm::vec4 { aabb.Min.x, aabb.Max.y, aabb.Min.z, 1.0f },
+			transform * glm::vec4 { aabb.Max.x, aabb.Max.y, aabb.Min.z, 1.0f },
+			transform * glm::vec4 { aabb.Max.x, aabb.Min.y, aabb.Min.z, 1.0f }
+		};
+
+		for (uint32_t i = 0; i < 4; i++)
+			Renderer2D::DrawLine(corners[i], corners[(i + 1) % 4], color);
+
+		for (uint32_t i = 0; i < 4; i++)
+			Renderer2D::DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
+
+		for (uint32_t i = 0; i < 4; i++)
+			Renderer2D::DrawLine(corners[i], corners[i + 4], color);
+	}
+
+	void Renderer::DrawAABB(Ref<Mesh> mesh, const glm::mat4& transform, const glm::vec4& color)
+	{
+		for (Submesh& submesh : mesh->m_Submeshes)
+		{
+			auto& aabb = submesh.BoundingBox;
+			auto aabbTransform =submesh.Transform;
+			DrawAABB(aabb, aabbTransform);
+		}
+	}
+
 	void Renderer::EndRenderPass()
 	{
 		RE_CORE_ASSERT(s_Data->m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
@@ -142,6 +181,7 @@ namespace RockEngine
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 		s_Data->m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 
+		Renderer2D::Init();
 	}
 
 	Ref<ShaderLibrary> Renderer::GetShaderLibrary()
@@ -164,7 +204,7 @@ namespace RockEngine
 		s_Data->m_FullscreenQuadVertexBuffer->Bind();
 		s_Data->m_FullscreenQuadPipeline->Bind();
 		s_Data->m_FullscreenQuadIndexBuffer->Bind();
-		Renderer::DrawIndexed(6, depthTest);
+		Renderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
 	void Renderer::SubmitFullscreenQuad(Ref<MaterialInstance> material)
@@ -179,7 +219,7 @@ namespace RockEngine
 		s_Data->m_FullscreenQuadVertexBuffer->Bind();
 		s_Data->m_FullscreenQuadPipeline->Bind();
 		s_Data->m_FullscreenQuadIndexBuffer->Bind();
-		Renderer::DrawIndexed(6, depthTest);
+		Renderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 
 	}
 
@@ -190,6 +230,13 @@ namespace RockEngine
 			});
 	}
 
+	void Renderer::SetLineThickness(float thickness)
+	{
+		Renderer::Submit([=]() {
+			RendererAPI::SetLineThickness(thickness);
+			});
+	}
+
 	void Renderer::SetViewport(u32 Width, u32 Height, u32 x, u32 y)
 	{
 		Renderer::Submit([=]() {
@@ -197,10 +244,10 @@ namespace RockEngine
 			});
 	}
 
-	void Renderer::DrawIndexed(u32 count, bool depthTest)
+	void Renderer::DrawIndexed(u32 count, PrimitiveType type, bool depthTest)
 	{
 		Renderer::Submit([=]() {
-			RendererAPI::DrawIndexed(count, depthTest);
+			RendererAPI::DrawIndexed(count, type, depthTest);
 		});
 	}
 

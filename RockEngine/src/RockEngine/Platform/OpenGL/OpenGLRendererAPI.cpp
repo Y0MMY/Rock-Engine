@@ -36,14 +36,31 @@ namespace RockEngine
 		glClearColor(r, g, b, a);
 	}
 	
-	void RendererAPI::DrawIndexed(u32 count, bool depthTest)
+	void RendererAPI::SetLineThickness(float thickness)
 	{
-		if (depthTest)
-			glEnable(GL_DEPTH_TEST);
-		else
+		glLineWidth(thickness);
+	}
+
+	void RendererAPI::DrawIndexed(u32 count, PrimitiveType type, bool depthTest)
+	{
+		if (!depthTest)
 			glDisable(GL_DEPTH_TEST);
 
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+		GLenum glPrimitiveType = 0;
+		switch (type)
+		{
+		case PrimitiveType::Triangles:
+			glPrimitiveType = GL_TRIANGLES;
+			break;
+		case PrimitiveType::Lines:
+			glPrimitiveType = GL_LINES;
+			break;
+		}
+
+		glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
+
+		if (!depthTest)
+			glEnable(GL_DEPTH_TEST);
 	}
 
 	void RendererAPI::SetViewport(u32 Width, u32 Height, u32 x, u32 y)

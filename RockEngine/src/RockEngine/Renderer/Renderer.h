@@ -16,7 +16,9 @@ namespace RockEngine
 		static void SetClearColor(float r, float g, float b, float a);
 		static void SetViewport(u32 Width, u32 Height, u32 x = 0, u32 y = 0);
 
-		static void DrawIndexed(u32 count, bool depthTest = true);
+		static void DrawIndexed(u32 count, PrimitiveType type, bool depthTest = true);
+		// For OpenGL
+		static void SetLineThickness(float thickness);
 
 		static void Init();
 
@@ -26,6 +28,9 @@ namespace RockEngine
 		static void SubmitFullscreenQuad(Ref<MaterialInstance> material);
 
 		static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance> overrideMaterial);
+
+		static void DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		static void DrawAABB(Ref<Mesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 
 		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear = true);
 		static void EndRenderPass();

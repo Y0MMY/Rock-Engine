@@ -4,6 +4,12 @@ namespace RockEngine
 {
 	using RendererID = unsigned int;
 
+	// TODO: move into separate header
+	enum class PrimitiveType
+	{
+		None = 0, Triangles, Lines
+	};
+
 	enum class RendererAPIType : uint32_t
 	{
 		None = 0,
@@ -30,7 +36,8 @@ namespace RockEngine
 		static void SetClearColor(float r, float g, float b, float a);
 		static void SetViewport(u32 Width, u32 Height, u32 x, u32 y);
 
-		static void DrawIndexed(u32 count, bool depthTest);
+		static void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest = true);
+		static void SetLineThickness(float thickness);
 
 		static void Init();
 

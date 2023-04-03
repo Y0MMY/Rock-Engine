@@ -59,14 +59,14 @@ namespace RockEngine
 
 	};
 
+	static Assimp::Importer importer;
+
 	Mesh::Mesh(const std::string& filename)
 		: m_FilePath(filename)
 	{
 		LogStream::Initialize();
 
 		RE_CORE_INFO("Loading mesh: {0}", filename.c_str());
-
-		Assimp::Importer importer;
 
 		const aiScene* scene = importer.ReadFile(filename, s_MeshImportFlags);
 		if (!scene || !scene->HasMeshes())
@@ -125,12 +125,22 @@ namespace RockEngine
 			}
 			else
 			{
-				
+				auto& aabb = submesh.BoundingBox;
+				aabb.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
+				aabb.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
 				for (size_t i = 0; i < mesh->mNumVertices; i++)
 				{
 					Vertex vertex;
 					vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
 					vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+
+					aabb.Min.x = glm::min(vertex.Position.x, aabb.Min.x);
+					aabb.Min.y = glm::min(vertex.Position.y, aabb.Min.y);
+					aabb.Min.z = glm::min(vertex.Position.z, aabb.Min.z);
+					aabb.Max.x = glm::max(vertex.Position.x, aabb.Max.x);
+					aabb.Max.y = glm::max(vertex.Position.y, aabb.Max.y);
+					aabb.Max.z = glm::max(vertex.Position.z, aabb.Max.z);
 
 					if (mesh->HasTangentsAndBitangents())
 					{

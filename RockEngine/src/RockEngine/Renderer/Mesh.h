@@ -15,6 +15,8 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 
+#include "RockEngine/Core/Math/AABB.h"
+
 struct aiNode;
 struct aiAnimation;
 struct aiNodeAnim;
@@ -131,6 +133,7 @@ namespace RockEngine {
 
 		glm::mat4 Transform;
 		glm::mat4 LocalTransform;
+		AABB BoundingBox;
 
 		std::string NodeName, MeshName;
 	};

@@ -26,6 +26,7 @@
 #include "RockEngine/Renderer/Material.h"
 #include "RockEngine/Renderer/RenderPass.h"
 #include "RockEngine/Renderer/SceneRenderer.h"
+#include "RockEngine/Renderer/Renderer2D.h"
 
 //---------------------------------------------
 
@@ -33,3 +34,6 @@
 // Scenes
 #include "RockEngine/Scene/Scene.h"
 #include "RockEngine/Scene/Entity.h"
+
+// Editor
+#include "RockEngine/Editor/SceneHierarchyPanel.h"
