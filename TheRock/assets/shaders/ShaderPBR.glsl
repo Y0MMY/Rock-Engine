@@ -46,6 +46,8 @@ const vec3 Fdielectric = vec3(0.04);
 struct Light {
 	vec3 Direction;
 	vec3 Radiance;
+
+	float Multiplier;
 };
 
 in VertexOutput
@@ -235,7 +237,7 @@ vec3 Lighting(vec3 F0)
 	for(int i = 0; i < LightCount; i++)
 	{
 		vec3 Li = -lights.Direction;
-		vec3 Lradiance = lights.Radiance;
+		vec3 Lradiance = lights.Radiance * lights.Multiplier;
 		vec3 Lh = normalize(Li + m_Params.View);
 
 		// Calculate angles between surface normal and various light vectors.

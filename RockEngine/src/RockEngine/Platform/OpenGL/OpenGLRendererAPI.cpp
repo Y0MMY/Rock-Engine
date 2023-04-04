@@ -35,7 +35,7 @@ namespace RockEngine
 	{
 		glClearColor(r, g, b, a);
 	}
-	
+
 	void RendererAPI::SetLineThickness(float thickness)
 	{
 		glLineWidth(thickness);
@@ -70,7 +70,7 @@ namespace RockEngine
 
 	void RendererAPI::Init()
 	{
-		glDebugMessageCallback(OpenGLLogMessage,nullptr);
+		glDebugMessageCallback(OpenGLLogMessage, nullptr);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
 		glEnable(GL_DEPTH_TEST);

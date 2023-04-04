@@ -120,6 +120,12 @@ namespace RockEngine
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_FN(OnWindowClose));
 		dispatcher.Dispatch<WindowResizeEvent>(BIND_FN(OnWindowResize));
 		dispatcher.Dispatch<MouseMovedEvent>(BIND_FN(OnMouseMoved));
+
+		for (Layer* layer : m_LayerStack)
+		{
+			layer->OnEvent(event);
+			if (event.m_Handled) break;
+		}
 	}
 
 	bool Application::OnMouseMoved(MouseMovedEvent& e)

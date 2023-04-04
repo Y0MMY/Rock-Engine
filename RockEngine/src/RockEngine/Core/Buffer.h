@@ -68,6 +68,16 @@ namespace RockEngine
 			return Data;
 		}
 
+		byte& operator[](int index)
+		{
+			return ((byte*)Data)[index];
+		}
+
+		byte operator[](int index) const
+		{
+			return ((byte*)Data)[index];
+		}
+
 		inline u32 GetSize() { return Size; }
 
 	};

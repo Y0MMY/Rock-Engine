@@ -9,7 +9,7 @@ namespace RockEngine
 	struct SceneRendererOptions
 	{
 		bool ShowGrid = true;
-		bool ShowBoundingBoxes = false;
+		bool ShowBoundingBoxes = true;
 	};
 
 	class SceneRenderer
@@ -31,6 +31,7 @@ namespace RockEngine
 		static std::pair<Ref<TextureCube>, Ref<TextureCube>> CreateEnvironmentMap(const std::string& filepath);
 
 		static Ref<Texture2D> GetFinalColorBuffer();
+		static Ref<RenderPass> GetFinalRenderPass();
 
 		// TODO: Temp
 		static uint32_t GetFinalColorBufferRendererID();

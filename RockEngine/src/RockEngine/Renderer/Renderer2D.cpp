@@ -57,7 +57,7 @@ namespace RockEngine
 
 			s_Data->LineVertexBufferBase = new LineVertex[s_Data->MaxLineIndices];
 
-			u32 *LineIndices = new u32[s_Data->MaxLineIndices];
+			u32* LineIndices = new u32[s_Data->MaxLineIndices];
 			for (u32 i = 0; i < s_Data->MaxLineIndices; i++)
 			{
 				LineIndices[i] = i;
@@ -117,7 +117,7 @@ namespace RockEngine
 
 			s_Data->LinePipeline->Bind();
 			s_Data->LineIndexBuffer->Bind();
-			Renderer::SetLineThickness(12.0f);
+			Renderer::SetLineThickness(5.0f);
 			Renderer::DrawIndexed(s_Data->LineIndexCount, PrimitiveType::Lines, s_Data->DepthTest);
 			s_Data->Stats.DrawCalls++;
 		}
@@ -126,7 +126,7 @@ namespace RockEngine
 
 	void Renderer2D::FlushAndResetLines()
 	{
-		
+
 
 	}
 

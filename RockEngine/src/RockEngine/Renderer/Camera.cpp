@@ -10,14 +10,16 @@ namespace RockEngine
 {
 	Camera::Camera(const glm::mat4& projectionMatrix)
 	{
-		m_Position = { -5, 5, 5 };
 		m_Rotation = glm::vec3(90.0f, 0.0f, 0.0f);
-
 		m_FocalPoint = glm::vec3(0.0f);
-		m_Distance = glm::distance(m_Position, m_FocalPoint);
+
+		glm::vec3 position = { -5, 5, 5 };
+		m_Distance = glm::distance(position, m_FocalPoint);
+
 		m_Yaw = 3.0f * (float)M_PI / 4.0f;
 		m_Pitch = M_PI / 4.0f;
 
+		UpdateCameraView();
 	}
 
 	std::pair<float, float> Camera::PanSpeed() const
@@ -49,7 +51,7 @@ namespace RockEngine
 	{
 	}
 
-	void Camera::Update(Timestep ts)
+	void Camera::OnUpdate(Timestep ts)
 	{
 		if (Input::IsKeyPressed(KeyCode::LeftAlt))
 		{
@@ -67,14 +69,7 @@ namespace RockEngine
 				MouseZoom(delta.y);
 		}
 
-		m_Position = CalculatePosition();
-
-		glm::quat orientation = GetOrientation();
-		m_Rotation = glm::eulerAngles(orientation) * (180.0f / (float)M_PI);
-		m_ViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 1)) * glm::toMat4(glm::conjugate(orientation)) * glm::translate(glm::mat4(1.0f), -m_Position);
-
-		m_ViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
-		m_ViewMatrix = glm::inverse(m_ViewMatrix);
+		UpdateCameraView();
 	}
 
 	void Camera::MousePan(const glm::vec2& delta)
@@ -126,4 +121,28 @@ namespace RockEngine
 	{
 		return glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f));
 	}
+
+	void Camera::OnEvent(Event& e)
+	{
+		EventDispatcher dispatcher(e);
+		//dispatcher.Dispatch<MouseScrolledEvent>(BIND_EVENT_FN(Camera::OnMouseScroll));
+	}
+
+	void Camera::UpdateCameraView()
+	{
+		m_Position = CalculatePosition();
+
+		glm::quat orientation = GetOrientation();
+		m_Rotation = glm::eulerAngles(orientation) * (180.0f / (float)M_PI);
+		m_ViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
+		m_ViewMatrix = glm::inverse(m_ViewMatrix);
+	}
+
+	/*bool Camera::OnMouseScroll(MouseScrolledEvent& e)
+	{
+
+		float delta = e.GetYOffset() * 0.1f;
+		MouseZoom(delta);
+		return false;
+	}*/
 }

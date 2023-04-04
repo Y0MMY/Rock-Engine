@@ -3,6 +3,8 @@
 #include "RockEngine/Core/Buffer.h"
 #include "RockEngine/Renderer/RendererAPI.h"
 
+#include <glm/glm.hpp>
+
 namespace RockEngine
 {
 	enum class TextureFormat
@@ -20,6 +22,26 @@ namespace RockEngine
 		Repeat = 2
 	};
 
+	namespace Utils
+	{
+		inline uint32_t CalculateMipCount(uint32_t width, uint32_t height)
+		{
+			return std::floor(std::log2(glm::min(width, height))) + 1;
+		}
+
+		inline uint32_t GetImageFormatBPP(TextureFormat format)
+		{
+			switch (format)
+			{
+			case TextureFormat::RGB:
+			case TextureFormat::RGBA:    return 4;
+			case TextureFormat::Float16: return 2 * 4;
+			}
+			RE_CORE_ASSERT(false,"");
+			return 0;
+		}
+	}
+
 	class Texture : public RefCounted
 	{
 	public:
@@ -35,9 +57,6 @@ namespace RockEngine
 		virtual RendererID GetRendererID() const = 0;
 
 		virtual const Buffer& GetBuffer() const = 0;
-
-		static u32 GetBPP(TextureFormat format);
-		static u32 CalculateMipMapCount(u32 width, u32 height);
 
 		virtual bool Loaded() const = 0;
 

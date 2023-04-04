@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include "RockEngine/Core/Timestep.h"
+#include "RockEngine/Core/Events/MouseEvent.h"
 
 namespace RockEngine
 {
@@ -13,7 +14,8 @@ namespace RockEngine
 		Camera(const glm::mat4& projectionMatrix);
 
 		void Focus();
-		void Update(Timestep ts);
+		void OnUpdate(Timestep ts);
+		void OnEvent(Event& e);
 
 		inline float GetDistance() const { return m_Distance; }
 		inline void SetDistance(float distance) { m_Distance = distance; }
@@ -24,6 +26,7 @@ namespace RockEngine
 
 		const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+		const glm::mat4& GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }
 
 		glm::vec3 GetUpDirection();
 		glm::vec3 GetRightDirection();
@@ -33,6 +36,10 @@ namespace RockEngine
 		float GetExposure() const { return m_Exposure; }
 		float& GetExposure() { return m_Exposure; }
 	private:
+		void UpdateCameraView();
+
+		//bool OnMouseScroll(MouseScrolledEvent& e);
+
 		void MousePan(const glm::vec2& delta);
 		void MouseRotate(const glm::vec2& delta);
 		void MouseZoom(float delta);
@@ -58,4 +65,5 @@ namespace RockEngine
 
 		float m_Pitch, m_Yaw;
 	};
+
 }

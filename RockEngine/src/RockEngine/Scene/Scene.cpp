@@ -34,7 +34,7 @@ namespace RockEngine
 
 	void Scene::OnUpdate(Timestep ts)
 	{
-		m_Camera.Update(ts);
+		m_Camera.OnUpdate(ts);
 		m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
 
 		// Update all entities

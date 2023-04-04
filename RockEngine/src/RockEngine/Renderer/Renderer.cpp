@@ -48,9 +48,9 @@ namespace RockEngine
 
 	void Renderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance> overrideMaterial)
 	{
-	// auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
-		// auto shader = material->GetShader();
-		// TODO: Sort this out
+		// auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
+			// auto shader = material->GetShader();
+			// TODO: Sort this out
 		mesh->m_VertexBuffer->Bind();
 		mesh->m_Pipeline->Bind();
 		mesh->m_IndexBuffer->Bind();
@@ -74,7 +74,7 @@ namespace RockEngine
 			shader->SetMat4("u_Transform", transform * submesh.Transform);
 
 			Renderer::Submit([submesh, material]() {
-				if (material->GetFlag(MaterialFlag::DepthTest))	
+				if (material->GetFlag(MaterialFlag::DepthTest))
 					glEnable(GL_DEPTH_TEST);
 				else
 					glDisable(GL_DEPTH_TEST);
@@ -85,7 +85,7 @@ namespace RockEngine
 					Renderer::Submit([]() { glDisable(GL_CULL_FACE); });
 
 				glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
-			});
+				});
 		}
 	}
 
@@ -122,7 +122,7 @@ namespace RockEngine
 		for (Submesh& submesh : mesh->m_Submeshes)
 		{
 			auto& aabb = submesh.BoundingBox;
-			auto aabbTransform =submesh.Transform;
+			auto aabbTransform = submesh.Transform;
 			DrawAABB(aabb, aabbTransform);
 		}
 	}
@@ -226,7 +226,7 @@ namespace RockEngine
 	void Renderer::Clear(float r, float g, float b, float a /* = 1.0f */)
 	{
 		Renderer::Submit([=]() {
-			RendererAPI::Clear(r,g,b,a);
+			RendererAPI::Clear(r, g, b, a);
 			});
 	}
 
@@ -240,7 +240,7 @@ namespace RockEngine
 	void Renderer::SetViewport(u32 Width, u32 Height, u32 x, u32 y)
 	{
 		Renderer::Submit([=]() {
-			RendererAPI::SetViewport(Width,Height,x,y);
+			RendererAPI::SetViewport(Width, Height, x, y);
 			});
 	}
 
@@ -248,7 +248,7 @@ namespace RockEngine
 	{
 		Renderer::Submit([=]() {
 			RendererAPI::DrawIndexed(count, type, depthTest);
-		});
+			});
 	}
 
 	void Renderer::WaitAndRender()

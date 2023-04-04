@@ -5,28 +5,6 @@
 
 namespace RockEngine
 {
-	uint32_t Texture::GetBPP(TextureFormat format)
-	{
-		switch (format)
-		{
-		case TextureFormat::RGB:    return 3;
-		case TextureFormat::RGBA:   return 4;
-		}
-		return 0;
-	}
-
-	u32 Texture::CalculateMipMapCount(uint32_t width, uint32_t height)
-	{
-		uint32_t levels = 1;
-		while ((width | height) >> levels)
-			levels++;
-
-		return levels;
-	}
-
-	// ---------------------------------------------------
-
-
 	Ref<Texture2D> Texture2D::Create(TextureFormat format, u32 width, u32 height, TextureWrap wrap)
 	{
 		switch (RendererAPI::Current())

@@ -1,11 +1,15 @@
 #pragma once
 
 #include "RockEngine/Core/Application.h"
-#include "RockEngine/EntryPoint.h"
 #include "RockEngine/Core/Log.h"
 #include "RockEngine/Core/Core.h"
 #include "RockEngine/Core/Buffer.h"
 #include "RockEngine/Core/Input.h"
+
+#include "RockEngine/Core/Events/Event.h"
+#include "RockEngine/Core/Events/ApplicationEvent.h"
+#include "RockEngine/Core/Events/KeyEvent.h"
+#include "RockEngine/Core/Events/MouseEvent.h"
 
 //---------------------------------------------
 
@@ -27,7 +31,6 @@
 #include "RockEngine/Renderer/RenderPass.h"
 #include "RockEngine/Renderer/SceneRenderer.h"
 #include "RockEngine/Renderer/Renderer2D.h"
-
 //---------------------------------------------
 
 

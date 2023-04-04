@@ -1,4 +1,5 @@
 #include "TheRock.h"
+#include "RockEngine/EntryPoint.h"
 #include "EditorLayer.h"
 
 class Sandbox : public RockEngine::Application
@@ -10,7 +11,7 @@ public:
 
 	void OnInit() override
 	{
-		PushLayer(new RockEngine::Editor());
+		PushLayer(new RockEngine::EditorLayer());
 	}
 };
 

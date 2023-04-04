@@ -46,7 +46,7 @@ namespace RockEngine
 			glBindTexture(GL_TEXTURE_2D, 0);
 		});
 
-		m_ImageData.Allocate(width * height * Texture::GetBPP(m_Format));
+		m_ImageData.Allocate(width * height * Utils::GetImageFormatBPP(m_Format));
 	}
 
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool srgb)
@@ -83,7 +83,7 @@ namespace RockEngine
 			if (srgb)
 			{
 				glCreateTextures(GL_TEXTURE_2D, 1, &instance->m_RendererID);
-				int levels = Texture::CalculateMipMapCount(instance->m_Width, instance->m_Height);
+				int levels = Utils::CalculateMipCount(instance->m_Width, instance->m_Height);
 				glTextureStorage2D(instance->m_RendererID, levels, GL_SRGB8, instance->m_Width, instance->m_Height);
 				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -133,7 +133,7 @@ namespace RockEngine
 
 	uint32_t OpenGLTexture2D::GetMipLevelCount() const
 	{
-		return Texture::CalculateMipMapCount(m_Width, m_Height);
+		return Utils::CalculateMipCount(m_Width, m_Height);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////
@@ -146,7 +146,7 @@ namespace RockEngine
 		m_Height = height;
 		m_Format = format;
 
-		uint32_t levels = Texture::CalculateMipMapCount(width, height);
+		uint32_t levels = Utils::CalculateMipCount(m_Width, m_Height);
 		Ref<OpenGLTextureCube> instance = this;
 		Renderer::Submit([instance, levels]() mutable
 		{
@@ -273,7 +273,7 @@ namespace RockEngine
 
 	uint32_t OpenGLTextureCube::GetMipLevelCount() const
 	{
-		return Texture::CalculateMipMapCount(m_Width, m_Height);
+		return Utils::CalculateMipCount(m_Width, m_Height);
 	}
 
 
