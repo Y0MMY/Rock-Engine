@@ -255,7 +255,7 @@ namespace RockEngine
 		{
 			Renderer2D::BeginScene(viewProjection);
 			for (auto& dc : s_Data->DrawList)
-				Renderer::DrawAABB(dc.Mesh, glm::mat4(1));
+				Renderer::DrawAABB(dc.Mesh, dc.Transform);
 			Renderer2D::EndScene();
 		}
 

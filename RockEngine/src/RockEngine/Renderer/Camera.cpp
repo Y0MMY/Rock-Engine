@@ -25,10 +25,10 @@ namespace RockEngine
 	std::pair<float, float> Camera::PanSpeed() const
 	{
 		float x = std::min(m_ViewportWidth / 1000.0f, 2.4f); // max = 2.4f
-		float xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.3021f; // Bradis table (0.0036 etc)
+		xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.3021f; // Bradis table (0.0036 etc)
 
 		float y = std::min(m_ViewportHeight / 1000.0f, 2.4f); // max = 2.4f
-		float yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.3021f;
+		yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.3021f;
 
 		return { xFactor, yFactor };
 	}

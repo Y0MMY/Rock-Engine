@@ -64,6 +64,8 @@ namespace RockEngine
 		uint32_t m_ViewportWidth = 1280, m_ViewportHeight = 720;
 
 		float m_Pitch, m_Yaw;
+		mutable float xFactor;
+		mutable float yFactor;
 	};
 
 }

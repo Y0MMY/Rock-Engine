@@ -59,9 +59,9 @@ namespace RockEngine
 
 	}
 
-	void OpenGLPipeline::Bind()
+	void OpenGLPipeline::Bind() const
 	{
-		Ref<OpenGLPipeline> instance = this;
+		Ref<const OpenGLPipeline> instance = this;
 		Renderer::Submit([instance]() mutable
 		{
 			if(instance->m_RendererID)

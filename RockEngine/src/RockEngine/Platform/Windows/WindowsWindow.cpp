@@ -3,6 +3,7 @@
 
 #include "RockEngine/Core/Events/ApplicationEvent.h"
 #include <RockEngine/Core/Events/MouseEvent.h>
+#include <RockEngine/Core/Events/KeyEvent.h>
 
 namespace RockEngine
 {
@@ -62,6 +63,34 @@ namespace RockEngine
 			MouseMovedEvent event((float)x, (float)y);
 			data.EventCallback(event);
 		});
+
+		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+			{
+				auto& data = *((WindowData*)glfwGetWindowUserPointer(window));
+
+				switch (action)
+				{
+				case GLFW_PRESS:
+				{
+					KeyPressedEvent event((KeyCode)key, 0);
+					data.EventCallback(event);
+					break;
+				}
+				case GLFW_RELEASE:
+				{
+					KeyReleasedEvent event((KeyCode)key);
+					data.EventCallback(event);
+					break;
+				}
+				case GLFW_REPEAT:
+				{
+					KeyPressedEvent event((KeyCode)key, 1);
+					data.EventCallback(event);
+					break;
+				}
+				}
+			});
+
 
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
 			{

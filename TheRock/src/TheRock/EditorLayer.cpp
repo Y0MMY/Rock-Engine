@@ -4,6 +4,8 @@
 #include "RockEngine/ImGui/ImGui.h"
 #include "RockEngine/Core/Math/Ray.h"
 
+#include "RockEngine/ImGui/ImGuizmo.h"
+
 namespace RockEngine
 {
 	EditorLayer::EditorLayer()
@@ -38,10 +40,43 @@ namespace RockEngine
 		return { rayPos, rayDir };
 	}
 
+	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
+	{
+		switch (e.GetKeyCode())
+		{
+		case KeyCode::Q:
+			m_GizmoType = -1;
+			break;
+		case KeyCode::W:
+			m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+			break;
+		case KeyCode::E:
+			m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+			break;
+		case KeyCode::R:
+			m_GizmoType = ImGuizmo::OPERATION::SCALE;
+			break;
+		case KeyCode::G:
+			// Toggle grid
+			if (RockEngine::Input::IsKeyPressed(KeyCode::LeftControl))
+				SceneRenderer::GetOptions().ShowGrid = !SceneRenderer::GetOptions().ShowGrid;
+			break;
+		case KeyCode::B:
+			// Toggle bounding boxes 
+			if (RockEngine::Input::IsKeyPressed(KeyCode::LeftControl))
+			{
+				m_UIShowBoundingBoxes = !m_UIShowBoundingBoxes;
+				ShowBoundingBoxes(m_UIShowBoundingBoxes, m_UIShowBoundingBoxes);
+			}
+			break;
+		}
+		return false;
+	}
+
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
 		auto [mouseX, mouseY] = GetMouseViewportSpace();
-		if (e.GetMouseButton() == MouseButton::Left && !Input::IsKeyPressed(KeyCode::LeftAlt))
+		if (e.GetMouseButton() == MouseButton::Left && !Input::IsKeyPressed(KeyCode::LeftAlt) && !ImGuizmo::IsOver())
 		{
 			if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
 			{
@@ -89,10 +124,16 @@ namespace RockEngine
 		return false;
 	}
 
+	void EditorLayer::ShowBoundingBoxes(bool show, bool onTop)
+	{
+		SceneRenderer::GetOptions().ShowBoundingBoxes = show;
+	}
+
 	void EditorLayer::OnEvent(Event& e)
 	{
 		EventDispatcher disp(e);
 		disp.Dispatch<MouseButtonPressedEvent>(BIND_FN(EditorLayer::OnMouseButtonPressed));
+		disp.Dispatch<KeyPressedEvent>(BIND_FN(EditorLayer::OnKeyPressedEvent));
 	}
 	
 	void EditorLayer::OnAttach()
@@ -369,6 +410,20 @@ namespace RockEngine
 		m_Scene->GetCamera().SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
 		m_Scene->GetCamera().SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 		ImGui::Image((void*)SceneRenderer::GetFinalColorBufferRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
+
+		if (m_GizmoType != -1)
+		{
+			float rw = (float)ImGui::GetWindowWidth();
+			float rh = (float)ImGui::GetWindowHeight();
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
+			ImGuizmo::Manipulate(glm::value_ptr(m_Scene->GetCamera().GetViewMatrix()),
+				glm::value_ptr(m_Scene->GetCamera().GetProjectionMatrix()),
+				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(m_MeshEntity->Transform()));
+		}
+
+
 		ImGui::End();
 		auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
 		static int counter = 0;
@@ -380,10 +435,7 @@ namespace RockEngine
 		ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
 		m_ViewportBounds[0] = { minBound.x, minBound.y };
 		m_ViewportBounds[1] = { maxBound.x, maxBound.y };
-		/*ImGui::Begin("Viewport 2");
-		m_FinalPresentBuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-		ImGui::Image((void*)m_FinalPresentBuffer->GetColorAttachmentRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
-		ImGui::End();*/
+	
 
 		ImGui::PopStyleVar();
 

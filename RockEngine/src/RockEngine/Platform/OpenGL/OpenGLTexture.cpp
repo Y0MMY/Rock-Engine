@@ -130,7 +130,6 @@ namespace RockEngine
 		});
 	}
 
-
 	uint32_t OpenGLTexture2D::GetMipLevelCount() const
 	{
 		return Utils::CalculateMipCount(m_Width, m_Height);

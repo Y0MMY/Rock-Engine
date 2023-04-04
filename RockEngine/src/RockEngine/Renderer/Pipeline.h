@@ -21,7 +21,7 @@ namespace RockEngine
 		virtual void Invalidate() = 0;
 
 		// TEMP: remove this when render command buffers are a thing
-		virtual void Bind() = 0;
+		virtual void Bind() const  = 0 ;
 
 		static Ref<Pipeline> Create(const PipelineSpecification& spec);
 	};

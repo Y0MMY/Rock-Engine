@@ -122,7 +122,7 @@ namespace RockEngine
 		for (Submesh& submesh : mesh->m_Submeshes)
 		{
 			auto& aabb = submesh.BoundingBox;
-			auto aabbTransform = submesh.Transform;
+			auto aabbTransform = submesh.Transform * transform;
 			DrawAABB(aabb, aabbTransform);
 		}
 	}

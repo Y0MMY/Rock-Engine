@@ -21,7 +21,10 @@ namespace RockEngine
 
 		std::pair<float, float> GetMouseViewportSpace();
 		std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my);
+	public:
+		void EditorLayer::ShowBoundingBoxes(bool show, bool onTop);
 	private:
+		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
 	private:
 		Ref<RockEngine::Shader> m_Shader;
@@ -105,5 +108,9 @@ namespace RockEngine
 
 		std::vector<SelectedSubmesh> m_SelectedSubmeshes;
 		glm::mat4* m_CurrentlySelectedTransform = nullptr;
+
+		int m_GizmoType = -1; // -1 = no gizmo
+
+		bool m_UIShowBoundingBoxes;
 	};
 }
