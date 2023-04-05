@@ -106,6 +106,8 @@ namespace RockEngine
 			float Distance;
 		};
 
+		float m_SnapValue = 0.5f;
+
 		std::vector<SelectedSubmesh> m_SelectedSubmeshes;
 		glm::mat4* m_CurrentlySelectedTransform = nullptr;
 

@@ -7,6 +7,94 @@
 
 namespace RockEngine
 {
+	namespace Utils
+	{
+		static GLenum TextureTarget(bool multisampled)
+		{
+			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+		}
+
+		static void CreateTexures(bool multisampled, RendererID* outID, u32 count)
+		{
+			glCreateTextures(TextureTarget(multisampled), 1, outID);
+		}
+
+		static void BindTexture(bool multisampled, RendererID id)
+		{
+			glBindTexture(TextureTarget(multisampled), id);
+		}
+
+		static GLenum DataType(GLenum format)
+		{
+			switch (format)
+			{
+				case GL_RGBA:
+				case GL_RGBA8: return GL_UNSIGNED_BYTE;
+				case GL_RG16F:
+				case GL_RG32F:
+				case GL_RGBA16F:
+				case GL_RGBA32F: return GL_FLOAT;
+				case GL_DEPTH24_STENCIL8: return GL_UNSIGNED_INT_24_8;
+			}
+
+			RE_CORE_ASSERT(false, "Unknown format!");
+			return 0;
+		}
+
+		static void AttachColorTexture(RendererID id, int samples, GLenum format, u32 width, u32 height, int index)
+		{
+			bool multisampled = samples > 1;
+			if (multisampled)
+			{
+				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
+			}
+			else
+			{
+				// Only RGBA access for now
+				glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGBA, DataType(format), nullptr);
+
+				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			}
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(multisampled), id, 0);
+		}
+
+		static void AttachDepthTexture(RendererID id, int samples, GLenum format, GLenum attachmentType, uint32_t width, uint32_t height)
+		{
+
+			bool multisampled = samples > 1;
+			if (multisampled)
+			{
+				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
+			}
+			else
+			{
+				glTexStorage2D(GL_TEXTURE_2D, 1, format, width, height);
+
+				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			}
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
+		}
+
+		static bool IsDepthFormat(FramebufferTextureFormat format)
+		{
+			switch (format)
+			{
+				case FramebufferTextureFormat::DEPTH24STENCIL8:
+				case FramebufferTextureFormat::DEPTH32F:
+					return true;
+			}
+			return false;
+		}
+
+	}
 	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpec& spec)
 		: m_Spec(spec), m_Width(spec.Width), m_Height(spec.Height)
 
@@ -38,33 +126,33 @@ namespace RockEngine
 					glDeleteFramebuffers(1, &instance->m_RendererID);
 					glDeleteTextures(1, &instance->m_ColorAttachment);
 					glDeleteTextures(1, &instance->m_DepthAttachment);
+
+					instance->m_DepthAttachment = 0;
+					instance->m_ColorAttachment = 0;
 				}
 
 				glGenFramebuffers(1, &instance->m_RendererID);
 				glBindFramebuffer(GL_FRAMEBUFFER, instance->m_RendererID);
 
-				glGenTextures(1, &instance->m_ColorAttachment);
-				glBindTexture(GL_TEXTURE_2D, instance->m_ColorAttachment);
+				Utils::CreateTexures(instance->m_Spec.Samples > 1, &instance->m_ColorAttachment, 1);
+				Utils::BindTexture(instance->m_Spec.Samples > 1, instance->m_ColorAttachment);
 
 				if (instance->m_Spec.Format == FramebufferTextureFormat::RGBA16F)
 				{
-					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, instance->m_Width, instance->m_Height, 0, GL_RGBA, GL_FLOAT, nullptr);
+					Utils::AttachColorTexture(instance->m_ColorAttachment, instance->m_Spec.Samples, GL_RGBA16F, instance->m_Width, instance->m_Height, 0);
+
 				}
 				else if (instance->m_Spec.Format == FramebufferTextureFormat::RGBA8)
 				{
-					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, instance->m_Width, instance->m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+				
+					Utils::AttachColorTexture(instance->m_ColorAttachment, instance->m_Spec.Samples, GL_RGBA, instance->m_Width, instance->m_Height, 0);
 				}
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, instance->m_ColorAttachment, 0);
+				
 
-				glGenTextures(1, &instance->m_DepthAttachment);
-				glBindTexture(GL_TEXTURE_2D, instance->m_DepthAttachment);
-				glTexImage2D(
-					GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, instance->m_Width, instance->m_Height, 0,
-					GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL
-				);
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, instance->m_DepthAttachment, 0);
+				Utils::CreateTexures(instance->m_Spec.Samples > 1, &instance->m_DepthAttachment, 1);
+				Utils::BindTexture(instance->m_Spec.Samples > 1, instance->m_DepthAttachment);
+
+				Utils::AttachDepthTexture(instance->m_DepthAttachment, instance->m_Spec.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, instance->m_Width, instance->m_Height);
 
 				if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 					RE_CORE_ERROR("Framebuffer is incomplete!");
@@ -98,8 +186,7 @@ namespace RockEngine
 		Ref<const OpenGLFramebuffer> instance = this;
 		Renderer::Submit([instance, slot] ()
 		{
-			glActiveTexture(GL_TEXTURE0 + slot);
-			glBindTexture(GL_TEXTURE_2D, instance->m_ColorAttachment);
+			glBindTextureUnit(slot, instance->m_ColorAttachment);
 		});
 	}
 }

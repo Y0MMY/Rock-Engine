@@ -10,7 +10,7 @@ namespace RockEngine
 {
 	EditorLayer::EditorLayer()
 		: m_Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 10000.0f))
-		
+
 	{
 
 	}
@@ -135,7 +135,7 @@ namespace RockEngine
 		disp.Dispatch<MouseButtonPressedEvent>(BIND_FN(EditorLayer::OnMouseButtonPressed));
 		disp.Dispatch<KeyPressedEvent>(BIND_FN(EditorLayer::OnKeyPressedEvent));
 	}
-	
+
 	void EditorLayer::OnAttach()
 	{
 		// ImGui Colors
@@ -293,7 +293,7 @@ namespace RockEngine
 		ImGui::Separator();
 
 		ImGui::Text("Renderer Settings");
-		
+
 		if (ImGui::TreeNode("Shaders"))
 		{
 			auto& shaders = Shader::s_AllShaders;
@@ -411,16 +411,23 @@ namespace RockEngine
 		m_Scene->GetCamera().SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 		ImGui::Image((void*)SceneRenderer::GetFinalColorBufferRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
 
-		if (m_GizmoType != -1)
+		// Gizmos
+		if (m_GizmoType != -1 && m_CurrentlySelectedTransform)
 		{
 			float rw = (float)ImGui::GetWindowWidth();
 			float rh = (float)ImGui::GetWindowHeight();
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
-			ImGuizmo::Manipulate(glm::value_ptr(m_Scene->GetCamera().GetViewMatrix()),
+
+			bool snap = Input::IsKeyPressed(KeyCode::LeftControl);
+			ImGuizmo::Manipulate(glm::value_ptr(m_Scene->GetCamera().GetViewMatrix() * m_MeshEntity->Transform()),
 				glm::value_ptr(m_Scene->GetCamera().GetProjectionMatrix()),
-				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(m_MeshEntity->Transform()));
+				(ImGuizmo::OPERATION)m_GizmoType,
+				ImGuizmo::LOCAL,
+				glm::value_ptr(*m_CurrentlySelectedTransform),
+				nullptr,
+				snap ? &m_SnapValue : nullptr);
 		}
 
 
@@ -435,7 +442,7 @@ namespace RockEngine
 		ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
 		m_ViewportBounds[0] = { minBound.x, minBound.y };
 		m_ViewportBounds[1] = { maxBound.x, maxBound.y };
-	
+
 
 		ImGui::PopStyleVar();
 

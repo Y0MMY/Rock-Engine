@@ -68,7 +68,7 @@ namespace RockEngine
 		s_Data->CompositePass = RenderPass::Create(compRenderPassSpec);
 
 		s_Data->BRDFLUT = Texture2D::Create("assets/textures/BRDF_LUT.tga");
-		s_Data->CompositeShader = Shader::Create("assets/shaders/hdr.glsl");
+		s_Data->CompositeShader = Shader::Create("assets/shaders/SceneComposite.glsl");
 
 		// Grid
 		auto gridShader = Shader::Create("assets/shaders/Grid.glsl");
@@ -140,8 +140,8 @@ namespace RockEngine
 		Renderer::Submit([envUnfiltered, cubemapSize, envEquirect]()
 			{
 				glBindImageTexture(0, envUnfiltered->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-		glDispatchCompute(cubemapSize / 32, cubemapSize / 32, 6);
-		glGenerateTextureMipmap(envUnfiltered->GetRendererID());
+				glDispatchCompute(cubemapSize / 32, cubemapSize / 32, 6);
+				glGenerateTextureMipmap(envUnfiltered->GetRendererID());
 			});
 
 
@@ -153,8 +153,8 @@ namespace RockEngine
 		Renderer::Submit([envUnfiltered, envFiltered]()
 			{
 				glCopyImageSubData(envUnfiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
-				envFiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
-				envFiltered->GetWidth(), envFiltered->GetHeight(), 6);
+					envFiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
+					envFiltered->GetWidth(), envFiltered->GetHeight(), 6);
 			});
 
 		envFilteringShader->Bind();
@@ -162,13 +162,13 @@ namespace RockEngine
 
 		Renderer::Submit([envUnfiltered, envFiltered, cubemapSize]() {
 			const float deltaRoughness = 1.0f / glm::max((float)(envFiltered->GetMipLevelCount() - 1.0f), 1.0f);
-		for (int level = 1, size = cubemapSize / 2; level < envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
-		{
-			const GLuint numGroups = glm::max(1, size / 32);
-			glBindImageTexture(0, envFiltered->GetRendererID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-			glProgramUniform1f(envFilteringShader->GetRendererID(), 0, level * deltaRoughness);
-			glDispatchCompute(numGroups, numGroups, 6);
-		}
+			for (int level = 1, size = cubemapSize / 2; level < envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
+			{
+				const GLuint numGroups = glm::max(1, size / 32);
+				glBindImageTexture(0, envFiltered->GetRendererID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+				glProgramUniform1f(envFilteringShader->GetRendererID(), 0, level * deltaRoughness);
+				glDispatchCompute(numGroups, numGroups, 6);
+			}
 			});
 
 		if (!envIrradianceShader)
@@ -183,6 +183,7 @@ namespace RockEngine
 				glDispatchCompute(irradianceMap->GetWidth() / 32, irradianceMap->GetHeight() / 32, 6);
 				glGenerateTextureMipmap(irradianceMap->GetRendererID());
 			});
+
 		return { envFiltered, irradianceMap };
 
 	}
@@ -267,6 +268,7 @@ namespace RockEngine
 		Renderer::BeginRenderPass(s_Data->CompositePass);
 		s_Data->CompositeShader->Bind();
 		s_Data->CompositeShader->SetFloat("u_Exposure", s_Data->SceneData.SceneCamera.GetExposure());
+		s_Data->CompositeShader->SetInt("u_TextureSamples", s_Data->GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
 
 		s_Data->GeoPass->GetSpecification().TargetFramebuffer->BindTexture();
 		Renderer::SubmitFullscreenQuad(nullptr);
