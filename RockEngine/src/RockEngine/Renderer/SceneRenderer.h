@@ -9,7 +9,7 @@ namespace RockEngine
 	struct SceneRendererOptions
 	{
 		bool ShowGrid = true;
-		bool ShowBoundingBoxes = true;
+		bool ShowBoundingBoxes = false;
 	};
 
 	class SceneRenderer

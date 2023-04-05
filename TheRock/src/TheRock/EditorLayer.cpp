@@ -69,6 +69,11 @@ namespace RockEngine
 				ShowBoundingBoxes(m_UIShowBoundingBoxes, m_UIShowBoundingBoxes);
 			}
 			break;
+		case KeyCode::A:
+			// Toggle bounding boxes 
+			if (RockEngine::Input::IsKeyPressed(KeyCode::A))
+				m_Scene->SetSelected(m_MeshEntity);
+			break;
 		}
 		return false;
 	}
@@ -83,7 +88,7 @@ namespace RockEngine
 
 				auto [origin, direction] = CastRay(mouseX, mouseY);
 
-				m_SelectedSubmeshes.clear();
+				m_Scene->m_SelectedSubmeshes.clear();
 				auto mesh = m_MeshEntity->GetMesh();
 				auto& submeshes = mesh->GetSubmeshes();
 				float lastT = std::numeric_limits<float>::max();
@@ -105,20 +110,23 @@ namespace RockEngine
 							if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
 							{
 								RE_CORE_WARN("INTERSECTION: {0}, t={1}", submesh.NodeName, t);
-								m_SelectedSubmeshes.push_back({ &submesh, t });
+								m_Scene->m_SelectedSubmeshes.push_back({ &submesh, t });
+								m_Scene->SetSelected(m_MeshEntity);
 								break;
 							}
 						}
 					}
 				}
-				std::sort(m_SelectedSubmeshes.begin(), m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
+				std::sort(m_Scene->m_SelectedSubmeshes.begin(), m_Scene->m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
 
 				// TODO: Handle mesh being deleted, etc.
-				if (m_SelectedSubmeshes.size())
-					m_CurrentlySelectedTransform = &m_SelectedSubmeshes[0].Mesh->Transform;
+				if (m_Scene->m_SelectedSubmeshes.size())
+					m_CurrentlySelectedTransform = &m_Scene->m_SelectedSubmeshes[0].Mesh->Transform;
 				else
+				{
 					m_CurrentlySelectedTransform = &m_MeshEntity->Transform();
-
+					m_Scene->SetSelected(nullptr);
+				}
 			}
 		}
 		return false;
@@ -226,16 +234,17 @@ namespace RockEngine
 		m_MeshMaterial->Set("u_EnvMapRotation", m_EnvMapRotation);
 		m_Scene->OnUpdate(ts);
 
-		if (m_SelectedSubmeshes.size())
+		if (m_Scene->m_SelectedSubmeshes.size())
 		{
 			RockEngine::Renderer::BeginRenderPass(RockEngine::SceneRenderer::GetFinalRenderPass(), false);
 			auto viewProj = m_Scene->GetCamera().GetViewProjection();
 			RockEngine::Renderer2D::BeginScene(viewProj, false);
-			auto& submesh = m_SelectedSubmeshes[0];
+			auto& submesh = m_Scene->m_SelectedSubmeshes[0];
 			Renderer::DrawAABB(submesh.Mesh->BoundingBox, m_MeshEntity->GetTransform() * submesh.Mesh->Transform);
 			RockEngine::Renderer2D::EndScene();
 			RockEngine::Renderer::EndRenderPass();
 		}
+
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -261,6 +270,9 @@ namespace RockEngine
 			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 		}
 
+		// When using ImGuiDockNodeFlags_PassthruDockspace, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+		//if (opt_flags & ImGuiDockNodeFlags_PassthruDockspace)
+		//	window_flags |= ImGuiWindowFlags_NoBackground;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("DockSpace Demo", &p_open, window_flags);
 		ImGui::PopStyleVar();
@@ -275,141 +287,26 @@ namespace RockEngine
 			ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), opt_flags);
 		}
-
-		// Editor Panel ------------------------------------------------------------------------------
-		auto viewportSize = ImGui::GetContentRegionAvail();
-
-		ImGui::Begin("Settings");
-
-		UI::BeginPropertyGrid();
-		ImGui::AlignTextToFramePadding();
-		UI::PropertySlider("Skybox LOD", m_Scene->GetSkyboxLod(), 0.0f, Utils::CalculateMipCount(viewportSize.x, viewportSize.y));
-		UI::PropertySlider("Exposure", m_Camera.GetExposure(), 0.0f, 5.0f);
-		UI::PropertySlider("Env Map Rotation", m_EnvMapRotation, -360.0f, 360.0f);
-		UI::Property("Show Bounding Boxes", SceneRenderer::GetOptions().ShowBoundingBoxes);
-		UI::Property("Show grid", SceneRenderer::GetOptions().ShowGrid);
-		UI::EndPropertyGrid();
-
-		ImGui::Separator();
-
-		ImGui::Text("Renderer Settings");
-
-		if (ImGui::TreeNode("Shaders"))
-		{
-			auto& shaders = Shader::s_AllShaders;
-			for (auto& shader : shaders)
-			{
-				if (ImGui::TreeNode(shader->GetName().c_str()))
-				{
-					std::string buttonName = "Reload##" + shader->GetName();
-					if (ImGui::Button(buttonName.c_str()))
-						shader->Reload();
-					ImGui::TreePop();
-				}
-			}
-			ImGui::TreePop();
-		}
-
-		ImGui::Separator();
-		{
-			ImGui::Text("Mesh");
-			std::string fullpath = m_SphereMesh ? m_SphereMesh->GetFilePath() : "None";
-			size_t found = fullpath.find_last_of("/\\");
-			std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
-			ImGui::Text(path.c_str()); ImGui::SameLine();
-			if (ImGui::Button("...##Mesh"))
-			{
-				std::string filename = RockEngine::Application::Get().OpenFile("");
-				if (filename != "")
-				{
-					auto newMesh = Ref<Mesh>::Create(filename);
-					m_Mesh = newMesh;
-				}
-			}
-		}
-
-		ImGui::Separator();
-
-		// Textures ------------------------------------------------------------------------------
-
-		{
-			if (ImGui::CollapsingHeader("Albedo", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-				ImGui::Image(m_AlbedoInput.TextureMap ? (void*)m_AlbedoInput.TextureMap->GetRendererID() : (void*)m_CheckerboardTex->GetRendererID(), ImVec2(64, 64));
-				ImGui::PopStyleVar();
-
-				if (ImGui::IsItemHovered())
-				{
-					if (m_AlbedoInput.TextureMap)
-					{
-						ImGui::BeginTooltip();
-						ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-						ImGui::TextUnformatted(m_AlbedoInput.TextureMap->GetPath().c_str());
-						ImGui::PopTextWrapPos();
-						ImGui::Image((void*)m_AlbedoInput.TextureMap->GetRendererID(), ImVec2(384, 384));
-						ImGui::EndTooltip();
-					}
-					if (ImGui::IsItemClicked())
-					{
-						std::string filename = RockEngine::Application::Get().OpenFile("");
-						if (filename != "")
-							m_AlbedoInput.TextureMap = (RockEngine::Texture2D::Create(filename, m_AlbedoInput.SRGB));
-					}
-				}
-				ImGui::SameLine();
-				ImGui::BeginGroup();
-				ImGui::Checkbox("Use##AlbedoMap", &m_AlbedoInput.UseTexture);
-				if (ImGui::Checkbox("sRGB##AlbedoMap", &m_AlbedoInput.SRGB))
-				{
-					if (m_AlbedoInput.TextureMap)
-						m_AlbedoInput.TextureMap = (RockEngine::Texture2D::Create(m_AlbedoInput.TextureMap->GetPath(), m_AlbedoInput.SRGB));
-				}
-				ImGui::EndGroup();
-				ImGui::SameLine();
-				ImGui::ColorEdit3("Color##Albedo", glm::value_ptr(m_AlbedoInput.Color), ImGuiColorEditFlags_NoInputs);
-			}
-		}
-
-		{
-			// Normals
-			if (ImGui::CollapsingHeader("Normals", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-				ImGui::Image(m_NormalInput.TextureMap ? (void*)m_NormalInput.TextureMap->GetRendererID() : (void*)m_CheckerboardTex->GetRendererID(), ImVec2(64, 64));
-				ImGui::PopStyleVar();
-				if (ImGui::IsItemHovered())
-				{
-					if (m_NormalInput.TextureMap)
-					{
-						ImGui::BeginTooltip();
-						ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-						ImGui::TextUnformatted(m_NormalInput.TextureMap->GetPath().c_str());
-						ImGui::PopTextWrapPos();
-						ImGui::Image((void*)m_NormalInput.TextureMap->GetRendererID(), ImVec2(384, 384));
-						ImGui::EndTooltip();
-					}
-					if (ImGui::IsItemClicked())
-					{
-						std::string filename = RockEngine::Application::Get().OpenFile("");
-						if (filename != "")
-							m_NormalInput.TextureMap = (RockEngine::Texture2D::Create(filename));
-					}
-				}
-				ImGui::SameLine();
-				ImGui::Checkbox("Use##NormalMap", &m_NormalInput.UseTexture);
-			}
-		}
-
-		ImGui::End();
-
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		ImGui::Begin("Viewport");
 
+		auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
+		auto viewportSize = ImGui::GetContentRegionAvail();
 		SceneRenderer::SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 		m_Scene->GetCamera().SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
 		m_Scene->GetCamera().SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 		ImGui::Image((void*)SceneRenderer::GetFinalColorBufferRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
+
+		static int counter = 0;
+		auto windowSize = ImGui::GetWindowSize();
+		ImVec2 minBound = ImGui::GetWindowPos();
+		minBound.x += viewportOffset.x;
+		minBound.y += viewportOffset.y;
+
+		ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
+		m_ViewportBounds[0] = { minBound.x, minBound.y };
+		m_ViewportBounds[1] = { maxBound.x, maxBound.y };
+		//m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound);
 
 		// Gizmos
 		if (m_GizmoType != -1 && m_CurrentlySelectedTransform)
@@ -430,43 +327,135 @@ namespace RockEngine
 				snap ? &m_SnapValue : nullptr);
 		}
 
-
 		ImGui::End();
-		auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
-		static int counter = 0;
-		auto windowSize = ImGui::GetWindowSize();
-		ImVec2 minBound = ImGui::GetWindowPos();
-		minBound.x += viewportOffset.x;
-		minBound.y += viewportOffset.y;
-
-		ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
-		m_ViewportBounds[0] = { minBound.x, minBound.y };
-		m_ViewportBounds[1] = { maxBound.x, maxBound.y };
-
-
 		ImGui::PopStyleVar();
-
-		if (ImGui::BeginMenuBar())
+		// Settings ImGui
 		{
-			if (ImGui::BeginMenu("Docking"))
-			{
-				// Disabling fullscreen would allow the window to be moved to the front of other windows, 
-				// which we can't undo at the moment without finer window depth/z control.
-				//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
+			ImGui::Begin("Settings");
 
-				if (ImGui::MenuItem("Flag: NoSplit", "", (opt_flags & ImGuiDockNodeFlags_NoSplit) != 0))                 opt_flags ^= ImGuiDockNodeFlags_NoSplit;
-				if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (opt_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  opt_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
-				if (ImGui::MenuItem("Flag: NoResize", "", (opt_flags & ImGuiDockNodeFlags_NoResize) != 0))                opt_flags ^= ImGuiDockNodeFlags_NoResize;
-				if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (opt_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          opt_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
-				ImGui::Separator();
-				if (ImGui::MenuItem("Close DockSpace", NULL, false, p_open != NULL))
-					p_open = false;
-				ImGui::EndMenu();
+			UI::BeginPropertyGrid();
+			ImGui::AlignTextToFramePadding();
+			UI::PropertySlider("Skybox LOD", m_Scene->GetSkyboxLod(), 0.0f, Utils::CalculateMipCount(viewportSize.x, viewportSize.y));
+			UI::PropertySlider("Exposure", m_Camera.GetExposure(), 0.0f, 5.0f);
+			UI::PropertySlider("Env Map Rotation", m_EnvMapRotation, -360.0f, 360.0f);
+			UI::Property("Show Bounding Boxes", SceneRenderer::GetOptions().ShowBoundingBoxes);
+			UI::Property("Show grid", SceneRenderer::GetOptions().ShowGrid);
+			UI::EndPropertyGrid();
+
+			ImGui::Separator();
+
+			ImGui::Text("Renderer Settings");
+
+			if (ImGui::TreeNode("Shaders"))
+			{
+				auto& shaders = Shader::s_AllShaders;
+				for (auto& shader : shaders)
+				{
+					if (ImGui::TreeNode(shader->GetName().c_str()))
+					{
+						std::string buttonName = "Reload##" + shader->GetName();
+						if (ImGui::Button(buttonName.c_str()))
+							shader->Reload();
+						ImGui::TreePop();
+					}
+				}
+				ImGui::TreePop();
 			}
 
+			ImGui::Separator();
+			{
+				ImGui::Text("Mesh");
+				std::string fullpath = m_SphereMesh ? m_SphereMesh->GetFilePath() : "None";
+				size_t found = fullpath.find_last_of("/\\");
+				std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
+				ImGui::Text(path.c_str()); ImGui::SameLine();
+				if (ImGui::Button("...##Mesh"))
+				{
+					std::string filename = RockEngine::Application::Get().OpenFile("");
+					if (filename != "")
+					{
+						auto newMesh = Ref<Mesh>::Create(filename);
+						m_Mesh = newMesh;
+					}
+				}
+			}
 
-			ImGui::EndMenuBar();
-		}
+			ImGui::Separator();
+
+			// Textures ------------------------------------------------------------------------------
+
+			{
+				if (ImGui::CollapsingHeader("Albedo", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+					ImGui::Image(m_AlbedoInput.TextureMap ? (void*)m_AlbedoInput.TextureMap->GetRendererID() : (void*)m_CheckerboardTex->GetRendererID(), ImVec2(64, 64));
+					ImGui::PopStyleVar();
+
+					if (ImGui::IsItemHovered())
+					{
+						if (m_AlbedoInput.TextureMap)
+						{
+							ImGui::BeginTooltip();
+							ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+							ImGui::TextUnformatted(m_AlbedoInput.TextureMap->GetPath().c_str());
+							ImGui::PopTextWrapPos();
+							ImGui::Image((void*)m_AlbedoInput.TextureMap->GetRendererID(), ImVec2(384, 384));
+							ImGui::EndTooltip();
+						}
+						if (ImGui::IsItemClicked())
+						{
+							std::string filename = RockEngine::Application::Get().OpenFile("");
+							if (filename != "")
+								m_AlbedoInput.TextureMap = (RockEngine::Texture2D::Create(filename, m_AlbedoInput.SRGB));
+						}
+					}
+					ImGui::SameLine();
+					ImGui::BeginGroup();
+					ImGui::Checkbox("Use##AlbedoMap", &m_AlbedoInput.UseTexture);
+					if (ImGui::Checkbox("sRGB##AlbedoMap", &m_AlbedoInput.SRGB))
+					{
+						if (m_AlbedoInput.TextureMap)
+							m_AlbedoInput.TextureMap = (RockEngine::Texture2D::Create(m_AlbedoInput.TextureMap->GetPath(), m_AlbedoInput.SRGB));
+					}
+					ImGui::EndGroup();
+					ImGui::SameLine();
+					ImGui::ColorEdit3("Color##Albedo", glm::value_ptr(m_AlbedoInput.Color), ImGuiColorEditFlags_NoInputs);
+				}
+			}
+
+			{
+				// Normals
+				if (ImGui::CollapsingHeader("Normals", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+					ImGui::Image(m_NormalInput.TextureMap ? (void*)m_NormalInput.TextureMap->GetRendererID() : (void*)m_CheckerboardTex->GetRendererID(), ImVec2(64, 64));
+					ImGui::PopStyleVar();
+					if (ImGui::IsItemHovered())
+					{
+						if (m_NormalInput.TextureMap)
+						{
+							ImGui::BeginTooltip();
+							ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+							ImGui::TextUnformatted(m_NormalInput.TextureMap->GetPath().c_str());
+							ImGui::PopTextWrapPos();
+							ImGui::Image((void*)m_NormalInput.TextureMap->GetRendererID(), ImVec2(384, 384));
+							ImGui::EndTooltip();
+						}
+						if (ImGui::IsItemClicked())
+						{
+							std::string filename = RockEngine::Application::Get().OpenFile("");
+							if (filename != "")
+								m_NormalInput.TextureMap = (RockEngine::Texture2D::Create(filename));
+						}
+					}
+					ImGui::SameLine();
+					ImGui::Checkbox("Use##NormalMap", &m_NormalInput.UseTexture);
+				}
+			}
+
+			ImGui::End();
+		} // End Of Setting ImGui
+
 		m_SceneHierarchyPanel->OnImGuiRender();
 
 		ImGui::End();

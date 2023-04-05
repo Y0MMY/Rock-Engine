@@ -100,15 +100,8 @@ namespace RockEngine
 		Ref<Scene> m_Scene;
 		std::unique_ptr<SceneHierarchyPanel> m_SceneHierarchyPanel;
 
-		struct SelectedSubmesh
-		{
-			Submesh* Mesh;
-			float Distance;
-		};
-
 		float m_SnapValue = 0.5f;
 
-		std::vector<SelectedSubmesh> m_SelectedSubmeshes;
 		glm::mat4* m_CurrentlySelectedTransform = nullptr;
 
 		int m_GizmoType = -1; // -1 = no gizmo

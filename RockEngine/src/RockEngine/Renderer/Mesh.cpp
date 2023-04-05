@@ -427,7 +427,6 @@ namespace RockEngine
 			auto& submesh = m_Submeshes[mesh];
 			submesh.NodeName = node->mName.C_Str();
 			submesh.Transform = transform;
-			submesh.LocalTransform = localTransform;
 		}
 
 		for (uint32_t i = 0; i < node->mNumChildren; i++)

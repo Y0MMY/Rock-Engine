@@ -3,11 +3,15 @@
 #include <memory>
 #include "Ref.h"
 
+#define BUILD_ID "v0.1a"
+
 namespace RockEngine
 {
 	void InitializeCore();
 }
 
+// __VA_ARGS__ expansion to get past MSVC "bug"
+#define RE_EXPAND_VARGS(x) x
 
 #define BIT(x) (1u << x)
 #define BIND_FN(fn) [this](auto&&... args) -> decltype(auto) \

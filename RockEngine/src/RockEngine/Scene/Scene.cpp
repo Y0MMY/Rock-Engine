@@ -14,7 +14,7 @@ namespace RockEngine
 	}
 
 	Scene::Scene(const std::string& debugName)
-		: m_DebugName(debugName)
+		: m_DebugName(debugName), m_SelectionContext(nullptr)
 	{
 		Init();
 	}
@@ -59,6 +59,11 @@ namespace RockEngine
 	void Scene::SetCamera(const Camera& camera)
 	{
 		m_Camera = camera;
+	}
+
+	void Scene::SetSelected(Entity* entity)
+	{
+		m_SelectionContext = entity;
 	}
 
 	void Scene::SetEnvironment(const Environment& environment)

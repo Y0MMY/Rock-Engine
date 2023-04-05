@@ -37,6 +37,7 @@ namespace RockEngine
 
 		void SetEnvironment(const Environment& environment);
 		void SetSkybox(const Ref<TextureCube> skybox);
+		void SetSelected(Entity* entity);
 
 		Light& GetLight() { return m_Light; }
 
@@ -45,8 +46,15 @@ namespace RockEngine
 		void AddEntity(Entity* entity);
 		Entity* CreateEntity(const std::string& name = "");
 	private:
+		struct SelectedSubmesh
+		{
+			Submesh* Mesh;
+			float Distance;
+		};
+		std::vector<SelectedSubmesh> m_SelectedSubmeshes;
 		std::string m_DebugName;
 		std::vector<Entity*> m_Entities;
+		Entity* m_SelectionContext;
 
 		Camera m_Camera;
 		Light m_Light;
@@ -60,6 +68,7 @@ namespace RockEngine
 
 		friend class SceneRenderer;
 		friend class SceneHierarchyPanel;
+		friend class EditorLayer;
 
 	};
 }
