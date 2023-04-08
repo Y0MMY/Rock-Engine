@@ -114,7 +114,7 @@ namespace RockEngine
 
 	void Material::BindTextures()
 	{
-		for (size_t i = 0; i < m_Textures.size(); i++)
+		for (u32 i = 0; i < m_Textures.size(); i++)
 		{
 			auto& texture = m_Textures[i];
 			if (texture)
@@ -211,7 +211,7 @@ namespace RockEngine
 			m_Material->m_Shader->SetPSMaterialUniformBuffer(m_PSUniformStorageBuffer);
 
 		m_Material->BindTextures();
-		for (size_t i = 0; i < m_Textures.size(); i++)
+		for (u32 i = 0; i < m_Textures.size(); i++)
 		{
 			auto& texture = m_Textures[i];
 			if (texture)

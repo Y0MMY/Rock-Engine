@@ -70,7 +70,7 @@ namespace RockEngine
 			}
 			break;
 		case KeyCode::A:
-			// Toggle bounding boxes 
+			
 			if (RockEngine::Input::IsKeyPressed(KeyCode::A))
 				m_Scene->SetSelected(m_MeshEntity);
 			break;
@@ -204,7 +204,7 @@ namespace RockEngine
 			m_MeshEntity = m_Scene->CreateEntity("Salam Entity");
 
 			// Mesh
-			m_Mesh = (Ref<Mesh>::Create("assets/meshes/TestScene.fbx"));
+			m_Mesh = (Ref<Mesh>::Create("assets/models/m1911/m1911.fbx"));
 			m_MeshEntity->SetMesh(m_Mesh);
 
 			// Editor

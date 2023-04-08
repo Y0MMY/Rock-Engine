@@ -5,12 +5,7 @@ namespace RockEngine
 {
 
 	Entity::Entity(const std::string& name)
-		: m_Name(name), m_Transform(1.0f)
-	{
-
-	}
-
-	Entity::~Entity()
+		: m_Name(name), m_Transform(1.0f), m_Scene(nullptr)
 	{
 
 	}

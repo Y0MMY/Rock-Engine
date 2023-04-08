@@ -40,7 +40,7 @@ namespace RockEngine::UI
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
-		itoa(s_Counter++, s_IDBuffer + 2, 16);
+		_itoa(s_Counter++, s_IDBuffer + 2, 16);
 		if (ImGui::Checkbox(s_IDBuffer, &value))
 			modified = true;
 
@@ -65,7 +65,7 @@ namespace RockEngine::UI
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
-		itoa(s_Counter++, s_IDBuffer + 2, 16);
+		_itoa(s_Counter++, s_IDBuffer + 2, 16);
 		if (ImGui::SliderFloat(s_IDBuffer, &value, min, max))
 			modified = true;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RockEngine/Scene/Scene.h"
+#include "RockEngine/Scene/Components.h"
 
 #include "RenderPass.h"
 

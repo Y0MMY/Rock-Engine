@@ -17,6 +17,7 @@ namespace RockEngine
 		: m_DebugName(debugName), m_SelectionContext(nullptr)
 	{
 		Init();
+
 	}
 
 	Scene::~Scene()
@@ -41,8 +42,8 @@ namespace RockEngine
 		for (auto entity : m_Entities)
 		{
 			auto mesh = entity->GetMesh();
-			/*if (mesh)
-				mesh->OnUpdate(ts);*/
+			if (mesh)
+				mesh->OnUpdate(ts);
 		}
 
 		SceneRenderer::BeginScene(this);
@@ -87,6 +88,7 @@ namespace RockEngine
 	{
 		const std::string& entityName = name.empty() ? DefaultEntityName : name;
 		Entity* entity = new Entity(entityName);
+		entity->m_Scene = this;
 		AddEntity(entity);
 		return entity;
 	}

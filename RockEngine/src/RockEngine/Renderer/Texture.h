@@ -26,7 +26,7 @@ namespace RockEngine
 	{
 		inline uint32_t CalculateMipCount(uint32_t width, uint32_t height)
 		{
-			return std::floor(std::log2(glm::min(width, height))) + 1;
+			return static_cast<uint32_t>(std::floor(std::log2(glm::min(width, height))) + 1);
 		}
 
 		inline uint32_t GetImageFormatBPP(TextureFormat format)

@@ -78,11 +78,11 @@ namespace RockEngine
 
 				if (base = GL_INT)
 				{
-					glVertexAttribIPointer(attribIndex, element.GetComponentCount(), GL_INT, layout.GetStride(), (GLvoid*)element.Offset);
+					glVertexAttribIPointer(attribIndex, element.GetComponentCount(), GL_INT, layout.GetStride(), (const void*)(intptr_t)element.Offset);
 				}
 				else
 					glVertexAttribPointer(attribIndex, element.GetComponentCount(), base, element.Normalized ? GL_TRUE : GL_FALSE,
-						layout.GetStride(), (GLvoid*)element.Offset);
+						layout.GetStride(), (const void*)(intptr_t)element.Offset);
 
 				attribIndex++;
 			}

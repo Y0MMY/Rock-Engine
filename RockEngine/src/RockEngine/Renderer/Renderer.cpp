@@ -144,6 +144,7 @@ namespace RockEngine
 			});
 
 		s_Data->m_ShaderLibrary->Load("assets/shaders/ShaderPBR.glsl");
+		s_Data->m_ShaderLibrary->Load("assets/shaders/ShaderPBRAnim.glsl");
 		SceneRenderer::Init();
 
 		// Create fullscreen quad

@@ -621,11 +621,50 @@ namespace RockEngine
 
 			if (uniform->IsArray())
 			{
-				RE_CORE_ASSERT(false, "");
+				ResolveAndSetUniformArray(uniform, buffer);
 			}
 
 			else
 				ResolveAndSetUniform(uniform, buffer);
+		}
+	}
+
+	void OpenGLShader::ResolveAndSetUniformArray(OpenGLShaderUniformDecl* uniform, Buffer buffer)
+	{
+		//HZ_CORE_ASSERT(uniform->GetLocation() != -1, "Uniform has invalid location!");
+
+		uint32_t offset = uniform->GetOffset();
+		switch (uniform->GetType())
+		{
+		case OpenGLShaderUniformDecl::Type::BOOL:
+			UploadUniformFloat(uniform->GetLocation(), *(bool*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::FLOAT32:
+			UploadUniformFloat(uniform->GetLocation(), *(float*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::INT32:
+			UploadUniformInt(uniform->GetLocation(), *(int32_t*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::VEC2:
+			UploadUniformFloat2(uniform->GetLocation(), *(glm::vec2*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::VEC3:
+			UploadUniformFloat3(uniform->GetLocation(), *(glm::vec3*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::VEC4:
+			UploadUniformFloat4(uniform->GetLocation(), *(glm::vec4*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::MAT3:
+			UploadUniformMat3(uniform->GetLocation(), *(glm::mat3*)&buffer.Data[offset]);
+			break;
+		case OpenGLShaderUniformDecl::Type::MAT4:
+			UploadUniformMat4Array(uniform->GetLocation(), *(glm::mat4*)&buffer.Data[offset], uniform->GetCount());
+			break;
+		case OpenGLShaderUniformDecl::Type::STRUCT:
+			UploadUniformStruct(uniform, buffer.Data, offset);
+			break;
+		default:
+			RE_CORE_ASSERT(false, "Unknown uniform type!");
 		}
 	}
 

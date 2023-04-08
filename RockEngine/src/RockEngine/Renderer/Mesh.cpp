@@ -156,7 +156,7 @@ namespace RockEngine
 			}
 
 			// Indices
-			for (size_t i = 0; i < mesh->mNumFaces; i++)
+			for (u32 i = 0; i < mesh->mNumFaces; i++)
 			{
 				RE_CORE_ASSERT(mesh->mFaces[i].mNumIndices == 3, "Must have 3 indices.");
 				Index index = { mesh->mFaces[i].mIndices[0], mesh->mFaces[i].mIndices[1], mesh->mFaces[i].mIndices[2] };
@@ -414,6 +414,24 @@ namespace RockEngine
 			{ ShaderDataType::Float2, "a_TexCoord" },
 		};
 		m_Pipeline = Pipeline::Create(pipelineSpecification);
+	}
+
+	void Mesh::OnUpdate(Timestep ts)
+	{
+		if (m_IsAnimated)
+		{
+			if (m_AnimationPlaying)
+			{
+				m_WorldTime += ts;
+
+				float ticksPerSecond = (float)(m_Scene->mAnimations[0]->mTicksPerSecond != 0 ? m_Scene->mAnimations[0]->mTicksPerSecond : 25.0f) * m_TimeMultiplier;
+				m_AnimationTime += ts * ticksPerSecond;
+				m_AnimationTime = fmod(m_AnimationTime, (float)m_Scene->mAnimations[0]->mDuration);
+			}
+
+			// TODO: We only need to recalc bones if rendering has been requested at the current animation frame
+			BoneTransform(m_AnimationTime);
+		}
 	}
 
 	void Mesh::TraverseNodes(aiNode* node, const glm::mat4& parentTransform, uint32_t level)

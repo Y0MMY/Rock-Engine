@@ -3,6 +3,7 @@
 #include "Entity.h"
 #include "RockEngine/Renderer/Camera.h"
 
+#include <RockEngine/Core/REVector.h>
 
 namespace RockEngine
 {
@@ -46,6 +47,8 @@ namespace RockEngine
 		void AddEntity(Entity* entity);
 		Entity* CreateEntity(const std::string& name = "");
 	private:
+		REVector m_Registry;
+
 		struct SelectedSubmesh
 		{
 			Submesh* Mesh;
@@ -69,6 +72,6 @@ namespace RockEngine
 		friend class SceneRenderer;
 		friend class SceneHierarchyPanel;
 		friend class EditorLayer;
-
+		friend class Entity;
 	};
 }

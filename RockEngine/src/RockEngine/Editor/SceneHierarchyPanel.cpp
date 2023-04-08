@@ -11,6 +11,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <iostream>
+#include <RockEngine/Scene/Components.h>
 
 namespace RockEngine
 {
@@ -144,6 +145,23 @@ namespace RockEngine
 		auto& sceneEntities = m_Context->m_Entities;
 		for (Entity* entity : sceneEntities)
 			DrawEntityNode(entity, entityCount, meshCount);
+
+		if (m_Context)
+		{
+			if (ImGui::BeginPopupContextWindow(0, 1, false))
+			{
+				if (ImGui::BeginMenu("Create"))
+				{
+					if (ImGui::MenuItem("Empty Entity"))
+					{
+						
+
+					}
+					ImGui::EndMenu();
+				}
+				ImGui::EndPopup();
+			}
+		}
 
 		ImGui::End();
 
