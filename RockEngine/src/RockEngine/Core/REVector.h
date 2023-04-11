@@ -1,90 +1,3 @@
-//#include <unordered_map>
-//#include <memory>
-//#include <typeindex>
-//
-//class REVector {
-//public:
-//	template<typename T>
-//	void add(T item) {
-//		data.emplace_back(new DataHolder<T>(item));
-//	}
-//
-//	template <class T, class... Args>
-//	T& emplace(Args&&... args) {
-//		data.emplace_back(new DataHolder<T>(std::forward<Args>(args)...));
-//		return static_cast<DataHolder<T>*>(data.back().get())->item;
-//	}
-//
-//	template<typename T>
-//	void remove() {
-//		auto it = data.begin();
-//		while (it != data.end()) {
-//			if (std::type_index(typeid(T)) == (*it)->type()) {
-//				it = data.erase(it);
-//			}
-//			else {
-//				++it;
-//			}
-//		}
-//	}
-//
-//	template<typename T>
-//	bool has() const {
-//		for (const auto& datum : data) {
-//			if (std::type_index(typeid(T)) == datum->type()) {
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
-//
-//	template<typename T>
-//	T& get() {
-//		for (const auto& datum : data) {
-//			if (std::type_index(typeid(T)) == datum->type()) 
-//			{
-//				return static_cast<DataHolder<T>*>(datum.get())->item;
-//			}
-//		}
-//		RE_CORE_ASSERT(false);
-//	}
-//
-//	int size() const {
-//		return data.size();
-//	}
-//
-//private:
-//	class Data {
-//	public:
-//		Data() = default;
-//		virtual ~Data() {}
-//		virtual std::type_index type() const = 0;
-//	};
-//
-//	template<typename T>
-//	class DataHolder : public Data {
-//	public:
-//		DataHolder() {}
-//		DataHolder(const T& item) : item(item) {}
-//		T item;
-//
-//		std::type_index type() const override {
-//			return std::type_index(typeid(T));
-//		}
-//
-//		DataHolder(const DataHolder& other) : Data(other), item(other.item) {}
-//
-//		DataHolder& operator=(const DataHolder& other) {
-//			if (this != &other) {
-//				Data::operator=(other);
-//				item = other.item;
-//			}
-//			return *this;
-//		}
-//	};
-//
-//	std::vector<std::unique_ptr<Data>> data;
-//};
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -118,6 +31,24 @@ namespace RockEngine
 		bool has(EntityID id) const 
 		{
 			return (data.count(id) != 0) && (data.at(id).count(std::type_index(typeid(T))) != 0);
+		}
+
+		template<typename T>
+		decltype(auto) group()
+		{
+			std::vector<DataHolder<T>*> result;
+			for (auto& [uuid, innerMap] : data)
+			{
+				if (innerMap.count(std::type_index(typeid(T))) != 0)
+				{
+					auto& item = innerMap[std::type_index(typeid(T))];
+					if (item != nullptr)
+					{
+						result.push_back(static_cast<DataHolder<T>*>(item.get()));
+					}
+				}
+			}
+			return result;
 		}
 
 		template<typename T>

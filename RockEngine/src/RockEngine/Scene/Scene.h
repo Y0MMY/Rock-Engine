@@ -1,21 +1,14 @@
 #pragma once
 
-#include "RockEngine/Renderer/Camera.h"
+#include "RockEngine/Editor/EditorCamera.h"
 
 #include "RockEngine/Renderer/Mesh.h"
+#include "RockEngine/Renderer/SceneEnvironment.h"
 
 #include <RockEngine/Core/REVector.h>
 
 namespace RockEngine
 {
-	struct Environment
-	{
-		Ref<TextureCube> RadianceMap;
-		Ref<TextureCube> IrradianceMap;
-
-		static Environment Load(const std::string& filepath);
-	};
-
 	struct Light
 	{
 		glm::vec3 Direction;
@@ -34,9 +27,8 @@ namespace RockEngine
 		void Init();
 
 		void OnUpdate(Timestep ts);
-
-		void SetCamera(const Camera& camera);
-		Camera& GetCamera() { return m_Camera; }
+		void OnRenderRuntime(Timestep ts);
+		void OnRenderEditor(Timestep ts, const EditorCamera& editorCamera);
 
 		void SetEnvironment(const Environment& environment);
 		void SetSkybox(const Ref<TextureCube> skybox);
@@ -62,7 +54,6 @@ namespace RockEngine
 		std::vector<Entity*> m_Entities;
 		Entity* m_SelectedEntity;
 
-		Camera m_Camera;
 		Light m_Light;
 		float m_LightMultiplier = 0.3f;
 

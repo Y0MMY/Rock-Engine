@@ -14,6 +14,8 @@
 #include <iostream>
 #include <RockEngine/Scene/Components.h>
 
+#include "RockEngine/ImGui/ImGui.h"
+
 namespace RockEngine
 {
 	static glm::mat4 Mat4FromAssimpMat4(const aiMatrix4x4& from)
@@ -160,10 +162,6 @@ namespace RockEngine
 
 			ImGui::PopID();
 		}
-		else
-		{
-
-		}
 	}
 
 //--------------------------------------------------------------------------
@@ -205,6 +203,12 @@ namespace RockEngine
 						m_Context->SetSelected(newEntity);
 					}
 
+					if (ImGui::MenuItem("Sky Light"))
+					{
+						decltype(auto) newEntity = m_Context->CreateEntity("Sky Light");
+						newEntity->AddComponent<SkyLightComponent>();
+						m_Context->SetSelected(newEntity);
+					}
 					ImGui::EndMenu();
 				}
 				ImGui::EndPopup();
@@ -381,6 +385,33 @@ namespace RockEngine
 				ImGui::Columns(1);
 			});
 
+		DrawComponent<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& slc)
+			{
+				ImGui::Columns(3);
+				ImGui::SetColumnWidth(0, 100);
+				ImGui::SetColumnWidth(1, 300);
+				ImGui::SetColumnWidth(2, 40);
+				ImGui::Text("File Path");
+				ImGui::NextColumn();
+				ImGui::PushItemWidth(-1);
+				if (!slc.SceneEnvironment.FilePath.empty())
+					ImGui::InputText("##envfilepath", (char*)slc.SceneEnvironment.FilePath.c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+				else
+					ImGui::InputText("##envfilepath", (char*)"Empty", 256, ImGuiInputTextFlags_ReadOnly);
+				ImGui::PopItemWidth();
+				ImGui::NextColumn();
+				if (ImGui::Button("...##openenv"))
+				{
+					std::string file = Application::Get().OpenFile("*.hdr");
+					if (!file.empty())
+						slc.SceneEnvironment = Environment::Load(file);
+				}
+				ImGui::Columns(1);
+
+				UI::BeginPropertyGrid();
+				UI::Property("Intensity", slc.Intensity, 0.01f, 0.0f, 5.0f);
+				UI::EndPropertyGrid();
+			});
 	}
 
 }

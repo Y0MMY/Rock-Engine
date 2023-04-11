@@ -15,10 +15,20 @@ namespace RockEngine
 
 		// Windows attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
+
 		uint32_t GetWidth() override { return m_Data.Width; }
 		uint32_t GetHeight() override { return m_Data.Height; }
 
+		virtual void SetVSync(bool enabled) override;
+		virtual bool IsVSync() const override;
+
+		virtual void Maximize() override;
+
+		virtual const std::string& GetTitle() const override { return m_Data.Title; }
+		virtual void SetTitle(const std::string& title) override;
+
 		inline void* GetNativeWindow() { return m_Window; }
+
 	private:
 		struct WindowData
 		{

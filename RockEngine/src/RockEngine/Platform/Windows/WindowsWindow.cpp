@@ -127,4 +127,30 @@ namespace RockEngine
 		glfwPollEvents();
 		glfwSwapBuffers(m_Window);
 	}
+
+	void WindowsWindow::SetVSync(bool enabled)
+	{
+		if (enabled)
+			glfwSwapInterval(1);
+		else
+			glfwSwapInterval(0);
+
+		m_Data.VSync = enabled;
+	}
+
+	bool WindowsWindow::IsVSync() const
+	{
+		return m_Data.VSync;
+	}
+
+	void WindowsWindow::Maximize()
+	{
+		glfwMaximizeWindow(m_Window);
+	}
+
+	void WindowsWindow::SetTitle(const std::string& title)
+	{
+		m_Data.Title = title;
+		glfwSetWindowTitle(m_Window, m_Data.Title.c_str());
+	}
 }

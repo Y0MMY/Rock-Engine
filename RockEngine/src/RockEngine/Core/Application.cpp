@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Application.h"
 
+#include <GLAD/glad.h>
+
 #include <RockEngine/Renderer/Renderer.h>
 #include "RockEngine/Renderer/Framebuffer.h"
 
@@ -19,6 +21,7 @@ namespace RockEngine
 		s_Instance = this;
 		m_Window = Ref<Window>( Window::Create({ props.Name, props.WindowWidth, props.WindowHeight }));
 		m_Window->SetEventCallback(BIND_FN(OnEvent));
+		//m_Window->Maximize();
 
 		m_ImGuiLayer = new ImGuiLayer("ImGuiLayer");
 		PushLayer(m_ImGuiLayer);
@@ -148,7 +151,7 @@ namespace RockEngine
 			return false;
 		}
 		m_Minimized = false;
-		Renderer::Submit([=]() { Renderer::SetViewport(width, height, 0, 0); });
+		Renderer::Submit([=]() { glViewport(0, 0, width, height); });
 
 		auto& fbs = FramebufferPool::GetGlobal()->GetAll();
 		for (auto& fb : fbs)
@@ -157,4 +160,25 @@ namespace RockEngine
 		}
 		return true;
 	}
+
+	const char* Application::GetConfigurationName()
+	{
+#if defined(RE_DEBUG)
+		return "Debug";
+#elif defined(RE_RELEASE)
+		return "Release";
+#else
+#error Undefined configuration?
+#endif
+	}
+
+	const char* Application::GetPlatformName()
+	{
+#if defined(RE_PLATFORM_WINDOWS)
+		return "Windows x64";
+#else
+#error Undefined platform?
+#endif
+	}
+
 }

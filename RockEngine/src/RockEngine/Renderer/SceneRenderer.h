@@ -13,6 +13,14 @@ namespace RockEngine
 		bool ShowBoundingBoxes = false;
 	};
 
+	struct SceneRendererCamera
+	{
+		RockEngine::Camera Camera;
+		glm::mat4 ViewMatrix;
+		float Near, Far;
+		float FOV;
+	};
+
 	class SceneRenderer
 	{
 	public:
@@ -21,11 +29,10 @@ namespace RockEngine
 
 		static void SetViewportSize(u32 width, u32 height);
 
-		static void BeginScene(const Scene*	scene);
+		static void BeginScene(const Scene*	scene, const SceneRendererCamera& camera);
 		static void EndScene();
 
-
-		static void SubmitEntity(Entity* entity);
+		static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<MaterialInstance> overrideMaterial = nullptr);
 
 		static SceneRendererOptions& GetOptions();
 

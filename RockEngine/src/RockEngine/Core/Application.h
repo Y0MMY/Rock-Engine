@@ -41,6 +41,9 @@ namespace RockEngine
 
 		inline Window& GetWindow() { return *m_Window; }
 		inline static Application& Get() { return *s_Instance; }
+
+		static const char* GetConfigurationName();
+		static const char* GetPlatformName();
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);

@@ -30,11 +30,11 @@ namespace RockEngine
 	{
 		glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
 
-		auto inverseProj = glm::inverse(m_Scene->GetCamera().GetProjectionMatrix());
-		auto inverseView = glm::inverse(glm::mat3(m_Scene->GetCamera().GetViewMatrix()));
+		auto inverseProj = glm::inverse(m_EditorCamera.GetProjectionMatrix());
+		auto inverseView = glm::inverse(glm::mat3(m_EditorCamera.GetViewMatrix()));
 
 		glm::vec4 ray = inverseProj * mouseClipPos;
-		glm::vec3 rayPos = m_Scene->GetCamera().GetPosition();
+		glm::vec3 rayPos = m_EditorCamera.GetPosition();
 		glm::vec3 rayDir = inverseView * glm::vec3(ray);
 
 		return { rayPos, rayDir };
@@ -72,7 +72,7 @@ namespace RockEngine
 		case KeyCode::A:
 			
 			if (RockEngine::Input::IsKeyPressed(KeyCode::A))
-				m_Scene->SetSelected(m_MeshEntity);
+				m_EditorScene->SetSelected(m_MeshEntity);
 			break;
 		}
 		return false;
@@ -80,55 +80,55 @@ namespace RockEngine
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		auto [mouseX, mouseY] = GetMouseViewportSpace();
-		if (e.GetMouseButton() == MouseButton::Left && !Input::IsKeyPressed(KeyCode::LeftAlt) && !ImGuizmo::IsOver())
-		{
-			if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
-			{
+		//auto [mouseX, mouseY] = GetMouseViewportSpace();
+		//if (e.GetMouseButton() == MouseButton::Left && !Input::IsKeyPressed(KeyCode::LeftAlt) && !ImGuizmo::IsOver())
+		//{
+		//	if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
+		//	{
 
-				auto [origin, direction] = CastRay(mouseX, mouseY);
+		//		auto [origin, direction] = CastRay(mouseX, mouseY);
 
-				m_Scene->m_SelectionContext.clear();
-				auto mesh = m_MeshEntity->GetComponent<MeshComponent>().Mesh;
-				auto& submeshes = mesh->GetSubmeshes();
-				float lastT = std::numeric_limits<float>::max();
-				for (uint32_t i = 0; i < submeshes.size(); i++)
-				{
-					auto& submesh = submeshes[i];
-					Ray ray = {
-						glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f),
-						glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction
-					};
+		//		m_EditorScene->m_SelectionContext.clear();
+		//		auto mesh = m_MeshEntity->GetComponent<MeshComponent>().Mesh;
+		//		auto& submeshes = mesh->GetSubmeshes();
+		//		float lastT = std::numeric_limits<float>::max();
+		//		for (uint32_t i = 0; i < submeshes.size(); i++)
+		//		{
+		//			auto& submesh = submeshes[i];
+		//			Ray ray = {
+		//				glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f),
+		//				glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction
+		//			};
 
-					float t;
-					bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
-					if (intersects)
-					{
-						const auto& triangleCache = mesh->GetTriangleCache(i);
-						for (const auto& triangle : triangleCache)
-						{
-							if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
-							{
-								RE_CORE_WARN("INTERSECTION: {0}, t={1}", submesh.NodeName, t);
-								m_Scene->m_SelectionContext.push_back({ m_MeshEntity, &submesh, t });
-								m_Scene->SetSelected(m_MeshEntity);
-								break;
-							}
-						}
-					}
-				}
-				std::sort(m_Scene->m_SelectionContext.begin(), m_Scene->m_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
+		//			float t;
+		//			bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
+		//			if (intersects)
+		//			{
+		//				const auto& triangleCache = mesh->GetTriangleCache(i);
+		//				for (const auto& triangle : triangleCache)
+		//				{
+		//					if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+		//					{
+		//						RE_CORE_WARN("INTERSECTION: {0}, t={1}", submesh.NodeName, t);
+		//						m_EditorScene->m_SelectionContext.push_back({ m_MeshEntity, &submesh, t });
+		//						m_EditorScene->SetSelected(m_MeshEntity);
+		//						break;
+		//					}
+		//				}
+		//			}
+		//		}
+		//		std::sort(m_EditorScene->m_SelectionContext.begin(), m_EditorScene->m_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
 
-				// TODO: Handle mesh being deleted, etc.
-				if (m_Scene->m_SelectionContext.size())
-					m_CurrentlySelectedTransform = &m_Scene->m_SelectionContext[0].Mesh->Transform;
-				else
-				{
-					m_CurrentlySelectedTransform = &m_MeshEntity->Transform().GetTransform();
-					m_Scene->SetSelected(nullptr);
-				}
-			}
-		}
+		//		// TODO: Handle mesh being deleted, etc.
+		//		if (m_EditorScene->m_SelectionContext.size())
+		//			m_CurrentlySelectedTransform = &m_EditorScene->m_SelectionContext[0].Mesh->Transform;
+		//		else
+		//		{
+		//			m_CurrentlySelectedTransform = &m_MeshEntity->Transform().GetTransform();
+		//			//m_EditorScene->SetSelected(nullptr);
+		//		}
+		//	}
+		//}
 		return false;
 	}
 
@@ -192,56 +192,53 @@ namespace RockEngine
 		colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
 
 
-		auto environment = Environment::Load("assets/env/birchwood_4k.hdr");
+		//auto environment = Environment::Load("assets/env/birchwood_4k.hdr");
 
 		// Model Scene
 		{
-			m_Scene = Ref<Scene>::Create("Model Scene");
-			m_Scene->SetCamera(Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 10000.0f)));
-
-			m_Scene->SetEnvironment(environment);
-
-			m_MeshEntity = m_Scene->CreateEntity("Salam Entity");
-
-			// Mesh
-			m_Mesh = (Ref<Mesh>::Create("assets/meshes/TestScene.fbx"));
-			m_MeshEntity->AddComponent<MeshComponent>().Mesh = m_Mesh;
-
 			// Editor
 			m_CheckerboardTex = Texture2D::Create("assets/editor/Checkerboard.tga");
+			m_SceneHierarchyPanel = std::make_unique<SceneHierarchyPanel>(m_EditorScene);
 
-			m_SceneHierarchyPanel = std::make_unique<SceneHierarchyPanel>(m_Scene);
-
-			m_MeshMaterial = m_Mesh->GetMaterial();
+			NewScene();
 
 			// Set lights
-			auto& light = m_Scene->GetLight();
+			auto& light = m_EditorScene->GetLight();
 			light.Direction = { -0.5f, -0.5f, 1.0f };
 			light.Radiance = { 1.0f, 1.0f, 1.0f };
 		}
 	}
 
+	void EditorLayer::UpdateWindowTitle(const std::string& sceneName)
+	{
+		std::string title = sceneName + " - TheRock - " + Application::GetPlatformName() + " (" + Application::GetConfigurationName() + ")";
+		Application::Get().GetWindow().SetTitle(title);
+	}
+
+	void EditorLayer::NewScene()
+	{
+		m_EditorScene = Ref<Scene>::Create("Empty Scene");
+		m_SceneHierarchyPanel->SetContext(m_EditorScene);
+		UpdateWindowTitle("Untitled Scene");
+
+		m_EditorCamera = EditorCamera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
+	}
+
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
-		m_MeshMaterial->Set("u_AlbedoColor", m_AlbedoInput.Color);
-		m_MeshMaterial->Set("u_Metalness", m_MetalnessInput.Value);
-		m_MeshMaterial->Set("u_Roughness", m_RoughnessInput.Value);
-		m_MeshMaterial->Set("lights", m_Light);
-		m_MeshMaterial->Set("u_AlbedoTexToggle", m_AlbedoInput.UseTexture ? 1.0f : 0.0f);
-		m_MeshMaterial->Set("u_NormalTexToggle", m_NormalInput.UseTexture ? 1.0f : 0.0f);
-		m_MeshMaterial->Set("u_MetalnessTexToggle", m_MetalnessInput.UseTexture ? 1.0f : 0.0f);
-		m_MeshMaterial->Set("u_RoughnessTexToggle", m_RoughnessInput.UseTexture ? 1.0f : 0.0f);
-		m_MeshMaterial->Set("u_EnvMapRotation", m_EnvMapRotation);
-		m_Scene->OnUpdate(ts);
+		m_EditorScene->OnUpdate(ts);
 
-		if (m_Scene->m_SelectionContext.size())
+		m_EditorCamera.OnUpdate(ts);
+		m_EditorScene->OnRenderEditor(ts, m_EditorCamera);
+
+		if (m_EditorScene->m_SelectionContext.size())
 		{
-			auto& selection = m_Scene->m_SelectionContext[0];
+			auto& selection = m_EditorScene->m_SelectionContext[0];
 
 			RockEngine::Renderer::BeginRenderPass(RockEngine::SceneRenderer::GetFinalRenderPass(), false);
-			auto viewProj = m_Scene->GetCamera().GetViewProjection();
+			auto viewProj = m_EditorCamera.GetViewProjection();
 			RockEngine::Renderer2D::BeginScene(viewProj, false);
-			auto& submesh = m_Scene->m_SelectionContext[0];
+			auto& submesh = m_EditorScene->m_SelectionContext[0];
 			Renderer::DrawAABB(selection.Mesh->BoundingBox, selection.Entity->Transform().GetTransform() * selection.Mesh->Transform);
 			RockEngine::Renderer2D::EndScene();
 			RockEngine::Renderer::EndRenderPass();
@@ -295,8 +292,8 @@ namespace RockEngine
 		auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
 		auto viewportSize = ImGui::GetContentRegionAvail();
 		SceneRenderer::SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-		m_Scene->GetCamera().SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
-		m_Scene->GetCamera().SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+		m_EditorCamera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
+		m_EditorCamera.SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 		ImGui::Image((void*)SceneRenderer::GetFinalColorBufferRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
 
 		static int counter = 0;
@@ -311,9 +308,9 @@ namespace RockEngine
 		//m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound);
 
 		// Gizmos
-		if (m_GizmoType != -1 && m_Scene->m_SelectionContext.size())
+		if (m_GizmoType != -1 && m_EditorScene->m_SelectionContext.size())
 		{
-			auto& selection = m_Scene->m_SelectionContext[0];
+			auto& selection = m_EditorScene->m_SelectionContext[0];
 
 			float rw = (float)ImGui::GetWindowWidth();
 			float rh = (float)ImGui::GetWindowHeight();
@@ -326,8 +323,8 @@ namespace RockEngine
 			TransformComponent& entityTransform = selection.Entity->Transform();
 
 
-			ImGuizmo::Manipulate(glm::value_ptr(m_Scene->GetCamera().GetViewMatrix() * m_MeshEntity->Transform().GetTransform()),
-				glm::value_ptr(m_Scene->GetCamera().GetProjectionMatrix()),
+			ImGuizmo::Manipulate(glm::value_ptr(m_EditorCamera.GetViewMatrix() * m_MeshEntity->Transform().GetTransform()),
+				glm::value_ptr(m_EditorCamera.GetProjectionMatrix()),
 				(ImGuizmo::OPERATION)m_GizmoType,
 				ImGuizmo::LOCAL,
 				glm::value_ptr(*m_CurrentlySelectedTransform),
@@ -343,7 +340,7 @@ namespace RockEngine
 
 			UI::BeginPropertyGrid();
 			ImGui::AlignTextToFramePadding();
-			UI::PropertySlider("Skybox LOD", m_Scene->GetSkyboxLod(), 0.0f, Utils::CalculateMipCount(viewportSize.x, viewportSize.y));
+			UI::PropertySlider("Skybox LOD", m_EditorScene->GetSkyboxLod(), 0.0f, Utils::CalculateMipCount(viewportSize.x, viewportSize.y));
 			UI::PropertySlider("Exposure", m_Camera.GetExposure(), 0.0f, 5.0f);
 			UI::PropertySlider("Env Map Rotation", m_EnvMapRotation, -360.0f, 360.0f);
 			UI::Property("Show Bounding Boxes", SceneRenderer::GetOptions().ShowBoundingBoxes);
@@ -467,5 +464,6 @@ namespace RockEngine
 		m_SceneHierarchyPanel->OnImGuiRender();
 
 		ImGui::End();
+
 	}
 }

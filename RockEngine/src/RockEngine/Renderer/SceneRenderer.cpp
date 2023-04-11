@@ -4,6 +4,8 @@
 #include "Renderer2D.h"
 #include "RockEngine/Scene/Entity.h"
 
+#include "SceneEnvironment.h"
+
 #include <glad/glad.h>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -15,7 +17,7 @@ namespace RockEngine
 		const Scene* ActiveScene = nullptr;
 		struct SceneInfo
 		{
-			Camera SceneCamera;
+			SceneRendererCamera SceneCamera;
 
 			// Resources
 			Ref<MaterialInstance> SkyboxMaterial;
@@ -90,12 +92,12 @@ namespace RockEngine
 		delete s_Data;
 	}
 
-	void SceneRenderer::BeginScene(const Scene* scene)
+	void SceneRenderer::BeginScene(const Scene* scene, const SceneRendererCamera& camera)
 	{
 		RE_CORE_ASSERT(!s_Data->ActiveScene, "");
 		s_Data->ActiveScene = scene;
 
-		s_Data->SceneData.SceneCamera = scene->m_Camera;
+		s_Data->SceneData.SceneCamera = camera;
 		s_Data->SceneData.SkyboxMaterial = scene->m_SkyboxMaterial;
 		s_Data->SceneData.SceneEnvironment = scene->m_Environment;
 		s_Data->SceneData.ActiveLight = scene->m_Light;
@@ -114,13 +116,21 @@ namespace RockEngine
 		return s_Data->Options;
 	}
 
-	void SceneRenderer::SubmitEntity(Entity* entity)
+	/*void SceneRenderer::SubmitEntity(Entity* entity)
 	{
+		if (!entity->HasComponent<RockEngine::MeshComponent>())
+			return;
 		auto mesh = entity->GetComponent<RockEngine::MeshComponent>().Mesh;
 		if (!mesh)
 			return;
 		auto& a = mesh->GetMaterial();
 		s_Data->DrawList.push_back({ mesh, mesh->GetMaterial(), entity->Transform().GetTransform() });
+	}*/
+
+	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance> overrideMaterial)
+	{
+		// TODO: Culling, sorting, etc.
+		s_Data->DrawList.push_back({ mesh, overrideMaterial, transform });
 	}
 
 	static Ref<Shader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
@@ -219,7 +229,11 @@ namespace RockEngine
 	void SceneRenderer::GeometryPass()
 	{
 		Renderer::BeginRenderPass(s_Data->GeoPass);
-		auto viewProjection = s_Data->SceneData.SceneCamera.GetProjectionMatrix() * s_Data->SceneData.SceneCamera.GetViewMatrix();
+
+		auto& sceneCamera = s_Data->SceneData.SceneCamera;
+
+		auto viewProjection = sceneCamera.Camera.GetProjectionMatrix() * sceneCamera.ViewMatrix;
+		glm::vec3 cameraPosition = glm::inverse(viewProjection)[3]; // TODO: Negate instead
 
 		// Skybox
 		auto skyboxShader = s_Data->SceneData.SkyboxMaterial->GetShader();
@@ -231,7 +245,7 @@ namespace RockEngine
 		{
 			auto baseMaterial = dc.Mesh->GetMaterial();
 			baseMaterial->Set("u_ViewProjectionMatrix", viewProjection);
-			baseMaterial->Set("u_CameraPosition", s_Data->SceneData.SceneCamera.GetPosition());
+			baseMaterial->Set("u_CameraPosition", cameraPosition);
 
 			// Environment (TODO: don't do this per mesh)
 			baseMaterial->Set("u_EnvRadianceTex", s_Data->SceneData.SceneEnvironment.RadianceMap);
@@ -268,7 +282,7 @@ namespace RockEngine
 	{
 		Renderer::BeginRenderPass(s_Data->CompositePass);
 		s_Data->CompositeShader->Bind();
-		s_Data->CompositeShader->SetFloat("u_Exposure", s_Data->SceneData.SceneCamera.GetExposure());
+		s_Data->CompositeShader->SetFloat("u_Exposure", s_Data->SceneData.SceneCamera.Camera.GetExposure());
 		s_Data->CompositeShader->SetInt("u_TextureSamples", s_Data->GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
 
 		s_Data->GeoPass->GetSpecification().TargetFramebuffer->BindTexture();

@@ -8,12 +8,6 @@ namespace RockEngine
 {
 	static const std::string DefaultEntityName = "Entity";
 
-	Environment Environment::Load(const std::string& filepath)
-	{
-		auto [rad, irrad] = SceneRenderer::CreateEnvironmentMap(filepath);
-		return { rad, irrad };
-	}
-
 	Scene::Scene(const std::string& debugName)
 		: m_DebugName(debugName), m_SelectedEntity(nullptr)
 	{
@@ -36,31 +30,68 @@ namespace RockEngine
 
 	void Scene::OnUpdate(Timestep ts)
 	{
-		m_Camera.OnUpdate(ts);
-		m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
+		//m_Camera.OnUpdate(ts);
+		//m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
 
-		// Update all entities
-		for (auto entity : m_Entities)
-		{
-			auto mesh = entity->GetComponent<MeshComponent>().Mesh;
-			if (mesh)
-				mesh->OnUpdate(ts);
-		}
+		//// Update all entities
+		//for (auto entity : m_Entities)
+		//{
+		//	//auto mesh = entity->GetComponent<MeshComponent>().Mesh; // TODO: Add a vector what store a all meshes
+		//	//if (mesh)
+		//	//	mesh->OnUpdate(ts);
+		//}
 
-		SceneRenderer::BeginScene(this);
+		//SceneRenderer::BeginScene(this);
 
-		for (auto entity : m_Entities)
-		{
-			// TODO: Should we render (logically)
-			SceneRenderer::SubmitEntity(entity);
-		}
+		//for (auto entity : m_Entities)
+		//{
+		//	// TODO: Should we render (logically)
+		//	SceneRenderer::SubmitEntity(entity);
+		//}
 
-		SceneRenderer::EndScene();
+		//SceneRenderer::EndScene();
 	}
 
-	void Scene::SetCamera(const Camera& camera)
+	void Scene::OnRenderRuntime(Timestep ts)
 	{
-		m_Camera = camera;
+
+	}
+
+	void Scene::OnRenderEditor(Timestep ts, const EditorCamera& editorCamera)
+	{
+		{
+			m_Environment = Environment();
+			for (auto& entity : m_Entities)
+				if (entity->HasComponent<SkyLightComponent>())
+				{
+					auto skyLightComponent = entity->GetComponent<SkyLightComponent>();
+					m_Environment = skyLightComponent.SceneEnvironment;
+					SetSkybox(m_Environment.RadianceMap);
+					break;
+				}
+		}
+
+		m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
+
+		SceneRenderer::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix(), 0.1f, 1000.0f, 45.0f });
+		for (auto& entity : m_Entities)
+		{
+			if (entity->HasComponent<MeshComponent>())
+			{
+				auto& meshComponent = entity->GetComponent<MeshComponent>();
+				if (meshComponent.Mesh)
+				{
+					if (entity->HasComponent<TransformComponent>())
+					{
+						auto& transformComponent = entity->GetComponent<TransformComponent>();
+
+						meshComponent.Mesh->OnUpdate(ts);
+						SceneRenderer::SubmitMesh(meshComponent, transformComponent.GetTransform());
+					}
+				}
+			}
+		}
+		SceneRenderer::EndScene();
 	}
 
 	void Scene::SetSelected(Entity* entity)

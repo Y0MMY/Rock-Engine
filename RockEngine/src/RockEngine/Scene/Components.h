@@ -6,6 +6,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include "RockEngine/Core/UUID.h"
+#include "RockEngine/Renderer/SceneEnvironment.h"
 
 namespace RockEngine
 {
@@ -56,5 +57,12 @@ namespace RockEngine
 			: Mesh(mesh) {}
 
 		operator Ref<RockEngine::Mesh>() { return Mesh; }
+	};
+
+	struct SkyLightComponent
+	{
+		Environment SceneEnvironment;
+		float Intensity = 1.0f;
+		float Angle = 0.0f;
 	};
 }

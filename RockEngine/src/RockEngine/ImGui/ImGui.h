@@ -49,6 +49,27 @@ namespace RockEngine::UI
 
 		return modified;
 	}
+
+	static bool Property(const char* label, float& value, float delta = 0.1f, float min = 0.0f, float max = 0.0f)
+	{
+		bool modified = false;
+
+		ImGui::Text(label);
+		ImGui::NextColumn();
+		ImGui::PushItemWidth(-1);
+
+		s_IDBuffer[0] = '#';
+		s_IDBuffer[1] = '#';
+		memset(s_IDBuffer + 2, 0, 14);
+		itoa(s_Counter++, s_IDBuffer + 2, 16);
+		if (ImGui::DragFloat(s_IDBuffer, &value, delta, min, max))
+			modified = true;
+
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+
+		return modified;
+	}
 	/*static bool Property(const char* label, std::string& value, bool error = false)
 	{
 

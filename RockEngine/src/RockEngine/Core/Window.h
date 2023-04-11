@@ -24,10 +24,18 @@ namespace RockEngine
 
 		virtual void OnUpdate() = 0;
 
-		// Windows attributes
+		virtual void Maximize() = 0;
+
+		// Window attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
+		virtual void SetVSync(bool enabled) = 0;
+		virtual bool IsVSync() const = 0;
+
 		virtual unsigned int GetWidth() = 0;
 		virtual unsigned int GetHeight() = 0;
+
+		virtual const std::string& GetTitle() const = 0;
+		virtual void SetTitle(const std::string& title) = 0;
 
 		inline virtual void* GetNativeWindow() = 0;
 

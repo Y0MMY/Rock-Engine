@@ -19,10 +19,18 @@ namespace RockEngine
 		virtual void OnEvent(Event& e) override;
 		virtual void OnImGuiRender();
 
+		void NewScene();
+		void OpenScene();
+		void OpenScene(const std::string& filepath);
+		void SaveScene();
+		void SaveSceneAs();
+
 		std::pair<float, float> GetMouseViewportSpace();
 		std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my);
 	public:
-		void EditorLayer::ShowBoundingBoxes(bool show, bool onTop);
+		void ShowBoundingBoxes(bool show, bool onTop);
+
+		void UpdateWindowTitle(const std::string& sceneName);
 	private:
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
@@ -88,6 +96,8 @@ namespace RockEngine
 		Light m_Light;
 		float m_LightMultiplier = 0.3f;
 
+		EditorCamera m_EditorCamera;
+
 		Ref<Pipeline> m_Pipeline;
 
 		float m_Exposure = 1.0f;
@@ -97,7 +107,7 @@ namespace RockEngine
 
 		Ref<Material> m_MeshMaterial;
 
-		Ref<Scene> m_Scene;
+		Ref<Scene> m_EditorScene;
 		std::unique_ptr<SceneHierarchyPanel> m_SceneHierarchyPanel;
 
 		float m_SnapValue = 0.5f;
