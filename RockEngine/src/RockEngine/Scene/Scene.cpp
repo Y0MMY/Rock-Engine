@@ -2,6 +2,7 @@
 #include "Scene.h"
 
 #include "RockEngine/Renderer/SceneRenderer.h"
+#include "RockEngine/Scene/Entity.h"
 
 namespace RockEngine
 {
@@ -86,10 +87,20 @@ namespace RockEngine
 
 	Entity* Scene::CreateEntity(const std::string& name /* = "" */)
 	{
-		const std::string& entityName = name.empty() ? DefaultEntityName : name;
-		Entity* entity = new Entity(entityName);
+		Entity* entity = new Entity(name);
 		entity->m_Scene = this;
+
+		auto& idComponent = entity->AddComponent<IDComponent>();
+		idComponent.ID = entity->m_Handle;
+
+		if (!name.empty())
+			entity->AddComponent<TagComponent>(name);
+		entity->AddComponent<TransformComponent>();
+
+		m_EntitysCount++;
 		AddEntity(entity);
+
+		//m_EntityIDMap[idComponent.ID] = entity;
 		return entity;
 	}
 

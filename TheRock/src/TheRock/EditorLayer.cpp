@@ -110,7 +110,7 @@ namespace RockEngine
 							if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
 							{
 								RE_CORE_WARN("INTERSECTION: {0}, t={1}", submesh.NodeName, t);
-								m_Scene->m_SelectedSubmeshes.push_back({ &submesh, t });
+								m_Scene->m_SelectedSubmeshes.push_back({ m_MeshEntity, &submesh, t });
 								m_Scene->SetSelected(m_MeshEntity);
 								break;
 							}
@@ -124,7 +124,7 @@ namespace RockEngine
 					m_CurrentlySelectedTransform = &m_Scene->m_SelectedSubmeshes[0].Mesh->Transform;
 				else
 				{
-					m_CurrentlySelectedTransform = &m_MeshEntity->Transform();
+					m_CurrentlySelectedTransform = &m_MeshEntity->Transform().GetTransform();
 					m_Scene->SetSelected(nullptr);
 				}
 			}
@@ -236,11 +236,13 @@ namespace RockEngine
 
 		if (m_Scene->m_SelectedSubmeshes.size())
 		{
+			auto& selection = m_Scene->m_SelectedSubmeshes[0];
+
 			RockEngine::Renderer::BeginRenderPass(RockEngine::SceneRenderer::GetFinalRenderPass(), false);
 			auto viewProj = m_Scene->GetCamera().GetViewProjection();
 			RockEngine::Renderer2D::BeginScene(viewProj, false);
 			auto& submesh = m_Scene->m_SelectedSubmeshes[0];
-			Renderer::DrawAABB(submesh.Mesh->BoundingBox, m_MeshEntity->GetTransform() * submesh.Mesh->Transform);
+			Renderer::DrawAABB(selection.Mesh->BoundingBox, selection.Entity->Transform().GetTransform() * selection.Mesh->Transform);
 			RockEngine::Renderer2D::EndScene();
 			RockEngine::Renderer::EndRenderPass();
 		}
@@ -318,7 +320,7 @@ namespace RockEngine
 			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
 
 			bool snap = Input::IsKeyPressed(KeyCode::LeftControl);
-			ImGuizmo::Manipulate(glm::value_ptr(m_Scene->GetCamera().GetViewMatrix() * m_MeshEntity->Transform()),
+			ImGuizmo::Manipulate(glm::value_ptr(m_Scene->GetCamera().GetViewMatrix() * m_MeshEntity->Transform().GetTransform()),
 				glm::value_ptr(m_Scene->GetCamera().GetProjectionMatrix()),
 				(ImGuizmo::OPERATION)m_GizmoType,
 				ImGuizmo::LOCAL,

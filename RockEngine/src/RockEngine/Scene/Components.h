@@ -5,12 +5,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include "RockEngine/Core/UUID.h"
+
 namespace RockEngine
 {
-	
 	struct IDComponent
 	{
-		uint32_t ID = 0;
+		UUID ID = 0;
 	};
 
 	struct TransformComponent
@@ -30,5 +31,19 @@ namespace RockEngine
 				* glm::toMat4(glm::quat(Rotation))
 				* glm::scale(glm::mat4(1.0f), Scale);
 		}
+	};
+
+	struct TagComponent
+	{
+		std::string Tag;
+
+		TagComponent() = default;
+		TagComponent(const TagComponent& other) = default;
+		~TagComponent() = default;
+		TagComponent(const std::string& tag)
+			: Tag(tag) {}
+
+		operator std::string& () { return Tag; }
+		operator const std::string& () const { return Tag; }
 	};
 }

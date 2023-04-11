@@ -2,6 +2,7 @@
 #include "SceneRenderer.h"
 #include "Renderer.h"
 #include "Renderer2D.h"
+#include "RockEngine/Scene/Entity.h"
 
 #include <glad/glad.h>
 
@@ -119,7 +120,7 @@ namespace RockEngine
 		if (!mesh)
 			return;
 		auto& a = entity->GetMaterial();
-		s_Data->DrawList.push_back({ mesh, entity->GetMaterial(), entity->GetTransform() });
+		s_Data->DrawList.push_back({ mesh, entity->GetMaterial(), entity->Transform().GetTransform() });
 	}
 
 	static Ref<Shader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;

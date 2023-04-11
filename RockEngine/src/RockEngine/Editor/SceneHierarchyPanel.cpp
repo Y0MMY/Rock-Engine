@@ -118,11 +118,51 @@ namespace RockEngine
 		return modified;
 	}
 
-	static glm::mat4 GetTransform(glm::vec3 Translation,glm::quat Rotation ,glm::vec3 Scale)
+	template<typename T, typename UIFunction>
+	static void DrawComponent(const std::string& name, Entity* entity, UIFunction uiFunction)
 	{
-		return glm::translate(glm::mat4(1.0f), Translation)
-			* glm::toMat4(glm::quat(Rotation))
-			* glm::scale(glm::mat4(1.0f), Scale);
+		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+		if (entity->HasComponent<T>())
+		{
+			ImGui::PushID((void*)typeid(T).hash_code());
+			auto& component = entity->GetComponent<T>();
+			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
+			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+			ImGui::Separator();
+			bool open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags, name.c_str());
+			ImGui::PopStyleVar();
+			ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
+			if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight }))
+			{
+				ImGui::OpenPopup("ComponentSettings");
+			}
+
+			bool removeComponent = false;
+			if (ImGui::BeginPopup("ComponentSettings"))
+			{
+				if (ImGui::MenuItem("Remove component"))
+					removeComponent = true;
+
+				ImGui::EndPopup();
+			}
+
+			if (open)
+			{
+				uiFunction(component);
+				ImGui::TreePop();
+			}
+
+			if (removeComponent)
+				entity->RemoveComponent<T>();
+
+			ImGui::PopID();
+		}
+		else
+		{
+
+		}
 	}
 
 //--------------------------------------------------------------------------
@@ -154,8 +194,12 @@ namespace RockEngine
 				{
 					if (ImGui::MenuItem("Empty Entity"))
 					{
-						
+						decltype(auto) newEntity = m_Context->CreateEntity("Empty Entity");
+					}
 
+					if (ImGui::MenuItem("Test"))
+					{
+						decltype(auto) newEntity = m_Context->CreateEntity("test");
 					}
 					ImGui::EndMenu();
 				}
@@ -166,7 +210,7 @@ namespace RockEngine
 		ImGui::End();
 
 		ImGui::Begin("Properties");
-		if (m_Context->m_SelectionContext)
+		/*if (m_Context->m_SelectionContext)
 		{
 			if (m_Context->m_SelectedSubmeshes.size())
 			{
@@ -191,25 +235,31 @@ namespace RockEngine
 				auto out = GetTransform(translation, rotation, scale);
 				m_Context->m_SelectionContext->Transform() = out;
 			}
-		}
+		}*/
+
+		if (m_Context->m_SelectionContext)
+				DrawComponents(m_Context->m_SelectionContext);
 		ImGui::End();
 	}
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity* entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID)
 	{
-		const char* name = entity->GetName().c_str();
-		static char imguiName[128];
-		memset(imguiName, 0, 128);
-		sprintf(imguiName, "%s##%d", name, imguiEntityID++);
-		if (ImGui::TreeNode(imguiName))
+		const char* name = "Unnamed Entity";
+		if (entity->HasComponent<TagComponent>())
+			name = entity->GetComponent<TagComponent>().Tag.c_str();
+		
+		ImGuiTreeNodeFlags flags = (entity == m_Context->m_SelectionContext ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+		bool opened = ImGui::TreeNodeEx((void*)(uint32_t)entity, flags, name);
+
+		if (ImGui::IsItemClicked())
 		{
-			auto mesh = entity->GetMesh();
-			auto material = entity->GetMaterial();
-			const auto& transform = entity->GetTransform();
+			m_Context->SetSelected(entity);	
+		}
 
-			if (mesh)
-				DrawMeshNode(mesh, imguiMeshID);
-
+		if (opened)
+		{
+			// TODO: Children
 			ImGui::TreePop();
 		}
 	}
@@ -256,4 +306,53 @@ namespace RockEngine
 		}
 
 	}
+
+	void SceneHierarchyPanel::DrawComponents(Entity* entity)
+	{
+		ImGui::AlignTextToFramePadding();
+		//auto id = entity->GetComponent<IDComponent>().ID;
+
+		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+
+		if (entity->HasComponent<TagComponent>())
+		{
+			auto& tag = entity->GetComponent<TagComponent>().Tag;
+			char buffer[256];
+			memset(buffer, 0, 256);
+			memcpy(buffer, tag.c_str(), tag.length());
+			ImGui::PushItemWidth(contentRegionAvailable.x * 0.5f);
+			if (ImGui::InputText("##Tag", buffer, 256))
+			{
+				tag = std::string(buffer);
+			}
+			ImGui::PopItemWidth();
+		}
+
+		// ID
+		ImGui::SameLine();
+		//ImGui::TextDisabled("%llx", id);
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImVec2 addTextSize = ImGui::CalcTextSize(" ADD        ");
+		addTextSize.x += GImGui->Style.FramePadding.x * 2.0f;
+
+		ImGui::SameLine(contentRegionAvailable.x - (addTextSize.x + GImGui->Style.FramePadding.y));
+		if (ImGui::Button(" ADD        "))
+			ImGui::OpenPopup("AddComponentPanel");
+		if (ImGui::BeginPopup("AddComponentPanel"))
+		{
+
+			ImGui::EndPopup();
+		}
+
+		DrawComponent<TransformComponent>("Transform", entity, [](TransformComponent& component)
+			{
+				DrawVec3Control("Translation", component.Translation);
+				glm::vec3 rotation = glm::degrees(component.Rotation);
+				DrawVec3Control("Rotation", rotation);
+				component.Rotation = glm::radians(rotation);
+				DrawVec3Control("Scale", component.Scale, 1.0f);
+			});
+
+	}
+
 }

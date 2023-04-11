@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Entity.h"
 #include "RockEngine/Renderer/Camera.h"
+
+#include "RockEngine/Renderer/Mesh.h"
 
 #include <RockEngine/Core/REVector.h>
 
@@ -22,7 +23,8 @@ namespace RockEngine
 
 		float Multiplier = 1.0f;
 	};
-
+	class Entity;
+	using EntityMap = std::unordered_map<UUID, Entity>;
 	class Scene : public RefCounted
 	{
 	public:
@@ -48,11 +50,12 @@ namespace RockEngine
 		Entity* CreateEntity(const std::string& name = "");
 	private:
 		REVector m_Registry;
-
+		u32 m_EntitysCount = 0;
 		struct SelectedSubmesh
 		{
-			Submesh* Mesh;
-			float Distance;
+			RockEngine::Entity* Entity;
+			Submesh* Mesh = nullptr;
+			float Distance = 0.0f;
 		};
 		std::vector<SelectedSubmesh> m_SelectedSubmeshes;
 		std::string m_DebugName;
