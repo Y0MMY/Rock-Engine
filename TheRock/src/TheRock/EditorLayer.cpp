@@ -88,8 +88,8 @@ namespace RockEngine
 
 				auto [origin, direction] = CastRay(mouseX, mouseY);
 
-				m_Scene->m_SelectedSubmeshes.clear();
-				auto mesh = m_MeshEntity->GetMesh();
+				m_Scene->m_SelectionContext.clear();
+				auto mesh = m_MeshEntity->GetComponent<MeshComponent>().Mesh;
 				auto& submeshes = mesh->GetSubmeshes();
 				float lastT = std::numeric_limits<float>::max();
 				for (uint32_t i = 0; i < submeshes.size(); i++)
@@ -110,18 +110,18 @@ namespace RockEngine
 							if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
 							{
 								RE_CORE_WARN("INTERSECTION: {0}, t={1}", submesh.NodeName, t);
-								m_Scene->m_SelectedSubmeshes.push_back({ m_MeshEntity, &submesh, t });
+								m_Scene->m_SelectionContext.push_back({ m_MeshEntity, &submesh, t });
 								m_Scene->SetSelected(m_MeshEntity);
 								break;
 							}
 						}
 					}
 				}
-				std::sort(m_Scene->m_SelectedSubmeshes.begin(), m_Scene->m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
+				std::sort(m_Scene->m_SelectionContext.begin(), m_Scene->m_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
 
 				// TODO: Handle mesh being deleted, etc.
-				if (m_Scene->m_SelectedSubmeshes.size())
-					m_CurrentlySelectedTransform = &m_Scene->m_SelectedSubmeshes[0].Mesh->Transform;
+				if (m_Scene->m_SelectionContext.size())
+					m_CurrentlySelectedTransform = &m_Scene->m_SelectionContext[0].Mesh->Transform;
 				else
 				{
 					m_CurrentlySelectedTransform = &m_MeshEntity->Transform().GetTransform();
@@ -204,8 +204,8 @@ namespace RockEngine
 			m_MeshEntity = m_Scene->CreateEntity("Salam Entity");
 
 			// Mesh
-			m_Mesh = (Ref<Mesh>::Create("assets/models/m1911/m1911.fbx"));
-			m_MeshEntity->SetMesh(m_Mesh);
+			m_Mesh = (Ref<Mesh>::Create("assets/meshes/TestScene.fbx"));
+			m_MeshEntity->AddComponent<MeshComponent>().Mesh = m_Mesh;
 
 			// Editor
 			m_CheckerboardTex = Texture2D::Create("assets/editor/Checkerboard.tga");
@@ -234,14 +234,14 @@ namespace RockEngine
 		m_MeshMaterial->Set("u_EnvMapRotation", m_EnvMapRotation);
 		m_Scene->OnUpdate(ts);
 
-		if (m_Scene->m_SelectedSubmeshes.size())
+		if (m_Scene->m_SelectionContext.size())
 		{
-			auto& selection = m_Scene->m_SelectedSubmeshes[0];
+			auto& selection = m_Scene->m_SelectionContext[0];
 
 			RockEngine::Renderer::BeginRenderPass(RockEngine::SceneRenderer::GetFinalRenderPass(), false);
 			auto viewProj = m_Scene->GetCamera().GetViewProjection();
 			RockEngine::Renderer2D::BeginScene(viewProj, false);
-			auto& submesh = m_Scene->m_SelectedSubmeshes[0];
+			auto& submesh = m_Scene->m_SelectionContext[0];
 			Renderer::DrawAABB(selection.Mesh->BoundingBox, selection.Entity->Transform().GetTransform() * selection.Mesh->Transform);
 			RockEngine::Renderer2D::EndScene();
 			RockEngine::Renderer::EndRenderPass();
@@ -311,8 +311,10 @@ namespace RockEngine
 		//m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound);
 
 		// Gizmos
-		if (m_GizmoType != -1 && m_CurrentlySelectedTransform)
+		if (m_GizmoType != -1 && m_Scene->m_SelectionContext.size())
 		{
+			auto& selection = m_Scene->m_SelectionContext[0];
+
 			float rw = (float)ImGui::GetWindowWidth();
 			float rh = (float)ImGui::GetWindowHeight();
 			ImGuizmo::SetOrthographic(false);
@@ -320,6 +322,10 @@ namespace RockEngine
 			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
 
 			bool snap = Input::IsKeyPressed(KeyCode::LeftControl);
+
+			TransformComponent& entityTransform = selection.Entity->Transform();
+
+
 			ImGuizmo::Manipulate(glm::value_ptr(m_Scene->GetCamera().GetViewMatrix() * m_MeshEntity->Transform().GetTransform()),
 				glm::value_ptr(m_Scene->GetCamera().GetProjectionMatrix()),
 				(ImGuizmo::OPERATION)m_GizmoType,

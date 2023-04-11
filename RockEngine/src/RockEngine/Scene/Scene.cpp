@@ -15,7 +15,7 @@ namespace RockEngine
 	}
 
 	Scene::Scene(const std::string& debugName)
-		: m_DebugName(debugName), m_SelectionContext(nullptr)
+		: m_DebugName(debugName), m_SelectedEntity(nullptr)
 	{
 		Init();
 
@@ -42,7 +42,7 @@ namespace RockEngine
 		// Update all entities
 		for (auto entity : m_Entities)
 		{
-			auto mesh = entity->GetMesh();
+			auto mesh = entity->GetComponent<MeshComponent>().Mesh;
 			if (mesh)
 				mesh->OnUpdate(ts);
 		}
@@ -65,7 +65,7 @@ namespace RockEngine
 
 	void Scene::SetSelected(Entity* entity)
 	{
-		m_SelectionContext = entity;
+		m_SelectedEntity = entity;
 	}
 
 	void Scene::SetEnvironment(const Environment& environment)
@@ -89,9 +89,10 @@ namespace RockEngine
 	{
 		Entity* entity = new Entity(name);
 		entity->m_Scene = this;
+		entity->m_Handle = m_EntitysCount;
 
 		auto& idComponent = entity->AddComponent<IDComponent>();
-		idComponent.ID = entity->m_Handle;
+		idComponent.ID = {};
 
 		if (!name.empty())
 			entity->AddComponent<TagComponent>(name);

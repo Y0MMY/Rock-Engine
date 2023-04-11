@@ -51,23 +51,23 @@ namespace RockEngine
 	private:
 		REVector m_Registry;
 		u32 m_EntitysCount = 0;
-		struct SelectedSubmesh
+		struct SelectedContext
 		{
 			RockEngine::Entity* Entity;
 			Submesh* Mesh = nullptr;
 			float Distance = 0.0f;
 		};
-		std::vector<SelectedSubmesh> m_SelectedSubmeshes;
+		std::vector<SelectedContext> m_SelectionContext;
 		std::string m_DebugName;
 		std::vector<Entity*> m_Entities;
-		Entity* m_SelectionContext;
+		Entity* m_SelectedEntity;
 
 		Camera m_Camera;
 		Light m_Light;
 		float m_LightMultiplier = 0.3f;
 
 		Environment m_Environment;
-		Ref<TextureCube> m_SkyboxTexture;
+		Ref<TextureCube> m_SkyboxTexture; 
 		Ref<MaterialInstance> m_SkyboxMaterial;
 
 		float m_SkyboxLod = 1.0f;

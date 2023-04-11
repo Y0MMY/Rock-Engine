@@ -4,6 +4,7 @@
 #include "ImGui.h"
 #include "imgui/imgui_internal.h"
 
+#include "RockEngine/Core/Application.h"
 #include "RockEngine/Renderer/Mesh.h"
 #include <assimp/scene.h>
 
@@ -197,10 +198,13 @@ namespace RockEngine
 						decltype(auto) newEntity = m_Context->CreateEntity("Empty Entity");
 					}
 
-					if (ImGui::MenuItem("Test"))
+					if (ImGui::MenuItem("Mesh"))
 					{
-						decltype(auto) newEntity = m_Context->CreateEntity("test");
+						decltype(auto) newEntity = m_Context->CreateEntity("Mesh");
+						newEntity->AddComponent<MeshComponent>();
+						m_Context->SetSelected(newEntity);
 					}
+
 					ImGui::EndMenu();
 				}
 				ImGui::EndPopup();
@@ -237,8 +241,8 @@ namespace RockEngine
 			}
 		}*/
 
-		if (m_Context->m_SelectionContext)
-				DrawComponents(m_Context->m_SelectionContext);
+		if (m_Context->m_SelectedEntity)
+				DrawComponents(m_Context->m_SelectedEntity);
 		ImGui::End();
 	}
 
@@ -248,7 +252,7 @@ namespace RockEngine
 		if (entity->HasComponent<TagComponent>())
 			name = entity->GetComponent<TagComponent>().Tag.c_str();
 		
-		ImGuiTreeNodeFlags flags = (entity == m_Context->m_SelectionContext ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		ImGuiTreeNodeFlags flags = (entity == m_Context->m_SelectedEntity ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(uint32_t)entity, flags, name);
 
@@ -351,6 +355,30 @@ namespace RockEngine
 				DrawVec3Control("Rotation", rotation);
 				component.Rotation = glm::radians(rotation);
 				DrawVec3Control("Scale", component.Scale, 1.0f);
+			});
+
+		DrawComponent<MeshComponent>("Mesh", entity, [](MeshComponent& mc)
+			{
+				ImGui::Columns(3);
+				ImGui::SetColumnWidth(0, 100);
+				ImGui::SetColumnWidth(1, 300);
+				ImGui::SetColumnWidth(2, 40);
+				ImGui::Text("File Path");
+				ImGui::NextColumn();
+				ImGui::PushItemWidth(-1);
+				if (mc.Mesh)
+					ImGui::InputText("##meshfilepath", (char*)mc.Mesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+				else
+					ImGui::InputText("##meshfilepath", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
+				ImGui::PopItemWidth();
+				ImGui::NextColumn();
+				if (ImGui::Button("...##openmesh"))
+				{
+					std::string file = Application::Get().OpenFile();
+					if (!file.empty())
+						mc.Mesh = Ref<Mesh>::Create(file);
+				}
+				ImGui::Columns(1);
 			});
 
 	}

@@ -93,34 +93,35 @@
 
 namespace RockEngine
 {
+	using EntityID = uint32_t;
 	class REVector {
 	public:
 		template<typename T>
-		void add(RockEngine::UUID id, T item) {
+		void add(EntityID id, T item) {
 			data[id][std::type_index(typeid(T))] = std::make_unique<DataHolder<T>>(item);
 		}
 
 		template <class T, class... Args>
-		T& emplace(RockEngine::UUID id, Args&&... args) 
+		T& emplace(EntityID id, Args&&... args) 
 		{
 			data[id][std::type_index(typeid(T))] = std::make_unique<DataHolder<T>>(std::forward<Args>(args)...);
 			return static_cast<DataHolder<T>*>(data[id][std::type_index(typeid(T))].get())->item;
 		}
 
 		template<typename T>
-		void remove(RockEngine::UUID id) 
+		void remove(EntityID id) 
 		{
 			data[id].erase(std::type_index(typeid(T)));
 		}
 
 		template<typename T>
-		bool has(RockEngine::UUID id) const 
+		bool has(EntityID id) const 
 		{
 			return (data.count(id) != 0) && (data.at(id).count(std::type_index(typeid(T))) != 0);
 		}
 
 		template<typename T>
-		T& get(RockEngine::UUID id)
+		T& get(EntityID id)
 		{
 			auto& item = data[id].at(std::type_index(typeid(T)));
 			if (item == nullptr) {

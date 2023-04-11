@@ -46,4 +46,15 @@ namespace RockEngine
 		operator std::string& () { return Tag; }
 		operator const std::string& () const { return Tag; }
 	};
+
+	struct MeshComponent
+	{
+		Ref<Mesh> Mesh;
+		MeshComponent() = default;
+		MeshComponent(const MeshComponent& other) = default;
+		MeshComponent(const Ref<RockEngine::Mesh>& mesh)
+			: Mesh(mesh) {}
+
+		operator Ref<RockEngine::Mesh>() { return Mesh; }
+	};
 }

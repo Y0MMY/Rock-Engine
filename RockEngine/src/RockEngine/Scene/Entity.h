@@ -9,6 +9,7 @@
 namespace RockEngine
 {
 	class Scene;
+	using EntityID = uint32_t;
 	class Entity
 	{
 	public:
@@ -44,25 +45,24 @@ namespace RockEngine
 		}
 
 		//TODO: Move to Component
-		void SetMesh(const Ref<Mesh>& mesh) { m_Mesh = mesh; }
+		/*void SetMesh(const Ref<Mesh>& mesh) { m_Mesh = mesh; }
 		Ref<Mesh>& GetMesh() { return m_Mesh; }
 
 		void SetMaterial(const Ref<MaterialInstance>& material) { m_Material = material; }
-		Ref<MaterialInstance>& GetMaterial() { return m_Material; }
+		Ref<MaterialInstance>& GetMaterial() { return m_Material; }*/
 
 		auto Transform() { return m_Scene->m_Registry.get<TransformComponent>(m_Handle); }
-		const glm::mat4& Transform() const { return tc.GetTransform(); }
-		const glm::mat4& GetTransform() const { return tc.GetTransform(); }
+		const glm::mat4& Transform() const { return m_Scene->m_Registry.get<TransformComponent>(m_Handle).GetTransform(); }
+		const glm::mat4& GetTransform() const { return m_Scene->m_Registry.get<TransformComponent>(m_Handle).GetTransform(); }
 
-
+		UUID GetUUID() { return m_Handle; }
 		const std::string& GetName() const { return m_Name; }
 	private:
 		Entity(const std::string& name);
 	private:
 		std::string m_Name;
 		glm::mat4 m_Transform;
-		RockEngine::UUID m_Handle;
-		TransformComponent tc;
+		EntityID m_Handle;
 		Scene* m_Scene = nullptr;
 
 		// TODO: Temp

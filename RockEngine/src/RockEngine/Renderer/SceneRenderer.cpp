@@ -116,11 +116,11 @@ namespace RockEngine
 
 	void SceneRenderer::SubmitEntity(Entity* entity)
 	{
-		auto mesh = entity->GetMesh();
+		auto mesh = entity->GetComponent<RockEngine::MeshComponent>().Mesh;
 		if (!mesh)
 			return;
-		auto& a = entity->GetMaterial();
-		s_Data->DrawList.push_back({ mesh, entity->GetMaterial(), entity->Transform().GetTransform() });
+		auto& a = mesh->GetMaterial();
+		s_Data->DrawList.push_back({ mesh, mesh->GetMaterial(), entity->Transform().GetTransform() });
 	}
 
 	static Ref<Shader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
