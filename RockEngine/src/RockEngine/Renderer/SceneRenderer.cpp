@@ -23,7 +23,7 @@ namespace RockEngine
 			Ref<MaterialInstance> SkyboxMaterial;
 			Environment SceneEnvironment;
 			float SceneEnvironmentIntensity;
-			Light ActiveLight;
+			LightEnvironment SceneLightEnvironment;
 		} SceneData;
 
 		Ref<Texture2D> BRDFLUT;
@@ -102,7 +102,7 @@ namespace RockEngine
 		s_Data->SceneData.SkyboxMaterial = scene->m_SkyboxMaterial;
 		s_Data->SceneData.SceneEnvironment = scene->m_Environment;
 		s_Data->SceneData.SceneEnvironmentIntensity = scene->m_EnvironmentIntensity;
-		s_Data->SceneData.ActiveLight = scene->m_Light;
+		s_Data->SceneData.SceneLightEnvironment = scene->m_LightEnvironment;
 	}
 
 	void SceneRenderer::EndScene()
@@ -256,7 +256,8 @@ namespace RockEngine
 			baseMaterial->Set("u_BRDFLUTTexture", s_Data->BRDFLUT);
 
 			// Set lights (TODO: move to light environment and don't do per mesh)
-			baseMaterial->Set("lights", s_Data->SceneData.ActiveLight);
+			auto directionalLight = s_Data->SceneData.SceneLightEnvironment.DirectionalLights[0];
+			baseMaterial->Set("u_DirectionalLights", directionalLight);
 
 			auto overrideMaterial = nullptr; // dc.Material;
 			Renderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);

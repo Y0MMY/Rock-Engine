@@ -40,6 +40,29 @@ namespace RockEngine
 
 	void Scene::OnRenderEditor(Timestep ts, const EditorCamera& editorCamera)
 	{
+
+		{
+			m_LightEnvironment = LightEnvironment();
+			//auto lights = m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
+			uint32_t directionalLightIndex = 0;
+			for (auto& entity : m_Entities)
+			{
+				if (entity->HasComponent<DirectionalLightComponent>())
+				{
+					auto transformComponent = entity->GetComponent<TransformComponent>();
+					auto lightComponent = entity->GetComponent<DirectionalLightComponent>();
+
+					glm::vec3 direction = -glm::normalize(glm::mat3(transformComponent.GetTransform()) * glm::vec3(1.0f));
+					m_LightEnvironment.DirectionalLights[directionalLightIndex++] =
+					{
+						direction,
+						lightComponent.Radiance,
+						lightComponent.Intensity,
+					};
+				}
+			}
+		}
+
 		{
 			m_Environment = Environment();
 			for (auto& entity : m_Entities)
@@ -63,13 +86,10 @@ namespace RockEngine
 				auto& meshComponent = entity->GetComponent<MeshComponent>();
 				if (meshComponent.Mesh)
 				{
-					if (entity->HasComponent<TransformComponent>())
-					{
-						auto& transformComponent = entity->GetComponent<TransformComponent>();
+					auto& transformComponent = entity->GetComponent<TransformComponent>();
 
-						meshComponent.Mesh->OnUpdate(ts);
-						SceneRenderer::SubmitMesh(meshComponent, transformComponent.GetTransform());
-					}
+					meshComponent.Mesh->OnUpdate(ts);
+					SceneRenderer::SubmitMesh(meshComponent, transformComponent.GetTransform());
 				}
 			}
 		}

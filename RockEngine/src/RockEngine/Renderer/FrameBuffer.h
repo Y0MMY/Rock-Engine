@@ -34,6 +34,9 @@ namespace RockEngine
 
 		FramebufferTextureFormat Format;
 
+		// TODO: Temp, needs scale
+		bool NoResize = false;
+
 		bool SpawChainTarget = false;
 	};
 

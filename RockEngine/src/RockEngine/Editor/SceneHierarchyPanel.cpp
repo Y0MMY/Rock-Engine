@@ -209,8 +209,17 @@ namespace RockEngine
 					{
 						decltype(auto) newEntity = m_Context->CreateEntity("Sky Light");
 						newEntity->AddComponent<SkyLightComponent>();
+						newEntity->GetComponent<TransformComponent>().Rotation = glm::radians(glm::vec3{ 80.0f, 10.0f, 0.0f });
 						m_Context->SetSelected(newEntity);
 					}
+
+					if (ImGui::MenuItem("Directional Light"))
+					{
+						decltype(auto) newEntity = m_Context->CreateEntity("Directional Light");
+						newEntity->AddComponent<DirectionalLightComponent>();
+						m_Context->SetSelected(newEntity);
+					}
+
 					ImGui::EndMenu();
 				}
 				ImGui::EndPopup();
@@ -413,6 +422,15 @@ namespace RockEngine
 				
 				UI::EndPropertyGrid();
 
+			});
+
+		DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](DirectionalLightComponent& dlc)
+			{
+				UI::BeginPropertyGrid();
+				UI::PropertyColor("Radiance", dlc.Radiance);
+				UI::Property("Intensity", dlc.Intensity);
+				UI::Property("Source Size", dlc.LightSize);
+				UI::EndPropertyGrid();
 			});
 	}
 

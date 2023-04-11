@@ -201,11 +201,6 @@ namespace RockEngine
 			m_SceneHierarchyPanel = std::make_unique<SceneHierarchyPanel>(m_EditorScene);
 
 			NewScene();
-
-			// Set lights
-			auto& light = m_EditorScene->GetLight();
-			light.Direction = { -0.5f, -0.5f, 1.0f };
-			light.Radiance = { 1.0f, 1.0f, 1.0f };
 		}
 	}
 
@@ -341,6 +336,11 @@ namespace RockEngine
 			UI::BeginPropertyGrid();
 			ImGui::AlignTextToFramePadding();
 			UI::PropertySlider("Skybox LOD", m_EditorScene->GetSkyboxLod(), 0.0f, Utils::CalculateMipCount(viewportSize.x, viewportSize.y));
+
+			ImGui::Columns(2);
+			ImGui::AlignTextToFramePadding();
+
+			
 			UI::PropertySlider("Exposure", m_Camera.GetExposure(), 0.0f, 5.0f);
 			UI::PropertySlider("Env Map Rotation", m_EnvMapRotation, -360.0f, 360.0f);
 			UI::Property("Show Bounding Boxes", SceneRenderer::GetOptions().ShowBoundingBoxes);

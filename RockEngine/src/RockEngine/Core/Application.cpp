@@ -19,14 +19,17 @@ namespace RockEngine
 	Application::Application(const ApplicationProps& props)
 	{
 		s_Instance = this;
+
 		m_Window = Ref<Window>( Window::Create({ props.Name, props.WindowWidth, props.WindowHeight }));
 		m_Window->SetEventCallback(BIND_FN(OnEvent));
-		//m_Window->Maximize();
 
 		m_ImGuiLayer = new ImGuiLayer("ImGuiLayer");
 		PushLayer(m_ImGuiLayer);
+
 		Renderer::Init();
 		Renderer::WaitAndRender();
+
+		m_Window->Maximize();
 	}
 
 	Application::~Application()
@@ -49,15 +52,16 @@ namespace RockEngine
 		{
 			if (!m_Minimized)
 			{
-
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(m_TimeStep);
 
 				Application* app = this;
 				Renderer::Submit([app]() { app->RenderImGui(); });
+
 				Renderer::WaitAndRender();
 			}
 			m_Window->OnUpdate();
+
 			float time = (float)glfwGetTime();
 			m_TimeStep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
@@ -156,9 +160,11 @@ namespace RockEngine
 		auto& fbs = FramebufferPool::GetGlobal()->GetAll();
 		for (auto& fb : fbs)
 		{
-			fb->Resize(width, height);
+			if (!fb->GetSpecification().NoResize)
+				fb->Resize(width, height);
 		}
-		return true;
+
+		return false;
 	}
 
 	const char* Application::GetConfigurationName()

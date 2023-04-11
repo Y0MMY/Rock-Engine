@@ -77,10 +77,44 @@ namespace RockEngine::UI
 
 		return modified;
 	}
-	/*static bool Property(const char* label, std::string& value, bool error = false)
-	{
 
-	}*/
+	static bool PropertyColor(const std::string& name, glm::vec3& value)
+	{
+		ImGui::Text(name.c_str());
+		ImGui::NextColumn();
+		ImGui::PushItemWidth(-1);
+
+		std::string id = "##" + name;
+		bool changed = false;
+		if (ImGui::ColorEdit3(s_IDBuffer, glm::value_ptr(value), ImGuiColorEditFlags_NoInputs))
+			changed = true;
+
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+
+		return changed;
+	}
+
+	static bool PropertySlider(const char* label, glm::vec3& value, float min, float max)
+	{
+		bool modified = false;
+
+		ImGui::Text(label);
+		ImGui::NextColumn();
+		ImGui::PushItemWidth(-1);
+
+		s_IDBuffer[0] = '#';
+		s_IDBuffer[1] = '#';
+		memset(s_IDBuffer + 2, 0, 14);
+		_itoa(s_Counter++, s_IDBuffer + 2, 16);
+		if (ImGui::SliderFloat3(s_IDBuffer, glm::value_ptr(value), min, max))
+			modified = true;
+
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+
+		return modified;
+	}
 
 	static bool PropertySlider(const char* label, float& value, float min, float max)
 	{

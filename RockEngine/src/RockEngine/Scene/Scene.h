@@ -9,13 +9,21 @@
 
 namespace RockEngine
 {
-	struct Light
+	struct DirectionalLight
 	{
-		glm::vec3 Direction;
-		glm::vec3 Radiance;
+		glm::vec3 Direction = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
+		float Multiplier = 0.0f;
 
-		float Multiplier = 1.0f;
+		// C++ only
+		bool CastShadows = true;
 	};
+
+	struct LightEnvironment
+	{
+		DirectionalLight DirectionalLights[4];
+	};
+
 	class Entity;
 	using EntityMap = std::unordered_map<UUID, Entity>;
 	class Scene : public RefCounted
@@ -33,8 +41,6 @@ namespace RockEngine
 		void SetEnvironment(const Environment& environment);
 		void SetSkybox(const Ref<TextureCube> skybox);
 		void SetSelected(Entity* entity);
-
-		Light& GetLight() { return m_Light; }
 
 		float& GetSkyboxLod() { return m_SkyboxLod; }
 
@@ -54,8 +60,9 @@ namespace RockEngine
 		std::vector<Entity*> m_Entities;
 		Entity* m_SelectedEntity;
 
-		Light m_Light;
 		float m_LightMultiplier = 0.3f;
+
+		LightEnvironment m_LightEnvironment;
 
 		Environment m_Environment;
 		Ref<TextureCube> m_SkyboxTexture; 
