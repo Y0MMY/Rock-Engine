@@ -7,11 +7,14 @@ namespace RockEngine
 
 	struct Environment
 	{
+
 		std::string FilePath;
 		Ref<TextureCube> RadianceMap;
 		Ref<TextureCube> IrradianceMap;
 
 		static Environment Load(const std::string& filepath);
+
+		operator bool() { return RadianceMap; }
 	};
 
 

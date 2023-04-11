@@ -5,7 +5,6 @@
 
 namespace RockEngine 
 {
-
 	Environment Environment::Load(const std::string& filepath)
 	{
 		auto [radiance, irradiance] = SceneRenderer::CreateEnvironmentMap(filepath);

@@ -4,6 +4,8 @@
 #include "ImGui.h"
 #include "imgui/imgui_internal.h"
 
+#include "RockEngine/Utilities/StringUtils.h"
+
 #include "RockEngine/Core/Application.h"
 #include "RockEngine/Renderer/Mesh.h"
 #include <assimp/scene.h>
@@ -218,32 +220,6 @@ namespace RockEngine
 		ImGui::End();
 
 		ImGui::Begin("Properties");
-		/*if (m_Context->m_SelectionContext)
-		{
-			if (m_Context->m_SelectedSubmeshes.size())
-			{
-				auto& mesh = m_Context->m_SelectedSubmeshes[0];
-				auto transform = mesh.Mesh->Transform;
-				auto [translation, rotation, scale] = GetTransformDecomposition(transform);
-
-				DrawVec3Control("Translation", translation);
-				DrawVec3Control("Scale", scale, 1.0f);
-
-				auto out = GetTransform(translation, rotation, scale);
-				mesh.Mesh->Transform = out;
-			}
-			else
-			{
-				auto transform = m_Context->m_SelectionContext->GetTransform();
-				auto [translation, rotation, scale] = GetTransformDecomposition(transform);
-
-				DrawVec3Control("Translation", translation);
-				DrawVec3Control("Scale", scale, 1.0f);
-
-				auto out = GetTransform(translation, rotation, scale);
-				m_Context->m_SelectionContext->Transform() = out;
-			}
-		}*/
 
 		if (m_Context->m_SelectedEntity)
 				DrawComponents(m_Context->m_SelectedEntity);
@@ -361,56 +337,82 @@ namespace RockEngine
 				DrawVec3Control("Scale", component.Scale, 1.0f);
 			});
 
-		DrawComponent<MeshComponent>("Mesh", entity, [](MeshComponent& mc)
+		DrawComponent<MeshComponent>("Mesh", entity, [=](MeshComponent& mc) mutable
 			{
-				ImGui::Columns(3);
-				ImGui::SetColumnWidth(0, 100);
-				ImGui::SetColumnWidth(1, 300);
-				ImGui::SetColumnWidth(2, 40);
-				ImGui::Text("File Path");
+				UI::BeginPropertyGrid();
+
+				ImGui::Text(entity->GetName().c_str());
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(-1);
+
+				ImVec2 originalButtonTextAlign = ImGui::GetStyle().ButtonTextAlign;
+				ImGui::GetStyle().ButtonTextAlign = { 0.0f, 0.5f };
+				float width = ImGui::GetContentRegionAvail().x - 0.0f;
+				UI::PushID();
+
+				float itemHeight = 28.0f;
+
+				std::string buttonName;
 				if (mc.Mesh)
-					ImGui::InputText("##meshfilepath", (char*)mc.Mesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+					buttonName = mc.Mesh->GetName();
 				else
-					ImGui::InputText("##meshfilepath", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
-				ImGui::PopItemWidth();
-				ImGui::NextColumn();
-				if (ImGui::Button("...##openmesh"))
+					buttonName = "Null";
+
+				if (ImGui::Button(buttonName.c_str(), { width, itemHeight }))
 				{
 					std::string file = Application::Get().OpenFile();
 					if (!file.empty())
 						mc.Mesh = Ref<Mesh>::Create(file);
 				}
-				ImGui::Columns(1);
+
+				UI::PopID();
+				ImGui::GetStyle().ButtonTextAlign = originalButtonTextAlign;
+				ImGui::PopItemWidth();
+
+				UI::EndPropertyGrid();
 			});
 
-		DrawComponent<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& slc)
+		DrawComponent<SkyLightComponent>("Sky Light", entity, [=](SkyLightComponent& slc) mutable
 			{
-				ImGui::Columns(3);
-				ImGui::SetColumnWidth(0, 100);
-				ImGui::SetColumnWidth(1, 300);
-				ImGui::SetColumnWidth(2, 40);
-				ImGui::Text("File Path");
+				
+				UI::BeginPropertyGrid();
+
+				ImGui::Text("Sky Light");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(-1);
-				if (!slc.SceneEnvironment.FilePath.empty())
-					ImGui::InputText("##envfilepath", (char*)slc.SceneEnvironment.FilePath.c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+
+				ImVec2 originalButtonTextAlign = ImGui::GetStyle().ButtonTextAlign;
+				ImGui::GetStyle().ButtonTextAlign = { 0.0f, 0.5f };
+				float width = ImGui::GetContentRegionAvail().x - 0.0f;
+				UI::PushID();
+
+				float itemHeight = 28.0f;
+
+				std::string buttonName;
+				if (slc.SceneEnvironment)
+					buttonName = slc.Name;
 				else
-					ImGui::InputText("##envfilepath", (char*)"Empty", 256, ImGuiInputTextFlags_ReadOnly);
-				ImGui::PopItemWidth();
-				ImGui::NextColumn();
-				if (ImGui::Button("...##openenv"))
+					buttonName = "Null";
+
+				if(ImGui::Button(buttonName.c_str(), { width, itemHeight }))
 				{
 					std::string file = Application::Get().OpenFile("*.hdr");
 					if (!file.empty())
+					{
 						slc.SceneEnvironment = Environment::Load(file);
+						slc.Name = Utils::GetFilename(file);
+					}
 				}
-				ImGui::Columns(1);
 
-				UI::BeginPropertyGrid();
+				UI::PopID();
+				ImGui::GetStyle().ButtonTextAlign = originalButtonTextAlign;
+				ImGui::PopItemWidth();
+				ImGui::NextColumn();
 				UI::Property("Intensity", slc.Intensity, 0.01f, 0.0f, 5.0f);
+				ImGui::Separator();
+				
 				UI::EndPropertyGrid();
+
 			});
 	}
 

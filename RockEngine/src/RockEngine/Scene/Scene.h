@@ -62,6 +62,7 @@ namespace RockEngine
 		Ref<MaterialInstance> m_SkyboxMaterial;
 
 		float m_SkyboxLod = 1.0f;
+		float m_EnvironmentIntensity = 1.0f;
 
 		friend class SceneRenderer;
 		friend class SceneHierarchyPanel;

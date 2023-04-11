@@ -61,8 +61,17 @@ namespace RockEngine
 
 	struct SkyLightComponent
 	{
+		std::string Name;
+
 		Environment SceneEnvironment;
 		float Intensity = 1.0f;
 		float Angle = 0.0f;
+	};
+
+	struct DirectionalLightComponent
+	{
+		glm::vec3 Radiance = { 1.0f, 1.0f, 1.0f };
+		float Intensity = 1.0f;
+		float LightSize = 0.5f; // For PCSS
 	};
 }

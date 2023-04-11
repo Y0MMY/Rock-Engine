@@ -11,6 +11,13 @@ namespace RockEngine::UI
 	static uint32_t s_Counter = 0;
 	static char s_IDBuffer[16];
 
+	struct PropertyAssetReferenceSettings
+	{
+		bool AdvanceToNextColumn = true;
+		bool NoItemSpacing = false; // After label
+		float WidthOffset = 0.0f;
+	};
+
 	static void PushID()
 	{
 		ImGui::PushID(s_UIContextID++);

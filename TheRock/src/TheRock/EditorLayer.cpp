@@ -219,7 +219,7 @@ namespace RockEngine
 	{
 		m_EditorScene = Ref<Scene>::Create("Empty Scene");
 		m_SceneHierarchyPanel->SetContext(m_EditorScene);
-		UpdateWindowTitle("Untitled Scene");
+		UpdateWindowTitle("Empty Scene");
 
 		m_EditorCamera = EditorCamera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
 	}
@@ -365,97 +365,6 @@ namespace RockEngine
 					}
 				}
 				ImGui::TreePop();
-			}
-
-			ImGui::Separator();
-			{
-				ImGui::Text("Mesh");
-				std::string fullpath = m_SphereMesh ? m_SphereMesh->GetFilePath() : "None";
-				size_t found = fullpath.find_last_of("/\\");
-				std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
-				ImGui::Text(path.c_str()); ImGui::SameLine();
-				if (ImGui::Button("...##Mesh"))
-				{
-					std::string filename = RockEngine::Application::Get().OpenFile("");
-					if (filename != "")
-					{
-						auto newMesh = Ref<Mesh>::Create(filename);
-						m_Mesh = newMesh;
-					}
-				}
-			}
-
-			ImGui::Separator();
-
-			// Textures ------------------------------------------------------------------------------
-
-			{
-				if (ImGui::CollapsingHeader("Albedo", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-					ImGui::Image(m_AlbedoInput.TextureMap ? (void*)m_AlbedoInput.TextureMap->GetRendererID() : (void*)m_CheckerboardTex->GetRendererID(), ImVec2(64, 64));
-					ImGui::PopStyleVar();
-
-					if (ImGui::IsItemHovered())
-					{
-						if (m_AlbedoInput.TextureMap)
-						{
-							ImGui::BeginTooltip();
-							ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-							ImGui::TextUnformatted(m_AlbedoInput.TextureMap->GetPath().c_str());
-							ImGui::PopTextWrapPos();
-							ImGui::Image((void*)m_AlbedoInput.TextureMap->GetRendererID(), ImVec2(384, 384));
-							ImGui::EndTooltip();
-						}
-						if (ImGui::IsItemClicked())
-						{
-							std::string filename = RockEngine::Application::Get().OpenFile("");
-							if (filename != "")
-								m_AlbedoInput.TextureMap = (RockEngine::Texture2D::Create(filename, m_AlbedoInput.SRGB));
-						}
-					}
-					ImGui::SameLine();
-					ImGui::BeginGroup();
-					ImGui::Checkbox("Use##AlbedoMap", &m_AlbedoInput.UseTexture);
-					if (ImGui::Checkbox("sRGB##AlbedoMap", &m_AlbedoInput.SRGB))
-					{
-						if (m_AlbedoInput.TextureMap)
-							m_AlbedoInput.TextureMap = (RockEngine::Texture2D::Create(m_AlbedoInput.TextureMap->GetPath(), m_AlbedoInput.SRGB));
-					}
-					ImGui::EndGroup();
-					ImGui::SameLine();
-					ImGui::ColorEdit3("Color##Albedo", glm::value_ptr(m_AlbedoInput.Color), ImGuiColorEditFlags_NoInputs);
-				}
-			}
-
-			{
-				// Normals
-				if (ImGui::CollapsingHeader("Normals", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-					ImGui::Image(m_NormalInput.TextureMap ? (void*)m_NormalInput.TextureMap->GetRendererID() : (void*)m_CheckerboardTex->GetRendererID(), ImVec2(64, 64));
-					ImGui::PopStyleVar();
-					if (ImGui::IsItemHovered())
-					{
-						if (m_NormalInput.TextureMap)
-						{
-							ImGui::BeginTooltip();
-							ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-							ImGui::TextUnformatted(m_NormalInput.TextureMap->GetPath().c_str());
-							ImGui::PopTextWrapPos();
-							ImGui::Image((void*)m_NormalInput.TextureMap->GetRendererID(), ImVec2(384, 384));
-							ImGui::EndTooltip();
-						}
-						if (ImGui::IsItemClicked())
-						{
-							std::string filename = RockEngine::Application::Get().OpenFile("");
-							if (filename != "")
-								m_NormalInput.TextureMap = (RockEngine::Texture2D::Create(filename));
-						}
-					}
-					ImGui::SameLine();
-					ImGui::Checkbox("Use##NormalMap", &m_NormalInput.UseTexture);
-				}
 			}
 
 			ImGui::End();

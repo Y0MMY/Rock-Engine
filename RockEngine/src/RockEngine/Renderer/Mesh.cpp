@@ -16,6 +16,7 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
+#include "RockEngine/Utilities/StringUtils.h"
 
 #include <RockEngine/Renderer/Renderer.h>
 
@@ -64,6 +65,7 @@ namespace RockEngine
 	Mesh::Mesh(const std::string& filename)
 		: m_FilePath(filename)
 	{
+		m_Name = Utils::GetFilename(filename);
 		LogStream::Initialize();
 
 		RE_CORE_INFO("Loading mesh: {0}", filename.c_str());

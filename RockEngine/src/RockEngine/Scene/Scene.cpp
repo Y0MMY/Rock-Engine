@@ -30,26 +30,7 @@ namespace RockEngine
 
 	void Scene::OnUpdate(Timestep ts)
 	{
-		//m_Camera.OnUpdate(ts);
-		//m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
-
-		//// Update all entities
-		//for (auto entity : m_Entities)
-		//{
-		//	//auto mesh = entity->GetComponent<MeshComponent>().Mesh; // TODO: Add a vector what store a all meshes
-		//	//if (mesh)
-		//	//	mesh->OnUpdate(ts);
-		//}
-
-		//SceneRenderer::BeginScene(this);
-
-		//for (auto entity : m_Entities)
-		//{
-		//	// TODO: Should we render (logically)
-		//	SceneRenderer::SubmitEntity(entity);
-		//}
-
-		//SceneRenderer::EndScene();
+		
 	}
 
 	void Scene::OnRenderRuntime(Timestep ts)
@@ -66,6 +47,7 @@ namespace RockEngine
 				{
 					auto skyLightComponent = entity->GetComponent<SkyLightComponent>();
 					m_Environment = skyLightComponent.SceneEnvironment;
+					m_EnvironmentIntensity = skyLightComponent.Intensity;
 					SetSkybox(m_Environment.RadianceMap);
 					break;
 				}

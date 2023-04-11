@@ -3,6 +3,8 @@
 
 #include "RockEngine/Renderer/Renderer.h"
 
+#include "RockEngine/Utilities/StringUtils.h"
+
 namespace RockEngine
 {
 #define UNIFORM_LOGGING 1
@@ -36,8 +38,7 @@ namespace RockEngine
 		: m_AssetPath(filepath)
 	{
 		ReadShaderFromFile(filepath);
-		auto found = filepath.find_last_of("/\\");
-		m_Name = found != std::string::npos ? filepath.substr(found + 1) : filepath;
+		m_Name = Utils::GetFilename(filepath);
 		Reload();
 	}
 

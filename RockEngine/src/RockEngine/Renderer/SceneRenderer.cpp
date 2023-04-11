@@ -22,6 +22,7 @@ namespace RockEngine
 			// Resources
 			Ref<MaterialInstance> SkyboxMaterial;
 			Environment SceneEnvironment;
+			float SceneEnvironmentIntensity;
 			Light ActiveLight;
 		} SceneData;
 
@@ -100,6 +101,7 @@ namespace RockEngine
 		s_Data->SceneData.SceneCamera = camera;
 		s_Data->SceneData.SkyboxMaterial = scene->m_SkyboxMaterial;
 		s_Data->SceneData.SceneEnvironment = scene->m_Environment;
+		s_Data->SceneData.SceneEnvironmentIntensity = scene->m_EnvironmentIntensity;
 		s_Data->SceneData.ActiveLight = scene->m_Light;
 	}
 
@@ -238,6 +240,7 @@ namespace RockEngine
 		// Skybox
 		auto skyboxShader = s_Data->SceneData.SkyboxMaterial->GetShader();
 		s_Data->SceneData.SkyboxMaterial->Set("u_InverseVP", glm::inverse(viewProjection));
+		s_Data->SceneData.SkyboxMaterial->Set("u_SkyIntensity", s_Data->SceneData.SceneEnvironmentIntensity);
 		Renderer::SubmitFullscreenQuad(s_Data->SceneData.SkyboxMaterial);
 
 		// Render entities
