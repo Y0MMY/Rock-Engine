@@ -132,7 +132,7 @@ namespace RockEngine {
 		uint32_t VertexCount;
 
 		glm::mat4 Transform;
-		AABB BoundingBox;
+		Math::AABB BoundingBox;
 
 		std::string NodeName, MeshName;
 	};

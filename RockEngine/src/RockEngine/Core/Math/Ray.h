@@ -4,7 +4,8 @@
 
 #include "AABB.h"
 
-namespace RockEngine {
+namespace RockEngine::Math 
+{
 
 	struct Ray
 	{

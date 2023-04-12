@@ -34,6 +34,8 @@ namespace RockEngine
 
 		void UpdateWindowTitle(const std::string& sceneName);
 	private:
+		float GetSnapValue();
+
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
 	private:
@@ -112,8 +114,6 @@ namespace RockEngine
 		Ref<Scene> m_EditorScene;
 		std::unique_ptr<SceneHierarchyPanel> m_SceneHierarchyPanel;
 
-		float m_SnapValue = 0.5f;
-
 		glm::mat4* m_CurrentlySelectedTransform = nullptr;
 
 		int m_GizmoType = -1; // -1 = no gizmo
@@ -132,15 +132,17 @@ namespace RockEngine
 		{
 			switch (lang)
 			{
-			case TextEditorLang::GLSL:
-					return TextEditor::LanguageDefinition::GLSL();
+				case TextEditorLang::GLSL:
+						return TextEditor::LanguageDefinition::GLSL();
 
-			case TextEditorLang::HLSL:
-				return TextEditor::LanguageDefinition::HLSL();
+				case TextEditorLang::HLSL:
+					return TextEditor::LanguageDefinition::HLSL();
 
-			case TextEditorLang::CPP:
-				return TextEditor::LanguageDefinition::CPlusPlus();
+				case TextEditorLang::CPP:
+					return TextEditor::LanguageDefinition::CPlusPlus();
 			}
+			RE_CORE_ASSERT(false);
+			return TextEditor::LanguageDefinition();
 		}
 
 	};

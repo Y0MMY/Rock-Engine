@@ -34,22 +34,23 @@ namespace RockEngine
 		}
 
 		template<typename T>
-		decltype(auto) group()
+		std::vector<T*> group()
 		{
-			std::vector<DataHolder<T>*> result;
-			for (auto& [uuid, innerMap] : data)
+			std::vector<T*> result;
+			for (auto& entity : data)
 			{
-				if (innerMap.count(std::type_index(typeid(T))) != 0)
+				if (entity.second.count(std::type_index(typeid(T))) != 0)
 				{
-					auto& item = innerMap[std::type_index(typeid(T))];
+					auto& item = entity.second.at(std::type_index(typeid(T)));
 					if (item != nullptr)
 					{
-						result.push_back(static_cast<DataHolder<T>*>(item.get()));
+						result.push_back(&static_cast<DataHolder<T>*>(item.get())->item);
 					}
 				}
 			}
 			return result;
 		}
+
 
 		template<typename T>
 		T& get(EntityID id)

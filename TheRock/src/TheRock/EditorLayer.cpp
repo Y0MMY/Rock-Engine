@@ -81,55 +81,57 @@ namespace RockEngine
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		//auto [mouseX, mouseY] = GetMouseViewportSpace();
-		//if (e.GetMouseButton() == MouseButton::Left && !Input::IsKeyPressed(KeyCode::LeftAlt) && !ImGuizmo::IsOver())
-		//{
-		//	if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
-		//	{
+		auto [mx, my] = Input::GetMousePosition();
+		if (e.GetMouseButton() == MouseButton::Left && !Input::IsKeyPressed(KeyCode::LeftAlt) && !ImGuizmo::IsOver())
+		{
+			auto [mouseX, mouseY] = GetMouseViewportSpace();
+			if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
+			{
+				auto [origin, direction] = CastRay(mouseX, mouseY);
+				m_EditorScene->m_SelectionContext.clear();
+				m_EditorScene->SetSelected({});
 
-		//		auto [origin, direction] = CastRay(mouseX, mouseY);
+				auto& meshEntities = m_EditorScene->GetAllEntitiesWith<MeshComponent>();
+				
+				for (auto e : meshEntities)
+				{
+					auto mesh = e->GetComponent<MeshComponent>().Mesh;
+					if (!mesh) continue;
+					auto& submeshes = mesh->GetSubmeshes();
+					float lastT = std::numeric_limits<float>::max();
 
-		//		m_EditorScene->m_SelectionContext.clear();
-		//		auto mesh = m_MeshEntity->GetComponent<MeshComponent>().Mesh;
-		//		auto& submeshes = mesh->GetSubmeshes();
-		//		float lastT = std::numeric_limits<float>::max();
-		//		for (uint32_t i = 0; i < submeshes.size(); i++)
-		//		{
-		//			auto& submesh = submeshes[i];
-		//			Ray ray = {
-		//				glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f),
-		//				glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction
-		//			};
+					for (uint32_t i = 0; i < submeshes.size(); i++)
+					{
+						auto& submesh = submeshes[i];
+						Math::Ray ray = {
+							glm::inverse(e->Transform().GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f),
+							glm::inverse(glm::mat3(e->Transform().GetTransform()) * glm::mat3(submesh.Transform)) * direction
+						};
 
-		//			float t;
-		//			bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
-		//			if (intersects)
-		//			{
-		//				const auto& triangleCache = mesh->GetTriangleCache(i);
-		//				for (const auto& triangle : triangleCache)
-		//				{
-		//					if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
-		//					{
-		//						RE_CORE_WARN("INTERSECTION: {0}, t={1}", submesh.NodeName, t);
-		//						m_EditorScene->m_SelectionContext.push_back({ m_MeshEntity, &submesh, t });
-		//						m_EditorScene->SetSelected(m_MeshEntity);
-		//						break;
-		//					}
-		//				}
-		//			}
-		//		}
-		//		std::sort(m_EditorScene->m_SelectionContext.begin(), m_EditorScene->m_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
-
-		//		// TODO: Handle mesh being deleted, etc.
-		//		if (m_EditorScene->m_SelectionContext.size())
-		//			m_CurrentlySelectedTransform = &m_EditorScene->m_SelectionContext[0].Mesh->Transform;
-		//		else
-		//		{
-		//			m_CurrentlySelectedTransform = &m_MeshEntity->Transform().GetTransform();
-		//			//m_EditorScene->SetSelected(nullptr);
-		//		}
-		//	}
-		//}
+						float t;
+						bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
+						if (intersects)
+						{
+							const auto& triangleCache = mesh->GetTriangleCache(i);
+							for (const auto& triangle : triangleCache)
+							{
+								if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+								{
+									RE_WARN("INTERSECTION: {0}, t={1}", submesh.NodeName, t);
+									m_EditorScene->m_SelectionContext.push_back({ e, &submesh, t});
+									break;
+								}
+							}
+						}
+					}
+				}
+				std::sort(m_EditorScene->m_SelectionContext.begin(), m_EditorScene->m_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
+				if (m_EditorScene->m_SelectionContext.size())
+				{
+					m_EditorScene->SetSelected(m_EditorScene->m_SelectionContext[0].Entity);
+				}
+			}
+		}
 		return false;
 	}
 
@@ -151,6 +153,9 @@ namespace RockEngine
 			// Editor
 			m_CheckerboardTex = Texture2D::Create("assets/editor/Checkerboard.tga");
 			m_SceneHierarchyPanel = std::make_unique<SceneHierarchyPanel>(m_EditorScene);
+
+			m_TextEditor.SetLanguageDefinition(GetLang(TextEditorLang::GLSL));
+			m_TextEditor.SetShowWhitespaces(false);
 
 			NewScene();
 		}
@@ -191,6 +196,17 @@ namespace RockEngine
 			RockEngine::Renderer::EndRenderPass();
 		}
 
+	}
+
+	float EditorLayer::GetSnapValue()
+	{
+		switch (m_GizmoType)
+		{
+		case  ImGuizmo::OPERATION::TRANSLATE: return 0.5f;
+		case  ImGuizmo::OPERATION::ROTATE: return 45.0f;
+		case  ImGuizmo::OPERATION::SCALE: return 0.5f;
+		}
+		return 0.0f;
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -268,23 +284,36 @@ namespace RockEngine
 			bool snap = Input::IsKeyPressed(KeyCode::LeftControl);
 
 			TransformComponent& entityTransform = selection.Entity->Transform();
+			glm::mat4 transform = entityTransform.GetTransform();
 
+			float snapValue = GetSnapValue();
+			float snapValues[3] = { snapValue, snapValue, snapValue };
 
-			ImGuizmo::Manipulate(glm::value_ptr(m_EditorCamera.GetViewMatrix() * m_MeshEntity->Transform().GetTransform()),
+			ImGuizmo::Manipulate(glm::value_ptr(m_EditorCamera.GetViewMatrix()),
 				glm::value_ptr(m_EditorCamera.GetProjectionMatrix()),
 				(ImGuizmo::OPERATION)m_GizmoType,
 				ImGuizmo::LOCAL,
-				glm::value_ptr(*m_CurrentlySelectedTransform),
+				glm::value_ptr(transform),
 				nullptr,
-				snap ? &m_SnapValue : nullptr);
+				snap ? snapValues : nullptr);
+
+			if (ImGuizmo::IsUsing())
+			{
+				glm::vec3 translation, rotation, scale;
+				Math::DecomposeTransform(transform, translation, rotation, scale);
+
+				glm::vec3 deltaRotation = rotation - entityTransform.Rotation;
+				entityTransform.Translation = translation;
+				entityTransform.Rotation += deltaRotation;
+				entityTransform.Scale = scale;
+			}
+
 		}
 
 		ImGui::End();
 		ImGui::PopStyleVar();
 		if(m_EditShaderText)
 		{
-			m_TextEditor.SetLanguageDefinition(GetLang(TextEditorLang::CPP));
-			m_TextEditor.SetShowWhitespaces(false);
 			ImGui::Begin("Editor", &m_EditShaderText, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_MenuBar);
 			if (ImGui::BeginMenuBar())
 			{
@@ -327,6 +356,7 @@ namespace RockEngine
 			UI::PropertySlider("Env Map Rotation", m_EnvMapRotation, -360.0f, 360.0f);
 			UI::Property("Show Bounding Boxes", SceneRenderer::GetOptions().ShowBoundingBoxes);
 			UI::Property("Show grid", SceneRenderer::GetOptions().ShowGrid);
+			UI::Property("Draw Outline", SceneRenderer::GetOptions().DrawOutline);
 			UI::EndPropertyGrid();
 
 			ImGui::Separator();

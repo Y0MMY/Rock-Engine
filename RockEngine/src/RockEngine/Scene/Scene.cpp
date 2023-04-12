@@ -89,7 +89,10 @@ namespace RockEngine
 					auto& transformComponent = entity->GetComponent<TransformComponent>();
 
 					meshComponent.Mesh->OnUpdate(ts);
-					SceneRenderer::SubmitMesh(meshComponent, transformComponent.GetTransform());
+					if (m_SelectedEntity == entity && SceneRenderer::GetOptions().DrawOutline)
+						SceneRenderer::SubmitSelectedMesh(meshComponent, transformComponent.GetTransform());
+					else
+						SceneRenderer::SubmitMesh(meshComponent, transformComponent.GetTransform());
 				}
 			}
 		}

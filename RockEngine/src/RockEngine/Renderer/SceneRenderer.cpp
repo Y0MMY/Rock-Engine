@@ -39,10 +39,13 @@ namespace RockEngine
 			glm::mat4 Transform;
 		};
 		std::vector<DrawCommand> DrawList;
+		std::vector<DrawCommand> SelectedMeshDrawList;
 		SceneRendererOptions Options;
 
 		// Grid
 		Ref<MaterialInstance> GridMaterial;
+
+		Ref<MaterialInstance> OutlineMaterial, OutlineAnimMaterial;
 	};
 
 	SceneRendererData* s_Data = nullptr;
@@ -73,6 +76,15 @@ namespace RockEngine
 
 		s_Data->BRDFLUT = Texture2D::Create("assets/textures/BRDF_LUT.tga");
 		s_Data->CompositeShader = Shader::Create("assets/shaders/SceneComposite.glsl");
+
+		// Outline
+		auto outlineShader = Shader::Create("assets/shaders/Outline.glsl");
+		s_Data->OutlineMaterial = MaterialInstance::Create(Material::Create(outlineShader));
+		s_Data->OutlineMaterial->SetFlag(MaterialFlag::DepthTest, false);
+
+		auto outlineAnimShader = Shader::Create("assets/shaders/Outline_Anim.glsl");
+		s_Data->OutlineAnimMaterial = MaterialInstance::Create(Material::Create(outlineAnimShader));
+		s_Data->OutlineAnimMaterial->SetFlag(MaterialFlag::DepthTest, false);
 
 		// Grid
 		auto gridShader = Shader::Create("assets/shaders/Grid.glsl");
@@ -133,6 +145,12 @@ namespace RockEngine
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data->DrawList.push_back({ mesh, overrideMaterial, transform });
+	}
+
+	void SceneRenderer::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform)
+	{
+		// TODO: Culling, sorting, etc.
+		s_Data->SelectedMeshDrawList.push_back({ mesh, nullptr, transform });
 	}
 
 	static Ref<Shader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
@@ -225,12 +243,31 @@ namespace RockEngine
 		CompositePass();
 
 		s_Data->DrawList.clear();
+		s_Data->SelectedMeshDrawList.clear();
 		s_Data->SceneData = { };
 	}
 
 	void SceneRenderer::GeometryPass()
 	{
+		bool outline = s_Data->SelectedMeshDrawList.size() > 0;
+
+		if (outline)
+		{
+			Renderer::Submit([]()
+				{
+					glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+				});
+		}
+
 		Renderer::BeginRenderPass(s_Data->GeoPass);
+
+		if (outline)
+		{
+			Renderer::Submit([]()
+				{
+					glStencilMask(0);
+				});
+		}
 
 		auto& sceneCamera = s_Data->SceneData.SceneCamera;
 
@@ -261,6 +298,76 @@ namespace RockEngine
 
 			auto overrideMaterial = nullptr; // dc.Material;
 			Renderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
+		}
+
+		if (outline)
+		{
+			Renderer::Submit([]()
+				{
+					glStencilFunc(GL_ALWAYS, 1, 0xff);
+					glStencilMask(0xff);
+				});
+		}
+
+		// Render selected entities
+
+		for (auto& dc : s_Data->SelectedMeshDrawList)
+		{
+			auto baseMaterial = dc.Mesh->GetMaterial();
+			baseMaterial->Set("u_ViewProjectionMatrix", viewProjection);
+			baseMaterial->Set("u_CameraPosition", cameraPosition);
+
+			// Environment (TODO: don't do this per mesh)
+			baseMaterial->Set("u_EnvRadianceTex", s_Data->SceneData.SceneEnvironment.RadianceMap);
+			baseMaterial->Set("u_EnvIrradianceTex", s_Data->SceneData.SceneEnvironment.IrradianceMap);
+			baseMaterial->Set("u_BRDFLUTTexture", s_Data->BRDFLUT);
+
+			// Set lights (TODO: move to light environment and don't do per mesh)
+			auto directionalLight = s_Data->SceneData.SceneLightEnvironment.DirectionalLights[0];
+			baseMaterial->Set("u_DirectionalLights", directionalLight);
+
+			auto overrideMaterial = nullptr; // dc.Material;
+			Renderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
+		}
+
+		if (outline)
+		{
+			Renderer::Submit([]()
+				{
+					glStencilFunc(GL_NOTEQUAL, 1, 0xff);
+					glStencilMask(0);
+
+					glLineWidth(10);
+					glEnable(GL_LINE_SMOOTH);
+					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+					glDisable(GL_DEPTH_TEST);
+				});
+
+			// Draw outline here
+			s_Data->OutlineMaterial->Set("u_ViewProjection", viewProjection);
+			s_Data->OutlineAnimMaterial->Set("u_ViewProjection", viewProjection);
+			for (auto& dc : s_Data->SelectedMeshDrawList)
+			{
+				Renderer::SubmitMesh(dc.Mesh, dc.Transform, dc.Mesh->IsAnimated() ? s_Data->OutlineAnimMaterial : s_Data->OutlineMaterial);
+			}
+
+			Renderer::Submit([]()
+				{
+					glPointSize(10);
+					glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+				});
+			for (auto& dc : s_Data->SelectedMeshDrawList)
+			{
+				Renderer::SubmitMesh(dc.Mesh, dc.Transform, dc.Mesh->IsAnimated() ? s_Data->OutlineAnimMaterial : s_Data->OutlineMaterial);
+			}
+
+			Renderer::Submit([]()
+				{
+					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+					glStencilMask(0xff);
+					glStencilFunc(GL_ALWAYS, 1, 0xff);
+					glEnable(GL_DEPTH_TEST);
+				});
 		}
 
 		// Grid

@@ -33,6 +33,8 @@
 #include "RockEngine/Renderer/Renderer2D.h"
 //---------------------------------------------
 
+//Math
+#include "RockEngine/Core/Math/Math.h"
 
 // Scenes
 #include "RockEngine/Scene/Scene.h"

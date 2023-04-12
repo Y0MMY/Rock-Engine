@@ -44,7 +44,7 @@ namespace RockEngine
 			m_Scene->m_Registry.remove<T>(m_Handle);
 		}
 
-		auto Transform() { return m_Scene->m_Registry.get<TransformComponent>(m_Handle); }
+		auto& Transform() { return m_Scene->m_Registry.get<TransformComponent>(m_Handle); }
 		const glm::mat4 Transform() const { return m_Scene->m_Registry.get<TransformComponent>(m_Handle).GetTransform(); }
 		const glm::mat4 GetTransform() const { return m_Scene->m_Registry.get<TransformComponent>(m_Handle).GetTransform(); }
 

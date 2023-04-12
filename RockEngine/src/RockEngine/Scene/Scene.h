@@ -44,6 +44,21 @@ namespace RockEngine
 
 		float& GetSkyboxLod() { return m_SkyboxLod; }
 
+		template<typename T>
+		decltype(auto) GetAllEntitiesWith()
+		{
+			std::vector<Entity*> out;
+			for (auto& e : m_Entities)
+				if (e->HasComponent<T>())
+					out.push_back(e);
+			return out;
+		}
+
+		decltype(auto) GetAllEntities()
+		{
+			return m_Entities;
+		}
+
 		void AddEntity(Entity* entity);
 		Entity* CreateEntity(const std::string& name = "");
 	private:
