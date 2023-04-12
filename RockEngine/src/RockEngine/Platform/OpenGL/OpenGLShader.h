@@ -17,6 +17,7 @@ namespace RockEngine
 		virtual RendererID GetRendererID() const override { return m_RendererID; }
 
 		virtual const std::string& GetName() const override { return m_Name; }
+		virtual const std::string& GetPath() const override { return m_AssetPath; }
 
 		virtual void UploadUniformBuffer(const UniformBufferBase& uniformBuffer) override {}
 

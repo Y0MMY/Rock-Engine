@@ -7,6 +7,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "ImGuiColorTextEdit/TextEditor.h"
+
 namespace RockEngine
 {
 	class EditorLayer : public Layer
@@ -117,5 +119,29 @@ namespace RockEngine
 		int m_GizmoType = -1; // -1 = no gizmo
 
 		bool m_UIShowBoundingBoxes;
+
+		TextEditor m_TextEditor;
+		bool m_EditShaderText = false;
+
+		enum class TextEditorLang
+		{
+			GLSL = 0, HLSL = 1, CPP = 2
+		};
+
+		auto GetLang(TextEditorLang lang)
+		{
+			switch (lang)
+			{
+			case TextEditorLang::GLSL:
+					return TextEditor::LanguageDefinition::GLSL();
+
+			case TextEditorLang::HLSL:
+				return TextEditor::LanguageDefinition::HLSL();
+
+			case TextEditorLang::CPP:
+				return TextEditor::LanguageDefinition::CPlusPlus();
+			}
+		}
+
 	};
 }

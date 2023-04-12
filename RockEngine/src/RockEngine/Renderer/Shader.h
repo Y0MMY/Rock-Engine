@@ -53,6 +53,7 @@ namespace RockEngine
 		virtual void UploadUniformBuffer(const UniformBufferBase& uniformBuffer) = 0;
 
 		virtual const std::string& GetName() const = 0;
+		virtual const std::string& GetPath() const = 0;
 
 		// Temporary while we don't have materials
 		virtual void SetFloat(const std::string& name, float value) = 0;

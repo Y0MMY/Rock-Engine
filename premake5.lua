@@ -36,7 +36,11 @@ project "RockEngine"
 		"%{prj.name}/src/**.h", 
 		"%{prj.name}/src/**.c", 
 		"%{prj.name}/src/**.hpp", 
-		"%{prj.name}/src/**.cpp" 
+		"%{prj.name}/src/**.cpp",
+
+		"%{prj.name}/vendor/yaml-cpp/src/**.cpp",
+		"%{prj.name}/vendor/yaml-cpp/src/**.h",
+		"%{prj.name}/vendor/yaml-cpp/include/**.h"
     }
 
     includedirs
@@ -49,6 +53,8 @@ project "RockEngine"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.stb}",
 		"%{IncludeDir.assimp}",
+		"%{IncludeDir.yaml}",
+
 	}
 
 	links
@@ -58,6 +64,9 @@ project "RockEngine"
 		"imgui"
 	}
     
+	filter "files:RockEngine/vendor/yaml-cpp/src/**.cpp or files:RockEngine/vendor/ImGuiColorTextEdit/*.cpp"
+	flags { "NoPCH" }
+
 	filter "system:windows"
 		cppdialect "C++17"
         staticruntime "On"
@@ -110,7 +119,9 @@ project "TheRock"
 		links 
 		{ 
 			"RockEngine",
-			"%{LinksDir.ImGui}"
+			"%{LinksDir.ImGui}",
+			"%{LinksDir.assimp}"
+
 		}
         
 		defines 

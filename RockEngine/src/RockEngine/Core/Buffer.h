@@ -80,5 +80,10 @@ namespace RockEngine
 
 		inline u32 GetSize() { return Size; }
 
+		template <typename T>
+		bool operator==(T& rhs)
+		{
+			return Data == rhs.Data;
+		}
 	};
 }

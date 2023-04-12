@@ -78,24 +78,8 @@ namespace RockEngine
 
 	const std::string OpenGLShader::ReadShaderFromFile(const std::string& filepath)
 	{
-		std::ifstream in(filepath, std::ios::out);
-		std::string result;
-
-		if (in)
-		{
-			in.seekg(0, std::ios::end);
-			result.resize(in.tellg());
-
-			in.seekg(std::ios::beg);
-			in.read(&result[0], result.size());
-		}
-		else
-		{
-			RE_CORE_ASSERT(false, "Could not open file!");
-		}
-		in.close();
-
-		return result;
+	
+		return Utils::ReadShaderFromFile(filepath.c_str());
 	}
 	void OpenGLShader::Bind() const {
 		Renderer::Submit([=]()

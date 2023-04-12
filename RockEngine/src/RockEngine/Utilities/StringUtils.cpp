@@ -38,4 +38,26 @@ namespace RockEngine::Utils
 		return result;
 	}
 
+	auto ReadShaderFromFile(std::string_view path) -> std::string
+	{
+		std::ifstream in(path.data(), std::ios::out);
+		std::string result;
+
+		if (in)
+		{
+			in.seekg(0, std::ios::end);
+			result.resize(in.tellg());
+
+			in.seekg(std::ios::beg);
+			in.read(&result[0], result.size());
+		}
+		else
+		{
+			RE_CORE_ASSERT(false, "Could not open file!");
+		}
+		in.close();
+
+		return result;
+	}
+
 }
