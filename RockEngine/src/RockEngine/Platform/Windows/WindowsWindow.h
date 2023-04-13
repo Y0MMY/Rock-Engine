@@ -27,7 +27,7 @@ namespace RockEngine
 		virtual const std::string& GetTitle() const override { return m_Data.Title; }
 		virtual void SetTitle(const std::string& title) override;
 
-		inline void* GetNativeWindow() { return m_Window; }
+		inline void* GetNativeWindow() const { return m_Window; }
 
 	private:
 		struct WindowData

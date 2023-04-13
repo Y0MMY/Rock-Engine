@@ -54,7 +54,7 @@ const int LightCount = 1;
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04);
 
-struct Light {
+struct DirectionalLight {
 	vec3 Direction;
 	vec3 Radiance;
 
@@ -72,7 +72,7 @@ in VertexOutput
 
 layout(location=0) out vec4 color;
 
-uniform Light lights;
+uniform DirectionalLight u_DirectionalLights;
 uniform vec3 u_CameraPosition;
 
 // PBR texture inputs
@@ -246,8 +246,8 @@ vec3 Lighting(vec3 F0)
 	vec3 result = vec3(0.0);
 	for(int i = 0; i < LightCount; i++)
 	{
-		vec3 Li = -lights.Direction;
-		vec3 Lradiance = lights.Radiance;
+		vec3 Li = -u_DirectionalLights.Direction;
+		vec3 Lradiance = u_DirectionalLights.Radiance;
 		vec3 Lh = normalize(Li + m_Params.View);
 
 		// Calculate angles between surface normal and various light vectors.

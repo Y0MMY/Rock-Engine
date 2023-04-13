@@ -79,7 +79,7 @@ namespace RockEngine
 	const std::string OpenGLShader::ReadShaderFromFile(const std::string& filepath)
 	{
 	
-		return Utils::ReadShaderFromFile(filepath.c_str());
+		return Utils::ReadFromFile(filepath.c_str());
 	}
 	void OpenGLShader::Bind() const {
 		Renderer::Submit([=]()
@@ -558,7 +558,7 @@ namespace RockEngine
 
 		if (outPosition)
 			*outPosition = end;
-		uint32_t length = end - str + 1;
+		auto length = end - str + 1;
 		return std::string(str, length);
 	}
 
@@ -575,7 +575,7 @@ namespace RockEngine
 
 		if (outPosition)
 			*outPosition = end;
-		uint32_t length = end - str + 1;
+		auto length = end - str + 1;
 		return std::string(str, length);
 	}
 

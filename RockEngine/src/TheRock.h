@@ -39,6 +39,7 @@
 // Scenes
 #include "RockEngine/Scene/Scene.h"
 #include "RockEngine/Scene/Entity.h"
+#include "RockEngine/Scene/SceneSerializer.h"
 
 // Editor
 #include "RockEngine/Editor/SceneHierarchyPanel.h"

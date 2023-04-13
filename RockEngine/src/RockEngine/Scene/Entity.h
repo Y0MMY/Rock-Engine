@@ -10,6 +10,7 @@ namespace RockEngine
 {
 	class Scene;
 	using EntityID = uint32_t;
+
 	class Entity
 	{
 	public:
@@ -48,20 +49,18 @@ namespace RockEngine
 		const glm::mat4 Transform() const { return m_Scene->m_Registry.get<TransformComponent>(m_Handle).GetTransform(); }
 		const glm::mat4 GetTransform() const { return m_Scene->m_Registry.get<TransformComponent>(m_Handle).GetTransform(); }
 
-		UUID GetUUID() { return m_Handle; }
+		const UUID GetUUID() const { return m_Scene->m_Registry.get<IDComponent>(m_Handle).ID; }
+		const EntityID GetHandle() const { return m_Handle; }
 		const std::string& GetName() const { return m_Name; }
 	private:
 		Entity(const std::string& name);
 	private:
 		std::string m_Name;
-		glm::mat4 m_Transform;
 		EntityID m_Handle;
 		Scene* m_Scene = nullptr;
-
-		// TODO: Temp
-		Ref<Mesh> m_Mesh;
-		Ref<MaterialInstance> m_Material;
+	private:
 		friend class Scene;
+		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
 	};
 }

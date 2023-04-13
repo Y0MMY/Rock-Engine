@@ -17,8 +17,7 @@ namespace RockEngine
 
 	Scene::~Scene()
 	{
-		for (auto entity : m_Entities)
-			delete entity;
+		
 	}
 
 	void Scene::Init()

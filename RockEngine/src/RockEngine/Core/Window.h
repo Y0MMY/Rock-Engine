@@ -37,7 +37,7 @@ namespace RockEngine
 		virtual const std::string& GetTitle() const = 0;
 		virtual void SetTitle(const std::string& title) = 0;
 
-		inline virtual void* GetNativeWindow() = 0;
+		inline virtual void* GetNativeWindow() const = 0;
 
 		// Instance of window
 		static Window* Create(const WindowProps& props = WindowProps());

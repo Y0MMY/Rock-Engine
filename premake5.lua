@@ -54,7 +54,7 @@ project "RockEngine"
 		"%{IncludeDir.stb}",
 		"%{IncludeDir.assimp}",
 		"%{IncludeDir.yaml}",
-
+		"%{IncludeDir.texteditor}",
 	}
 
 	links
@@ -64,7 +64,10 @@ project "RockEngine"
 		"imgui"
 	}
     
-	filter "files:RockEngine/vendor/yaml-cpp/src/**.cpp or files:RockEngine/vendor/ImGuiColorTextEdit/*.cpp"
+	filter "files:RockEngine/vendor/yaml-cpp/src/**.cpp"
+	flags { "NoPCH" }
+
+	filter "files:RockEngine/vendor/ImGuiColorTextEdit/**.cpp"
 	flags { "NoPCH" }
 
 	filter "system:windows"
@@ -109,7 +112,8 @@ project "TheRock"
         "%{prj.name}/src",
         "RockEngine/src",
         "RockEngine/vendor",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.yaml}",
     }
 	
 	filter "system:windows"

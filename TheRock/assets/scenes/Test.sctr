@@ -1,0 +1,27 @@
+Scene: Scene Name
+Environment:
+  AssetPath: ""
+Entities:
+  - Entity: 10543282777517637913
+    TagComponent:
+      Tag: Mesh
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      AssetPath: D:\Programming\C++\RockEngine\TheRock\assets\meshes\TestScene.fbx
+  - Entity: 11252350046089420906
+    TagComponent:
+      Tag: Sky Light
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [1.39626336, 0.17453292, 0]
+      Scale: [1, 1, 1]
+  - Entity: 8774352689782766274
+    TagComponent:
+      Tag: Directional Light
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]

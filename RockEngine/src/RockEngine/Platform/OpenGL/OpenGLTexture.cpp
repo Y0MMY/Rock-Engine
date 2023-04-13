@@ -179,19 +179,19 @@ namespace RockEngine
 		RE_CORE_ASSERT(faceWidth == faceHeight, "Non-square faces!");
 
 		std::array<uint8_t*, 6> faces;
-		for (size_t i = 0; i < faces.size(); i++)
+		for (int i = 0; i < faces.size(); i++)
 			faces[i] = new uint8_t[faceWidth * faceHeight * 3]; // 3 BPP
 
 		int faceIndex = 0;
 
-		for (size_t i = 0; i < 4; i++)
+		for (int i = 0; i < 4; i++)
 		{
-			for (size_t y = 0; y < faceHeight; y++)
+			for (u32 y = 0; y < faceHeight; y++)
 			{
-				size_t yOffset = y + faceHeight;
-				for (size_t x = 0; x < faceWidth; x++)
+				int yOffset = y + faceHeight;
+				for (u32 x = 0; x < faceWidth; x++)
 				{
-					size_t xOffset = x + i * faceWidth;
+					int xOffset = x + i * faceWidth;
 					faces[faceIndex][(x + y * faceWidth) * 3 + 0] = m_ImageData[(xOffset + yOffset * m_Width) * 3 + 0];
 					faces[faceIndex][(x + y * faceWidth) * 3 + 1] = m_ImageData[(xOffset + yOffset * m_Width) * 3 + 1];
 					faces[faceIndex][(x + y * faceWidth) * 3 + 2] = m_ImageData[(xOffset + yOffset * m_Width) * 3 + 2];
@@ -200,18 +200,18 @@ namespace RockEngine
 			faceIndex++;
 		}
 
-		for (size_t i = 0; i < 3; i++)
+		for (int i = 0; i < 3; i++)
 		{
 			// Skip the middle one
 			if (i == 1)
 				continue;
 
-			for (size_t y = 0; y < faceHeight; y++)
+			for (u32 y = 0; y < faceHeight; y++)
 			{
-				size_t yOffset = y + i * faceHeight;
-				for (size_t x = 0; x < faceWidth; x++)
+				int yOffset = y + i * faceHeight;
+				for (u32 x = 0; x < faceWidth; x++)
 				{
-					size_t xOffset = x + faceWidth;
+					int xOffset = x + faceWidth;
 					faces[faceIndex][(x + y * faceWidth) * 3 + 0] = m_ImageData[(xOffset + yOffset * m_Width) * 3 + 0];
 					faces[faceIndex][(x + y * faceWidth) * 3 + 1] = m_ImageData[(xOffset + yOffset * m_Width) * 3 + 1];
 					faces[faceIndex][(x + y * faceWidth) * 3 + 2] = m_ImageData[(xOffset + yOffset * m_Width) * 3 + 2];
@@ -247,7 +247,7 @@ namespace RockEngine
 
 			glBindTexture(GL_TEXTURE_2D, 0);
 
-			for (size_t i = 0; i < faces.size(); i++)
+			for (int i = 0; i < faces.size(); i++)
 				delete[] faces[i];
 
 			stbi_image_free(instance->m_ImageData.Data);

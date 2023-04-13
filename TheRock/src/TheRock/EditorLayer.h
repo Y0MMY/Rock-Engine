@@ -91,14 +91,6 @@ namespace RockEngine
 		Ref<VertexBuffer> m_VertexBuffer;
 		Ref<IndexBuffer> m_IndexBuffer;
 		Ref<TextureCube> m_EnvironmentCubeMap, m_EnvironmentIrradiance;
-		float m_ClearColor[4];
-		struct Light
-		{
-			glm::vec3 Direction;
-			glm::vec3 Radiance;
-		};
-		Light m_Light;
-		float m_LightMultiplier = 0.3f;
 
 		EditorCamera m_EditorCamera;
 
@@ -127,6 +119,15 @@ namespace RockEngine
 		{
 			GLSL = 0, HLSL = 1, CPP = 2
 		};
+
+		struct ShaderFileProps
+		{
+			Ref<RockEngine::Shader> Shader;
+			std::string_view Path;
+			std::string Text;
+		};
+
+		ShaderFileProps m_ShaderStruct;
 
 		auto GetLang(TextEditorLang lang)
 		{

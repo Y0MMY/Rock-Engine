@@ -26,6 +26,7 @@ namespace RockEngine
 
 	class Entity;
 	using EntityMap = std::unordered_map<UUID, Entity>;
+
 	class Scene : public RefCounted
 	{
 	public:
@@ -43,6 +44,8 @@ namespace RockEngine
 		void SetSelected(Entity* entity);
 
 		float& GetSkyboxLod() { return m_SkyboxLod; }
+
+		const Environment& GetEnvironment() const { return m_Environment; }
 
 		template<typename T>
 		decltype(auto) GetAllEntitiesWith()

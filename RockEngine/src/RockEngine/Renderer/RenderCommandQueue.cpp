@@ -33,7 +33,7 @@ namespace RockEngine
 	{
 		byte* buffer = m_CommandBuffer;
 
-		for (signed i = 0; i < m_CommandCount; i++)
+		for (u32 i = 0; i < m_CommandCount; i++)
 		{
 			RenderCommandFn function = *(RenderCommandFn*)buffer;
 			buffer += sizeof(RenderCommandFn);

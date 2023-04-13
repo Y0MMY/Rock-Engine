@@ -249,6 +249,30 @@ namespace RockEngine
 			ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), opt_flags);
 		}
+
+
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("New Scene", "Ctrl+N"))
+					NewScene();
+				if (ImGui::MenuItem("Open Scene...", "Ctrl+O"))
+					OpenScene();
+				ImGui::Separator();
+				if (ImGui::MenuItem("Save Scene", "Ctrl+S"))
+					SaveScene();
+				if (ImGui::MenuItem("Save Scene As...", "Ctrl+Shift+S"))
+					SaveSceneAs();
+
+				ImGui::Separator();
+				if (ImGui::MenuItem("Exit"))
+					p_open = false;
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		ImGui::Begin("Viewport");
 
@@ -319,13 +343,15 @@ namespace RockEngine
 			{
 				if (ImGui::Button("Save"))
 				{
-
+					m_ShaderStruct.Text = m_TextEditor.GetText();
+					Utils::SaveToFile(m_ShaderStruct.Path, m_ShaderStruct.Text);
 				}
 
 				if (ImGui::Button("Close"))
 				{
 					m_EditShaderText = !m_EditShaderText;
 					m_TextEditor.SetText("");
+					m_ShaderStruct = {};
 				}
 
 				if (ImGui::BeginMenu("View"))
@@ -373,10 +399,14 @@ namespace RockEngine
 						std::string buttonName = "Reload##" + shader->GetName();
 						if (ImGui::Button(buttonName.c_str()))
 							shader->Reload();
+
+						ImGui::SameLine();
+
 						buttonName = "Edit##" + shader->GetName();
 						if (ImGui::Button(buttonName.c_str()))
 						{
-							m_TextEditor.SetText(Utils::ReadShaderFromFile(shader->GetPath()));
+							m_ShaderStruct = { shader, shader->GetPath(), Utils::ReadFromFile(shader->GetPath())};
+							m_TextEditor.SetText(m_ShaderStruct.Text);
 							m_EditShaderText = true;
 						}
 						ImGui::TreePop();
@@ -393,4 +423,34 @@ namespace RockEngine
 		ImGui::End();
 
 	}
+
+	void EditorLayer::SaveSceneAs()
+	{
+		auto& app = Application::Get();
+		auto filepath = app.SaveFileDialog("TheRock Scene (*.sctr)\0*.sctr\0");
+		if (!filepath.empty())
+		{
+			SceneSerializer serializer(m_EditorScene);
+			serializer.Serialize(filepath.string());
+
+			UpdateWindowTitle(Utils::GetFilename(filepath.string()));
+		}
+	}
+	
+	void EditorLayer::OpenScene()
+	{
+
+	}
+
+	void EditorLayer::OpenScene(const std::string& filepath)
+	{
+
+	}
+
+	void EditorLayer::SaveScene()
+	{
+
+	}
+
+
 }

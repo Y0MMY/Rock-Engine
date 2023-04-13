@@ -106,7 +106,7 @@ namespace RockEngine
 
 	void Renderer2D::EndScene()
 	{
-		uint32_t dataSize = (uint8_t*)(s_Data->LineVertexBufferBase + s_Data->LineIndexCount) - (uint8_t*)s_Data->LineVertexBufferBase;
+		auto dataSize = (uint8_t*)(s_Data->LineVertexBufferBase + s_Data->LineIndexCount) - (uint8_t*)s_Data->LineVertexBufferBase;
 
 		if (dataSize)
 		{

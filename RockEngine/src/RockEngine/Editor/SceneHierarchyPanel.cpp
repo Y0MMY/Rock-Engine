@@ -243,7 +243,7 @@ namespace RockEngine
 		
 		ImGuiTreeNodeFlags flags = (entity == m_Context->m_SelectedEntity ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-		bool opened = ImGui::TreeNodeEx((void*)(uint32_t)entity, flags, name);
+		bool opened = ImGui::TreeNodeEx((void*)entity, flags, name);
 
 		if (ImGui::IsItemClicked())
 		{
@@ -369,7 +369,7 @@ namespace RockEngine
 
 				if (ImGui::Button(buttonName.c_str(), { width, itemHeight }))
 				{
-					std::string file = Application::Get().OpenFile();
+					std::string file = Application::Get().OpenFileDialog();
 					if (!file.empty())
 						mc.Mesh = Ref<Mesh>::Create(file);
 				}
@@ -405,7 +405,7 @@ namespace RockEngine
 
 				if(ImGui::Button(buttonName.c_str(), { width, itemHeight }))
 				{
-					std::string file = Application::Get().OpenFile("*.hdr");
+					std::string file = Application::Get().OpenFileDialog("*.hdr");
 					if (!file.empty())
 					{
 						slc.SceneEnvironment = Environment::Load(file);

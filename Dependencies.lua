@@ -10,6 +10,7 @@ IncludeDir["glm"] = rootDir .. "glm"
 IncludeDir["stb"] = rootDir .. "stb/include"
 IncludeDir["assimp"] = rootDir .. "assimp/include"
 IncludeDir["yaml"] = rootDir .. "yaml-cpp/include"
+IncludeDir["texteditor"] = rootDir .. "ImGuiColorTextEdit"
 
 
 LinksDir = {}

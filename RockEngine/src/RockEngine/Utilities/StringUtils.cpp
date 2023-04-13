@@ -38,7 +38,7 @@ namespace RockEngine::Utils
 		return result;
 	}
 
-	auto ReadShaderFromFile(std::string_view path) -> std::string
+	auto ReadFromFile(std::string_view path) -> std::string
 	{
 		std::ifstream in(path.data(), std::ios::out);
 		std::string result;
@@ -58,6 +58,19 @@ namespace RockEngine::Utils
 		in.close();
 
 		return result;
+	}
+
+	void SaveToFile(std::string_view path, std::string_view source)
+	{
+		std::ofstream output(path.data());
+		output << (source);
+		output.close();
+	}
+
+	std::string GetExtension(const std::string& filename)
+	{
+		auto file = std::filesystem::path(filename);
+		return file.extension().string();
 	}
 
 }
