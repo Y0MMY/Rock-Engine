@@ -2,11 +2,63 @@
 #include "SceneSerializer.h"
 
 #include "RockEngine/Core/Math/Math.h"
+#include "RockEngine/Utilities/StringUtils.h"
 
 #include "Components.h"
 
 namespace YAML
 {
+	template<>
+	struct convert<glm::vec3>
+	{
+		static Node encode(const glm::vec3& rhs)
+		{
+			Node node;
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			node.push_back(rhs.z);
+			return node;
+		}
+
+		static bool decode(const Node& node, glm::vec3& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 3)
+				return false;
+
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
+			rhs.z = node[2].as<float>();
+			return true;
+		}
+
+	};
+
+	template<>
+	struct convert<glm::quat>
+	{
+		static Node encode(const glm::quat& rhs)
+		{
+			Node node;
+			node.push_back(rhs.w);
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			node.push_back(rhs.z);
+			return node;
+		}
+
+		static bool decode(const Node& node, glm::quat& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 4)
+				return false;
+
+			rhs.w = node[0].as<float>();
+			rhs.x = node[1].as<float>();
+			rhs.y = node[2].as<float>();
+			rhs.z = node[3].as<float>();
+			return true;
+		}
+	};
+
 	Emitter& operator<<(Emitter& out, const glm::vec3& v)
 	{
 		out << YAML::Flow;
@@ -58,16 +110,32 @@ namespace RockEngine
 
 			out << YAML::EndMap; // MeshComponent
 		}
-		out << YAML::EndMap; 
-	}
 
-	void SceneSerializer::SerializeEnvironment(YAML::Emitter& out, const Ref<Scene>& scene)
-	{
-		out << YAML::Key << "Environment"; 
-		out << YAML::Value;
-		out << YAML::BeginMap; // Environment
-		out << YAML::Key << "AssetPath" << YAML::Value << scene->GetEnvironment().FilePath;
-		out << YAML::EndMap; // Environment
+		if (entity->HasComponent<DirectionalLightComponent>())
+		{
+			out << YAML::Key << "DirectionalLightComponent";
+			out << YAML::BeginMap; // DirectionalLightComponent
+
+			auto& directionalLightComponent = entity->GetComponent<DirectionalLightComponent>();
+			out << YAML::Key << "Radiance" << YAML::Value << directionalLightComponent.Radiance;
+			out << YAML::Key << "LightSize" << YAML::Value << directionalLightComponent.LightSize;
+
+			out << YAML::EndMap; // DirectionalLightComponent
+		}
+
+		if (entity->HasComponent<SkyLightComponent>())
+		{
+			out << YAML::Key << "SkyLightComponent";
+			out << YAML::BeginMap; // SkyLightComponent
+
+			auto& skyLightComponent = entity->GetComponent<SkyLightComponent>();
+			out << YAML::Key << "EnvironmentAssetPath" << YAML::Value << skyLightComponent.SceneEnvironment.FilePath;
+			out << YAML::Key << "Intensity" << YAML::Value << skyLightComponent.Intensity;
+			out << YAML::Key << "Angle" << YAML::Value << skyLightComponent.Angle;
+
+			out << YAML::EndMap; // SkyLightComponent
+		}
+		out << YAML::EndMap; // Entity
 	}
 
 	SceneSerializer::SceneSerializer(const Ref<Scene>& scene)
@@ -83,8 +151,6 @@ namespace RockEngine
 		out << YAML::Key << "Scene";
 		out << YAML::Value << "Scene Name";
 
-		SerializeEnvironment(out, m_Scene);
-
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
 
@@ -99,6 +165,91 @@ namespace RockEngine
 
 		std::ofstream fout(filepath);
 		fout << out.c_str();
+	}
+
+	void SceneSerializer::Deserialize(const std::string& filepath)
+	{
+		std::ifstream stream(filepath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+
+		YAML::Node data = YAML::Load(strStream.str());
+		if (!data["Scene"])
+			return;
+
+		std::string sceneName = data["Scene"].as<std::string>();
+		RE_CORE_INFO("Deserializing scene '{0}'", sceneName);
+		m_Scene->SetName(sceneName);
+
+		auto entities = data["Entities"];
+		if (entities)
+		{
+			for (auto entity : entities)
+			{
+				uint64_t uuid = entity["Entity"].as<uint64_t>();
+
+				std::string name;
+				auto tagComponent = entity["TagComponent"];
+				if (tagComponent)
+					name = tagComponent["Tag"].as<std::string>();
+
+				RE_CORE_INFO("Deserialized entity with ID = {0}, name = {1}", uuid, name);
+				Entity* deserializedEntity = m_Scene->CreateEntityWithID(uuid, name);
+
+				auto transformComponent = entity["TransformComponent"];
+				if (transformComponent)
+				{
+					// Entities always have transforms
+					auto& transform = deserializedEntity->GetComponent<TransformComponent>();
+					transform.Translation = transformComponent["Position"].as<glm::vec3>();
+					auto& rotationNode = transformComponent["Rotation"];
+					// Rotations used to be stored as quaternions
+					if (rotationNode.size() == 4)
+					{
+						glm::quat rotation = transformComponent["Rotation"].as<glm::quat>();
+						transform.Rotation = glm::eulerAngles(rotation);
+					}
+					else
+					{
+						RE_CORE_ASSERT(rotationNode.size() == 3);
+						transform.Rotation = transformComponent["Rotation"].as<glm::vec3>();
+					}
+					transform.Scale = transformComponent["Scale"].as<glm::vec3>();
+				}
+
+				auto meshComponent = entity["MeshComponent"];
+				if (meshComponent)
+				{
+					std::string meshPath = meshComponent["AssetPath"].as<std::string>();
+					
+					if (!deserializedEntity->HasComponent<MeshComponent>())
+						deserializedEntity->AddComponent<MeshComponent>(Ref<Mesh>::Create(meshPath));
+
+					RE_CORE_INFO("  Mesh Asset Path: {0}", meshPath);
+				}
+
+				auto skyLightComponent = entity["SkyLightComponent"];
+				if (skyLightComponent)
+				{
+					auto& component = deserializedEntity->AddComponent<SkyLightComponent>();
+					std::string env = skyLightComponent["EnvironmentAssetPath"].as<std::string>();
+					if (!env.empty())
+					{
+						component.SceneEnvironment = Environment::Load(env);
+					}
+					component.Intensity = skyLightComponent["Intensity"].as<float>();
+					component.Angle = skyLightComponent["Angle"].as<float>();
+				}
+
+				auto directionalLightComponent = entity["DirectionalLightComponent"];
+				if (directionalLightComponent)
+				{
+					auto& component = deserializedEntity->AddComponent<DirectionalLightComponent>();
+					component.Radiance = directionalLightComponent["Radiance"].as<glm::vec3>();
+					component.LightSize = directionalLightComponent["LightSize"].as<float>();
+				}
+			}
+		}
 	}
 
 }

@@ -317,11 +317,11 @@ namespace RockEngine
 				glm::value_ptr(m_EditorCamera.GetProjectionMatrix()),
 				(ImGuizmo::OPERATION)m_GizmoType,
 				ImGuizmo::LOCAL,
-				glm::value_ptr(transform),
+				glm::value_ptr(selection.Mesh ? selection.Mesh->Transform : transform),
 				nullptr,
 				snap ? snapValues : nullptr);
 
-			if (ImGuizmo::IsUsing())
+			if (ImGuizmo::IsUsing() && selection.Mesh)
 			{
 				glm::vec3 translation, rotation, scale;
 				Math::DecomposeTransform(transform, translation, rotation, scale);
@@ -439,12 +439,25 @@ namespace RockEngine
 	
 	void EditorLayer::OpenScene()
 	{
-
+		auto& app = Application::Get();
+		std::string filepath = app.OpenFileDialog("TheRock Scene (*.sctr)\0*.sctr\0");
+		if (!filepath.empty())
+			OpenScene(filepath);
 	}
 
 	void EditorLayer::OpenScene(const std::string& filepath)
 	{
+		Ref<Scene> newScene = Ref<Scene>::Create("New Scene");
+		SceneSerializer serializer(newScene);
+		serializer.Deserialize(filepath);
 
+		m_EditorScene = newScene;
+
+		UpdateWindowTitle(Utils::GetFilename(filepath));
+		m_SceneHierarchyPanel->SetContext(m_EditorScene);
+		
+		m_EditorScene->SetSelected({});
+		m_EditorScene->m_SelectionContext.clear();
 	}
 
 	void EditorLayer::SaveScene()

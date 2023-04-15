@@ -5,6 +5,7 @@
 #include "imgui/imgui_internal.h"
 
 #include "RockEngine/Utilities/StringUtils.h"
+#include "RockEngine/Core/Math/Math.h"
 
 #include "RockEngine/Core/Application.h"
 #include "RockEngine/Renderer/Mesh.h"
@@ -29,16 +30,6 @@ namespace RockEngine
 		to[0][2] = from.c1; to[1][2] = from.c2; to[2][2] = from.c3; to[3][2] = from.c4;
 		to[0][3] = from.d1; to[1][3] = from.d2; to[2][3] = from.d3; to[3][3] = from.d4;
 		return to;
-	}
-
-	static std::tuple<glm::vec3, glm::quat, glm::vec3> GetTransformDecomposition(const glm::mat4& transform)
-	{
-		glm::vec3 scale, translation, skew;
-		glm::vec4 perspective;
-		glm::quat orientation;
-		glm::decompose(transform, scale, orientation, translation, skew, perspective);
-
-		return { translation, orientation, scale };
 	}
 
 	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f)
@@ -183,8 +174,8 @@ namespace RockEngine
 		ImGui::Begin("Scene Hierarchy");
 
 		uint32_t entityCount = 0, meshCount = 0;
-		auto& sceneEntities = m_Context->m_Entities;
-		for (Entity* entity : sceneEntities)
+		auto& sceneEntities = m_Context->GetAllEntities();
+		for (const auto& [key, entity] : sceneEntities)
 			DrawEntityNode(entity, entityCount, meshCount);
 
 		if (m_Context)
@@ -279,18 +270,7 @@ namespace RockEngine
 
 		if (ImGui::TreeNode(node->mName.C_Str()))
 		{
-			{
-				auto [translation, rotation, scale] = GetTransformDecomposition(transform);
-				ImGui::Text("World Transform");
-				ImGui::Text("  Translation: %.2f, %.2f, %.2f", translation.x, translation.y, translation.z);
-				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
-			}
-			{
-				auto [translation, rotation, scale] = GetTransformDecomposition(localTransform);
-				ImGui::Text("Local Transform");
-				ImGui::Text("  Translation: %.2f, %.2f, %.2f", translation.x, translation.y, translation.z);
-				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
-			}
+			
 
 			for (uint32_t i = 0; i < node->mNumChildren; i++)
 				MeshNodeHierarchy(mesh, node->mChildren[i], transform, level + 1);
@@ -337,13 +317,15 @@ namespace RockEngine
 			ImGui::EndPopup();
 		}
 
-		DrawComponent<TransformComponent>("Transform", entity, [](TransformComponent& component)
+		DrawComponent<TransformComponent>("Transform", entity, [=](TransformComponent& component) mutable
 			{
+				
 				DrawVec3Control("Translation", component.Translation);
 				glm::vec3 rotation = glm::degrees(component.Rotation);
 				DrawVec3Control("Rotation", rotation);
 				component.Rotation = glm::radians(rotation);
 				DrawVec3Control("Scale", component.Scale, 1.0f);
+	
 			});
 
 		DrawComponent<MeshComponent>("Mesh", entity, [=](MeshComponent& mc) mutable

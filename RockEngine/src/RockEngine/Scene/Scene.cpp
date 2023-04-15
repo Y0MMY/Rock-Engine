@@ -44,7 +44,7 @@ namespace RockEngine
 			m_LightEnvironment = LightEnvironment();
 			//auto lights = m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
 			uint32_t directionalLightIndex = 0;
-			for (auto& entity : m_Entities)
+			for (const auto& [key, entity] : m_EntityIDMap)
 			{
 				if (entity->HasComponent<DirectionalLightComponent>())
 				{
@@ -64,7 +64,7 @@ namespace RockEngine
 
 		{
 			m_Environment = Environment();
-			for (auto& entity : m_Entities)
+			for (const auto& [key, entity] : m_EntityIDMap)
 				if (entity->HasComponent<SkyLightComponent>())
 				{
 					auto skyLightComponent = entity->GetComponent<SkyLightComponent>();
@@ -78,7 +78,7 @@ namespace RockEngine
 		m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
 
 		SceneRenderer::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix(), 0.1f, 1000.0f, 45.0f });
-		for (auto& entity : m_Entities)
+		for (const auto& [key, entity] : m_EntityIDMap)
 		{
 			if (entity->HasComponent<MeshComponent>())
 			{
@@ -117,7 +117,8 @@ namespace RockEngine
 
 	void Scene::AddEntity(Entity* entity)
 	{
-		m_Entities.push_back(entity);
+		//m_Entities.push_back(entity);
+		m_EntityIDMap[entity->GetComponent<IDComponent>().ID] = entity;
 	}
 
 	Entity* Scene::CreateEntity(const std::string& name /* = "" */)
@@ -137,6 +138,32 @@ namespace RockEngine
 		AddEntity(entity);
 
 		//m_EntityIDMap[idComponent.ID] = entity;
+		return entity;
+	}
+
+	Entity* Scene::FindEntityByUUID(const UUID& uuid)
+	{
+		RE_CORE_ASSERT(m_EntityIDMap.find(uuid) == m_EntityIDMap.end());
+		return m_EntityIDMap[uuid];
+	}
+
+	Entity* Scene::CreateEntityWithID(UUID uuid, const std::string& name)
+	{
+		RE_CORE_ASSERT(m_EntityIDMap.find(uuid) == m_EntityIDMap.end());
+
+		Entity* entity = new Entity(name);
+		entity->m_Scene = this;
+		entity->m_Handle = m_EntitysCount;
+
+		auto& idComponent = entity->AddComponent<IDComponent>();
+		idComponent.ID = uuid;
+
+		if (!name.empty())
+			entity->AddComponent<TagComponent>(name);
+		entity->AddComponent<TransformComponent>();
+
+		m_EntitysCount++;
+		AddEntity(entity);
 		return entity;
 	}
 

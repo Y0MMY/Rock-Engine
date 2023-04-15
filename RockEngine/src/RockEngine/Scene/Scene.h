@@ -25,7 +25,7 @@ namespace RockEngine
 	};
 
 	class Entity;
-	using EntityMap = std::unordered_map<UUID, Entity>;
+	using EntityMap = std::unordered_map<UUID, Entity*>;
 
 	class Scene : public RefCounted
 	{
@@ -39,6 +39,9 @@ namespace RockEngine
 		void OnRenderRuntime(Timestep ts);
 		void OnRenderEditor(Timestep ts, const EditorCamera& editorCamera);
 
+		void SetName(const std::string& name) { m_DebugName = name; }
+		const std::string& GetName() const { return m_DebugName; }
+
 		void SetEnvironment(const Environment& environment);
 		void SetSkybox(const Ref<TextureCube> skybox);
 		void SetSelected(Entity* entity);
@@ -46,12 +49,14 @@ namespace RockEngine
 		float& GetSkyboxLod() { return m_SkyboxLod; }
 
 		const Environment& GetEnvironment() const { return m_Environment; }
+		const LightEnvironment& GetLight() const { return m_LightEnvironment; }
+		LightEnvironment& GetLight() { return m_LightEnvironment; }
 
 		template<typename T>
 		decltype(auto) GetAllEntitiesWith()
 		{
 			std::vector<Entity*> out;
-			for (auto& e : m_Entities)
+			for (const auto& [key, e] : m_EntityIDMap)
 				if (e->HasComponent<T>())
 					out.push_back(e);
 			return out;
@@ -59,11 +64,13 @@ namespace RockEngine
 
 		decltype(auto) GetAllEntities()
 		{
-			return m_Entities;
+			return m_EntityIDMap;
 		}
 
 		void AddEntity(Entity* entity);
 		Entity* CreateEntity(const std::string& name = "");
+		Entity* CreateEntityWithID(UUID uuid, const std::string& name = "");
+		Entity* FindEntityByUUID(const UUID& uuid);
 	private:
 		REVector m_Registry;
 		u32 m_EntitysCount = 0;
@@ -75,7 +82,8 @@ namespace RockEngine
 		};
 		std::vector<SelectedContext> m_SelectionContext;
 		std::string m_DebugName;
-		std::vector<Entity*> m_Entities;
+		//std::vector<Entity*> m_Entities;
+		EntityMap m_EntityIDMap;
 		Entity* m_SelectedEntity;
 
 		float m_LightMultiplier = 0.3f;

@@ -39,13 +39,6 @@ namespace RockEngine
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
 	private:
-		Ref<RockEngine::Shader> m_Shader;
-		Ref<RockEngine::Shader> m_PBRShader;
-		Ref<RockEngine::Shader> m_SimplePBRShader;
-		Ref<RockEngine::Shader> m_QuadShader;
-		Ref<RockEngine::Shader> m_HDRShader;
-		Ref<RockEngine::Mesh> m_Mesh;
-		Ref<RockEngine::Mesh> m_SphereMesh;
 		Entity* m_MeshEntity = nullptr;
 		glm::vec2 m_ViewportBounds[2];
 
@@ -87,26 +80,16 @@ namespace RockEngine
 
 		// Editor resources
 		Ref<Texture2D> m_CheckerboardTex;
-		Ref<Framebuffer> m_Framebuffer, m_FinalPresentBuffer;
-		Ref<VertexBuffer> m_VertexBuffer;
-		Ref<IndexBuffer> m_IndexBuffer;
-		Ref<TextureCube> m_EnvironmentCubeMap, m_EnvironmentIrradiance;
 
 		EditorCamera m_EditorCamera;
-
-		Ref<Pipeline> m_Pipeline;
 
 		float m_Exposure = 1.0f;
 		bool m_RadiancePrefilter = false;
 
 		float m_EnvMapRotation = 0.0f;
 
-		Ref<Material> m_MeshMaterial;
-
 		Ref<Scene> m_EditorScene;
 		std::unique_ptr<SceneHierarchyPanel> m_SceneHierarchyPanel;
-
-		glm::mat4* m_CurrentlySelectedTransform = nullptr;
 
 		int m_GizmoType = -1; // -1 = no gizmo
 
