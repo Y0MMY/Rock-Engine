@@ -14,22 +14,38 @@
 
 namespace RockEngine
 {
+	using LoadingFlags = ApplicationSpecification::ApplicationLoadFlags;
+
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const ApplicationProps& props)
+	Application::Application(const ApplicationSpecification& specification)
+		: m_Specification(specification)
 	{
 		s_Instance = this;
 
-		m_Window = Ref<Window>( Window::Create({ props.Name, props.WindowWidth, props.WindowHeight }));
+		WindowSpecification windowSpec;
+		windowSpec.Title = specification.Name;
+		windowSpec.Width = specification.WindowWidth; 
+		windowSpec.Height = specification.WindowHeight;
+		windowSpec.Decorated = (specification.LoadFlags & LoadingFlags::WindowDecorated);
+		m_Window = Ref<Window>( Window::Create(windowSpec));
+		m_Window->Init();
 		m_Window->SetEventCallback(BIND_FN(OnEvent));
 
-		m_ImGuiLayer = new ImGuiLayer("ImGuiLayer");
-		PushLayer(m_ImGuiLayer);
-
-		Renderer::Init();
+		if (specification.LoadFlags & LoadingFlags::EnableImGui)
+		{
+			m_ImGuiLayer = new ImGuiLayer("ImGuiLayer");
+			PushLayer(m_ImGuiLayer);
+		}
+		
+		Renderer::Init(); // TODO: This should be removed in launcher mode. Tempory we have a assets files in launcher's dirictory 
 		Renderer::WaitAndRender();
 
-		m_Window->Maximize();
+		if (specification.LoadFlags & LoadingFlags::StartMaximized)
+			m_Window->Maximize();
+		else m_Window->CenterWindow();
+
+		m_Window->SetResizeble(!(LoadingFlags::WindowResizeble & specification.LoadFlags));
 	}
 
 	Application::~Application()
@@ -56,7 +72,8 @@ namespace RockEngine
 					layer->OnUpdate(m_TimeStep);
 
 				Application* app = this;
-				Renderer::Submit([app]() { app->RenderImGui(); });
+				if(m_Specification.LoadFlags & LoadingFlags::EnableImGui)
+					Renderer::Submit([app]() { app->RenderImGui(); });
 
 				Renderer::WaitAndRender();
 			}

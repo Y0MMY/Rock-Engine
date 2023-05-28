@@ -13,15 +13,35 @@
 
 namespace RockEngine
 {
-	struct ApplicationProps {
-		uint32_t WindowWidth, WindowHeight;
-		std::string Name;
+	
+	struct ApplicationSpecification
+	{
+		std::string Name = "TheRock";
+		uint32_t WindowWidth = 1600, WindowHeight = 900;
+		uint32_t LoadFlags = 1;
+
+		enum ApplicationLoadFlags
+		{
+			None = BIT(0),
+			WindowDecorated = BIT(1),
+			StartMaximized = BIT(2),
+			WindowResizeble = BIT(3),
+			EnableImGui = BIT(4)
+		};
+
+		enum struct ApplicationMode
+		{
+			None = 0,
+			Debug,
+			Runtime,
+			Launcher
+		} Mode;
 	};
 
 	class Application
 	{
 	public:
-		Application(const ApplicationProps& props);
+		Application(const ApplicationSpecification& props);
 		virtual ~Application();
 
 		virtual void OnInit(){}
@@ -50,6 +70,8 @@ namespace RockEngine
 		bool OnWindowResize(WindowResizeEvent& e);
 		bool OnMouseMoved(MouseMovedEvent& e);
 	private:
+		ApplicationSpecification m_Specification;
+
 		Ref<Window> m_Window;
 		LayerStack m_LayerStack;
 		bool m_Running = true;
@@ -59,8 +81,9 @@ namespace RockEngine
 
 		Timestep m_TimeStep;
 		float m_LastFrameTime = 0.0f;
+
 	};
 
 	//Iml. by client
-	Application* CreateApplication();
+	Application* CreateApplication(int argc, char** argv);
 }

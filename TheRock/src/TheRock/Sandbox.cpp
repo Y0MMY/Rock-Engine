@@ -5,7 +5,7 @@
 class Sandbox : public RockEngine::Application
 {
 public:
-	Sandbox(const RockEngine::ApplicationProps& props)
+	Sandbox(const RockEngine::ApplicationSpecification& props)
 		: RockEngine::Application(props)
 	{}
 
@@ -15,11 +15,12 @@ public:
 	}
 };
 
-RockEngine::Application* RockEngine::CreateApplication()
+RockEngine::Application* RockEngine::CreateApplication(int argc, char** argv)
 {
-	RockEngine::ApplicationProps props;
-	props.WindowHeight = 1600;
-	props.WindowWidth = 1600;
-	props.Name = "Title";
-	return new Sandbox(props);
+	RockEngine::ApplicationSpecification specification;
+	specification.WindowHeight = 1600;
+	specification.WindowWidth = 1600;
+	specification.Name = "Title";
+	specification.LoadFlags = ApplicationSpecification::StartMaximized | ApplicationSpecification::EnableImGui;
+	return new Sandbox(specification);
 }

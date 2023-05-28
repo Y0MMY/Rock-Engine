@@ -14,13 +14,18 @@ namespace RockEngine
 
 	static bool s_GLFWInitialized = false;
 
-	WindowsWindow::WindowsWindow(const WindowProps& props)
+	WindowsWindow::WindowsWindow(const WindowSpecification& specification)
+		: m_Specification(specification)
 	{
-		m_Data.Title = props.Title;
-		m_Data.Width = props.Width;
-		m_Data.Height = props.Height;
+	}
 
-		RE_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
+	void WindowsWindow::Init()
+	{
+		m_Data.Title = m_Specification.Title;
+		m_Data.Width = m_Specification.Width;
+		m_Data.Height = m_Specification.Height;
+
+		RE_CORE_INFO("Creating window {0} ({1}, {2})", m_Specification.Title, m_Specification.Width, m_Specification.Height);
 
 		if (!s_GLFWInitialized)
 		{
@@ -32,7 +37,18 @@ namespace RockEngine
 			s_GLFWInitialized = true;
 		}
 
-		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+		if (!m_Specification.Decorated)
+		{
+			// This removes titlebar on all platforms
+			// and all of the native window effects on non-Windows platforms
+#ifdef RE_PLATFORM_WINDOWS
+			glfwWindowHint(GLFW_DECORATED, false);
+#else
+			glfwWindowHint(GLFW_DECORATED, false);
+#endif
+		}
+
+		m_Window = glfwCreateWindow((int)m_Specification.Width, (int)m_Specification.Height, m_Data.Title.c_str(), nullptr, nullptr);
 		glfwMakeContextCurrent(m_Window);
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		RE_CORE_ASSERT(status, "Failed to initialize Glad!");
@@ -152,5 +168,19 @@ namespace RockEngine
 	{
 		m_Data.Title = title;
 		glfwSetWindowTitle(m_Window, m_Data.Title.c_str());
+	}
+
+	void WindowsWindow::CenterWindow()
+	{
+		const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		int x = (mode->width / 2) - (m_Data.Width / 2);
+		int y = (mode->width / 2) - (m_Data.Width / 2);
+
+		glfwSetWindowPos(m_Window, x, y);
+	}
+
+	void WindowsWindow::SetResizeble(bool resizeble)
+	{
+		glfwSetWindowAttrib(m_Window, GLFW_RESIZABLE, resizeble ? GLFW_TRUE : GLFW_FALSE);
 	}
 }
