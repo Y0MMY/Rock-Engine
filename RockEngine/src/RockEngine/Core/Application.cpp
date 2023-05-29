@@ -85,53 +85,6 @@ namespace RockEngine
 		}
 	}
 
-	std::string Application::OpenFileDialog(const char* filter) const
-	{
-		OPENFILENAMEA ofn;       // common dialog box structure
-		CHAR szFile[260] = { 0 };       // if using TCHAR macros
-
-		// Initialize OPENFILENAME
-		ZeroMemory(&ofn, sizeof(OPENFILENAME));
-		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetNativeWindow());
-		ofn.lpstrFile = szFile;
-		ofn.nMaxFile = sizeof(szFile);
-		ofn.lpstrFilter = filter;
-		ofn.nFilterIndex = 1;
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-
-		if (GetOpenFileNameA(&ofn) == TRUE)
-		{
-			return ofn.lpstrFile;
-		}
-		return std::string();
-	}
-
-	std::filesystem::path Application::SaveFileDialog(const char* filter) const
-	{
-		OPENFILENAMEA ofn;       // common dialog box structure
-		CHAR szFile[260] = { 0 };       // if using TCHAR macros
-
-		// Initialize OPENFILENAME
-		ZeroMemory(&ofn, sizeof(OPENFILENAME));
-		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)Application::Get().GetWindow().GetNativeWindow());
-		ofn.lpstrFile = szFile;
-		ofn.nMaxFile = sizeof(szFile);
-		ofn.lpstrFilter = filter;
-		ofn.nFilterIndex = 1;
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-
-		if (GetSaveFileNameA(&ofn) == TRUE)
-		{
-			std::string fp = ofn.lpstrFile;
-			std::replace(fp.begin(), fp.end(), '\\', '/');
-			return std::filesystem::path(fp);
-		}
-
-		return std::filesystem::path();
-	}
-
 	void Application::PushLayer(Layer* layer)
 	{
 		m_LayerStack.PushLayer(layer);
@@ -147,13 +100,13 @@ namespace RockEngine
 	void Application::RenderImGui()
 	{
 		m_ImGuiLayer->Begin();
-		ImGui::Begin("Renderer");
+		/*ImGui::Begin("Renderer");
 		auto& caps = RendererAPI::GetCapabilities();
 		ImGui::Text("Vendor: %s", caps.Vendor.c_str());
 		ImGui::Text("Renderer: %s", caps.Renderer.c_str());
 		ImGui::Text("Version: %s", caps.Version.c_str());
 		ImGui::Text("Frame Time: %.2fms\n", m_TimeStep.GetMilliseconds());
-		ImGui::End();
+		ImGui::End();*/
 
 		for (Layer* layer : m_LayerStack)
 			layer->OnImGuiRender();

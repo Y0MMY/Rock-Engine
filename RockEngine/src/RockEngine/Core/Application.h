@@ -55,9 +55,6 @@ namespace RockEngine
 		void PushLayer(Layer* layer);
 		void PopLayer(Layer* layer);
 
-		std::string OpenFileDialog(const char* filter = "All\0*.*\0") const;
-		std::filesystem::path SaveFileDialog(const char* filter = "All\0*.*\0") const; // TODO: Move to Windows File System
-
 		virtual void Run();
 
 		inline Window& GetWindow() { return *m_Window; }

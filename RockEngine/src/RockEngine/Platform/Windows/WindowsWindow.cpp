@@ -174,7 +174,7 @@ namespace RockEngine
 	{
 		const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		int x = (mode->width / 2) - (m_Data.Width / 2);
-		int y = (mode->width / 2) - (m_Data.Width / 2);
+		int y = (mode->height / 2) - (m_Data.Height / 2);
 
 		glfwSetWindowPos(m_Window, x, y);
 	}

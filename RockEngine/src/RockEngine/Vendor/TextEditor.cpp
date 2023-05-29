@@ -4,7 +4,7 @@
 #include <regex>
 #include <cmath>
 
-#include "TextEditor.h"
+#include "TextEditor/TextEditor.h"
 
 // TODO
 // - multiline comments vs single-line: latter is blocking start of a ML

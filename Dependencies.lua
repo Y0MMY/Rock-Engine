@@ -15,4 +15,4 @@ IncludeDir["texteditor"] = rootDir .. "ImGuiColorTextEdit"
 
 LinksDir = {}
 LinksDir["ImGui"] = rootDir .. "imgui/build/bin/Debug-windows-x86_64/ImGui/ImGui.lib"
-LinksDir["assimp"] = rootDir .. "assimp/bin/Debug/assimp-vc141-mtd.lib"
+LinksDir["assimp"] = rootDir .. "assimp/bin/Debug/assimp-vc142-mtd.lib"
