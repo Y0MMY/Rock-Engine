@@ -1,8 +1,6 @@
 Scene: Scene Name
-Environment:
-  AssetPath: ""
 Entities:
-  - Entity: 10543282777517637913
+  - Entity: 3180515428195599773
     TagComponent:
       Tag: Mesh
     TransformComponent:
@@ -11,17 +9,24 @@ Entities:
       Scale: [1, 1, 1]
     MeshComponent:
       AssetPath: D:\Programming\C++\RockEngine\TheRock\assets\meshes\TestScene.fbx
-  - Entity: 11252350046089420906
+  - Entity: 13456131509643744593
     TagComponent:
       Tag: Sky Light
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [1.39626336, 0.17453292, 0]
       Scale: [1, 1, 1]
-  - Entity: 8774352689782766274
+    SkyLightComponent:
+      EnvironmentAssetPath: D:\Programming\C++\RockEngine\TheRock\assets\env\birchwood_4k.hdr
+      Intensity: 1
+      Angle: 0
+  - Entity: 1860228945068287744
     TagComponent:
       Tag: Directional Light
     TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
+      Position: [0, 0, -10.3999996]
+      Rotation: [0, 1.15540791, 0]
       Scale: [1, 1, 1]
+    DirectionalLightComponent:
+      Radiance: [1, 1, 1]
+      LightSize: 0.5

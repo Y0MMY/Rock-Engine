@@ -11,6 +11,18 @@ public:
 
 	void OnInit() override
 	{
+		auto dllHandle = LoadLibraryA("TestTemplate.dll");
+		if (dllHandle != NULL)
+		{
+			typedef RockEngine::Layer* (*ScriptClass)();
+			ScriptClass LoadScriptClass = (ScriptClass)GetProcAddress(dllHandle, "CreateInstanceApplication");
+			if (LoadScriptClass != NULL)
+			{
+				auto object = LoadScriptClass();
+				PushLayer(object);
+			}
+		}
+		//FreeLibrary(dllHandle);
 		PushLayer(new RockEngine::EditorLayer());
 	}
 };

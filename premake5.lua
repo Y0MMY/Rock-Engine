@@ -6,7 +6,6 @@ workspace "RockEngine"
 	{ 
 		"Debug", 
         "Release",
-        "Dist"
     }
     
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -80,6 +79,59 @@ project "RockEngine"
 		}
 					
     filter "configurations:Debug"
+        defines "RE_DEBUG"
+		runtime "Debug"
+        symbols "On"
+
+project "RockEngine-ScriptCore"
+    location "RockEngine-ScriptCore"
+    kind "StaticLib"
+    language "C++"
+    
+	targetdir ("build/bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("build/bin-int/" .. outputdir .. "/%{prj.name}")
+
+	dependson 
+	{ 
+		"RockEngine"
+    }
+    
+	files 
+	{ 
+		"%{prj.name}/src/**.h", 
+		"%{prj.name}/src/**.c", 
+		"%{prj.name}/src/**.hpp", 
+		"%{prj.name}/src/**.cpp" 
+	}
+    
+	includedirs 
+	{
+        "%{prj.name}/src",
+        "RockEngine/src",
+        "RockEngine/vendor",
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.yaml}",
+    }
+	
+	filter "system:windows"
+        cppdialect "C++17"
+        staticruntime "On"
+        
+		links 
+		{ 
+			"RockEngine",
+			"%{LinksDir.ImGui}",
+			"%{LinksDir.assimp}"
+
+		}
+        
+		defines 
+		{ 
+            "RE_PLATFORM_WINDOWS",
+			"RE_SCRIPT_CORE"
+		}
+    
+   filter "configurations:Debug"
         defines "RE_DEBUG"
 		runtime "Debug"
         symbols "On"

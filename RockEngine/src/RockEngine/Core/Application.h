@@ -11,6 +11,8 @@
 #include "RockEngine/Core/Events/ApplicationEvent.h"
 #include "RockEngine/Core/Events/MouseEvent.h"
 
+#include <filesystem>
+
 namespace RockEngine
 {
 	struct ApplicationProps {

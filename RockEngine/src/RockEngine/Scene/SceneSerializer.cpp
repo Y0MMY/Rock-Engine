@@ -102,13 +102,16 @@ namespace RockEngine
 
 		if (entity->HasComponent<MeshComponent>())
 		{
-			out << YAML::Key << "MeshComponent";
-			out << YAML::BeginMap; // MeshComponent
-
 			auto mesh = entity->GetComponent<MeshComponent>().Mesh;
-			out << YAML::Key << "AssetPath" << YAML::Value << mesh->GetFilePath();
+			if (mesh)
+			{
+				out << YAML::Key << "MeshComponent";
+				out << YAML::BeginMap; // MeshComponent
 
-			out << YAML::EndMap; // MeshComponent
+				out << YAML::Key << "AssetPath" << YAML::Value << mesh->GetFilePath();
+
+				out << YAML::EndMap; // MeshComponent
+			}
 		}
 
 		if (entity->HasComponent<DirectionalLightComponent>())
