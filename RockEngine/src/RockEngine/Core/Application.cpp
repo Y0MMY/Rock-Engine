@@ -12,6 +12,8 @@
 #include <GLFW/glfw3native.h>
 #include <Windows.h>
 
+#include "RockEngine/Script/ScriptEngine.h"
+
 namespace RockEngine
 {
 	Application* Application::s_Instance = nullptr;
@@ -20,12 +22,13 @@ namespace RockEngine
 	{
 		s_Instance = this;
 
-		m_Window = Ref<Window>( Window::Create({ props.Name, props.WindowWidth, props.WindowHeight }));
+		m_Window = Ref<Window>(Window::Create({ props.Name, props.WindowWidth, props.WindowHeight }));
 		m_Window->SetEventCallback(BIND_FN(OnEvent));
 
 		m_ImGuiLayer = new ImGuiLayer("ImGuiLayer");
 		PushLayer(m_ImGuiLayer);
 
+		ScriptEngine::Init();
 		Renderer::Init();
 		Renderer::WaitAndRender();
 
@@ -48,6 +51,7 @@ namespace RockEngine
 	void Application::Run()
 	{
 		OnInit();
+		//PushLayer(object);
 		while (m_Running)
 		{
 			if (!m_Minimized)

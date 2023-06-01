@@ -2,6 +2,8 @@
 #include "RockEngine/EntryPoint.h"
 #include "EditorLayer.h"
 
+#include "RockEngine/Script/ScriptEngine.h"
+
 class Sandbox : public RockEngine::Application
 {
 public:
@@ -11,18 +13,11 @@ public:
 
 	void OnInit() override
 	{
-		auto dllHandle = LoadLibraryA("TestTemplate.dll");
-		if (dllHandle != NULL)
-		{
-			typedef RockEngine::Layer* (*ScriptClass)();
-			ScriptClass LoadScriptClass = (ScriptClass)GetProcAddress(dllHandle, "CreateInstanceApplication");
-			if (LoadScriptClass != NULL)
-			{
-				auto object = LoadScriptClass();
-				PushLayer(object);
-			}
-		}
-		//FreeLibrary(dllHandle);
+		typedef RockEngine::Layer* (*ScriptClass)();
+		RockEngine::REInstance createmethod = RockEngine::ScriptEngine::GetInstanceObject();
+		ScriptClass objecti = (ScriptClass)createmethod;
+		auto object = objecti();
+		PushLayer(object);
 		PushLayer(new RockEngine::EditorLayer());
 	}
 };

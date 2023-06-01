@@ -120,9 +120,11 @@ project "RockEngine-ScriptCore"
 		links 
 		{ 
 			"RockEngine",
-			"%{LinksDir.ImGui}",
-			"%{LinksDir.assimp}"
+		}
 
+		postbuildcommands
+		{
+			'{COPY} build/bin'..outputdir..'/RockEngine-ScriptCore/RockEngine-ScriptCore.lib" "TheRock/Resources/TestTemplateProject/Assets/libs'
 		}
         
 		defines 
@@ -153,10 +155,10 @@ project "TheRock"
     
 	files 
 	{ 
-		"%{prj.name}/**.h", 
-		"%{prj.name}/**.c", 
-		"%{prj.name}/**.hpp", 
-		"%{prj.name}/**.cpp" 
+		"%{prj.name}/src/**.h", 
+		"%{prj.name}/src/**.c", 
+		"%{prj.name}/src/**.hpp", 
+		"%{prj.name}/src/**.cpp" 
 	}
     
 	includedirs 
