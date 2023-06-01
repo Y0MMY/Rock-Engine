@@ -5,6 +5,7 @@
 #include "imgui/imgui_internal.h"
 
 #include "RockEngine/Utilities/StringUtils.h"
+#include "RockEngine/Utilities/FileSystem.h"
 #include "RockEngine/Core/Math/Math.h"
 
 #include "RockEngine/Core/Application.h"
@@ -351,7 +352,7 @@ namespace RockEngine
 
 				if (ImGui::Button(buttonName.c_str(), { width, itemHeight }))
 				{
-					std::string file = Application::Get().OpenFileDialog();
+					std::string file = Utils::FileSystem::OpenFileDialog().string();
 					if (!file.empty())
 						mc.Mesh = Ref<Mesh>::Create(file);
 				}
@@ -387,7 +388,7 @@ namespace RockEngine
 
 				if(ImGui::Button(buttonName.c_str(), { width, itemHeight }))
 				{
-					std::string file = Application::Get().OpenFileDialog("*.hdr");
+					std::string file = Utils::FileSystem::OpenFileDialog("*.hdr").string();
 					if (!file.empty())
 					{
 						slc.SceneEnvironment = Environment::Load(file);

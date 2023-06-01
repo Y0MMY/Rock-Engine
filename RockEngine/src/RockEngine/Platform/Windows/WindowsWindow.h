@@ -9,9 +9,14 @@ namespace RockEngine
 {
 	class WindowsWindow : public Window {
 	public:
-		WindowsWindow(const WindowProps& props);
+		WindowsWindow(const WindowSpecification& specification);
+		virtual ~WindowsWindow() override {}
+
+		void Init() override;
 
 		void OnUpdate() override;
+
+		void CenterWindow() override;
 
 		// Windows attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
@@ -22,6 +27,7 @@ namespace RockEngine
 		virtual void SetVSync(bool enabled) override;
 		virtual bool IsVSync() const override;
 
+		virtual void SetResizeble(bool resizeble) override;
 		virtual void Maximize() override;
 
 		virtual const std::string& GetTitle() const override { return m_Data.Title; }
@@ -43,5 +49,6 @@ namespace RockEngine
 
 		WindowData m_Data;
 		GLFWwindow* m_Window;
+		WindowSpecification m_Specification;
 	};
 }

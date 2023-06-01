@@ -1,9 +1,9 @@
 [submodule "RockEngine/vendor/GLFW"]
 	path = RockEngine/vendor/GLFW
 	url = https://github.com/y0mmy/glfw.git
-[submodule "RockEngine/vendor/imgui"]
-	path = RockEngine/vendor/imgui
-	url = ttps://github.com/y0mmy/imgui.git
 [submodule "RockEngine/vendor/glm"]
 	path = RockEngine/vendor/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "RockEngine/vendor/imgui"]
+	path = RockEngine/vendor/imgui
+	url = https://github.com/Y0MMY/imgui

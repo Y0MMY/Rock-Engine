@@ -1,11 +1,11 @@
 #pragma once
 
-extern RockEngine::Application* RockEngine::CreateApplication();
+extern RockEngine::Application* RockEngine::CreateApplication(int argc, char** argv);
 
 int main(int arc, char** argv)
 {
 	RockEngine::InitializeCore();
-	auto app = RockEngine::CreateApplication();
+	auto app = RockEngine::CreateApplication(arc, argv);
 	app->Run();
 	delete app;
 	return 0;

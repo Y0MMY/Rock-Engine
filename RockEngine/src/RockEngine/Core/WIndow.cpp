@@ -4,7 +4,7 @@
 
 namespace RockEngine
 {
-	Window* Window::Create(const WindowProps& props /* = WindowProps() */)
+	Window* Window::Create(const WindowSpecification& props /* = WindowProps() */)
 	{
 		return new WindowsWindow(props);
 	}

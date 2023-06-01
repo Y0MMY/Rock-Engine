@@ -8,6 +8,7 @@
 #include "RockEngine/Core/Application.h"
 #include <GLFW/glfw3.h>
 
+#include "ImGuiFonts.h"
 
 namespace RockEngine {
 
@@ -40,15 +41,26 @@ namespace RockEngine {
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
-		ImFont* pFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-		io.FontDefault = io.Fonts->Fonts.back();
+		UI::Fonts::Add("Bold", "Resources/Fonts/Roboto/Roboto-Bold.ttf", 18.0f);
+		UI::Fonts::Add("Large", "Resources/Fonts/Roboto/Roboto-Regular.ttf", 30.0f);
+		UI::Fonts::Add("Default", "Resources/Fonts/Roboto/Roboto-SemiMedium.ttf", 15.0f, true);
 
 		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();
 		//ImGui::StyleColorsClassic();
 
-		// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+		Application& app = Application::Get();
+		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
+
+		// Setup Platform/Renderer bindings
+		ImGui_ImplGlfw_InitForOpenGL(window, true);
+		ImGui_ImplOpenGL3_Init("#version 430");
+	}
+
+	void ImGuiLayer::SetDarkTheme()
+	{
 		ImGuiStyle& style = ImGui::GetStyle();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			style.WindowRounding = 0.0f;
@@ -153,13 +165,6 @@ namespace RockEngine {
 		colors[ImGuiCol_NavHighlight] = ImVec4(0.260f, 0.590f, 0.980f, 1.00f);
 		colors[ImGuiCol_NavWindowingHighlight] = ImVec4(0.270f, 0.530f, 0.930f, 1.00f);
 		colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.200f, 0.200f, 0.200f, 0.200f);
-
-		Application& app = Application::Get();
-		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
-
-		// Setup Platform/Renderer bindings
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 430");
 	}
 
 	void ImGuiLayer::OnDetach()
@@ -197,7 +202,7 @@ namespace RockEngine {
 
 	void ImGuiLayer::OnImGuiRender()
 	{
-		
+
 	}
 
 

@@ -242,7 +242,6 @@ namespace RockEngine
 				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
 				if (hasAlbedoMap)
 				{
-					// TODO: Temp - this should be handled by Hazel's filesystem
 					std::filesystem::path path = filename;
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
@@ -270,7 +269,6 @@ namespace RockEngine
 				mi->Set("u_NormalTexToggle", 0.0f);
 				if (aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &aiTexPath) == AI_SUCCESS)
 				{
-					// TODO: Temp - this should be handled by Hazel's filesystem
 					std::filesystem::path path = filename;
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
@@ -295,7 +293,6 @@ namespace RockEngine
 				// mi->Set("u_RoughnessTexToggle", 0.0f);
 				if (aiMaterial->GetTexture(aiTextureType_SHININESS, 0, &aiTexPath) == AI_SUCCESS)
 				{
-					// TODO: Temp - this should be handled by Hazel's filesystem
 					std::filesystem::path path = filename;
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
@@ -331,7 +328,6 @@ namespace RockEngine
 						{
 							metalnessTextureFound = true;
 
-							// TODO: Temp - this should be handled by Hazel's filesystem
 							std::filesystem::path path = filename;
 							auto parentPath = path.parent_path();
 							parentPath /= str;
@@ -431,7 +427,6 @@ namespace RockEngine
 				m_AnimationTime = fmod(m_AnimationTime, (float)m_Scene->mAnimations[0]->mDuration);
 			}
 
-			// TODO: We only need to recalc bones if rendering has been requested at the current animation frame
 			BoneTransform(m_AnimationTime);
 		}
 	}

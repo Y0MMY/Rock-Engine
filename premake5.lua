@@ -66,7 +66,7 @@ project "RockEngine"
 	filter "files:RockEngine/vendor/yaml-cpp/src/**.cpp"
 	flags { "NoPCH" }
 
-	filter "files:RockEngine/vendor/ImGuiColorTextEdit/**.cpp"
+	filter "files:RockEngine/src/RockEngine/vendor/TextEditor/**.cpp"
 	flags { "NoPCH" }
 
 	filter "system:windows"
@@ -189,5 +189,58 @@ project "TheRock"
         defines "RE_DEBUG"
 		runtime "Debug"
         symbols "On"
+
+project "TheRockLauncher"	
+		location "TheRockLauncher"
+		kind "ConsoleApp"
+		language "C++"
+
+		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+		links
+		{
+			"RockEngine"
+		}
+
+		files 
+		{ 
+			"%{prj.name}/src/**.h", 
+			"%{prj.name}/src/**.c", 
+			"%{prj.name}/src/**.hpp", 
+			"%{prj.name}/src/**.cpp" 
+		}
+
+		includedirs 
+		{
+			"%{prj.name}/src",
+			"RockEngine/src",
+			"RockEngine/vendor",
+			"%{IncludeDir.GLFW}",
+			"%{IncludeDir.ImGui}",
+			"%{IncludeDir.glm}",
+			"%{IncludeDir.yaml}",
+		}
+
+	filter "system:windows"
+		systemversion "latest"
+		cppdialect "C++17"
+		staticruntime "on"
+
+		defines 
+		{ 
+			"RE_PLATFORM_WINDOWS"
+		}
+
+	filter "configurations:Debug"
+		symbols "on"
+
+		defines 
+		{
+			"RE_DEBUG",
+		}
+
+	filter "configurations:Release"
+		optimize "on"
 group ""   
   

@@ -14,22 +14,38 @@
 
 namespace RockEngine
 {
+	using LoadingFlags = ApplicationSpecification::ApplicationLoadFlags;
+
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const ApplicationProps& props)
+	Application::Application(const ApplicationSpecification& specification)
+		: m_Specification(specification)
 	{
 		s_Instance = this;
 
-		m_Window = Ref<Window>( Window::Create({ props.Name, props.WindowWidth, props.WindowHeight }));
+		WindowSpecification windowSpec;
+		windowSpec.Title = specification.Name;
+		windowSpec.Width = specification.WindowWidth; 
+		windowSpec.Height = specification.WindowHeight;
+		windowSpec.Decorated = (specification.LoadFlags & LoadingFlags::WindowDecorated);
+		m_Window = Ref<Window>( Window::Create(windowSpec));
+		m_Window->Init();
 		m_Window->SetEventCallback(BIND_FN(OnEvent));
 
-		m_ImGuiLayer = new ImGuiLayer("ImGuiLayer");
-		PushLayer(m_ImGuiLayer);
-
-		Renderer::Init();
+		if (specification.LoadFlags & LoadingFlags::EnableImGui)
+		{
+			m_ImGuiLayer = new ImGuiLayer("ImGuiLayer");
+			PushLayer(m_ImGuiLayer);
+		}
+		
+		Renderer::Init(); // TODO: This should be removed in launcher mode. Tempory we have a assets files in launcher's dirictory 
 		Renderer::WaitAndRender();
 
-		m_Window->Maximize();
+		if (specification.LoadFlags & LoadingFlags::StartMaximized)
+			m_Window->Maximize();
+		else m_Window->CenterWindow();
+
+		m_Window->SetResizeble(!(LoadingFlags::WindowResizeble & specification.LoadFlags));
 	}
 
 	Application::~Application()
@@ -56,7 +72,8 @@ namespace RockEngine
 					layer->OnUpdate(m_TimeStep);
 
 				Application* app = this;
-				Renderer::Submit([app]() { app->RenderImGui(); });
+				if(m_Specification.LoadFlags & LoadingFlags::EnableImGui)
+					Renderer::Submit([app]() { app->RenderImGui(); });
 
 				Renderer::WaitAndRender();
 			}
@@ -66,53 +83,6 @@ namespace RockEngine
 			m_TimeStep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 		}
-	}
-
-	std::string Application::OpenFileDialog(const char* filter) const
-	{
-		OPENFILENAMEA ofn;       // common dialog box structure
-		CHAR szFile[260] = { 0 };       // if using TCHAR macros
-
-		// Initialize OPENFILENAME
-		ZeroMemory(&ofn, sizeof(OPENFILENAME));
-		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetNativeWindow());
-		ofn.lpstrFile = szFile;
-		ofn.nMaxFile = sizeof(szFile);
-		ofn.lpstrFilter = filter;
-		ofn.nFilterIndex = 1;
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-
-		if (GetOpenFileNameA(&ofn) == TRUE)
-		{
-			return ofn.lpstrFile;
-		}
-		return std::string();
-	}
-
-	std::filesystem::path Application::SaveFileDialog(const char* filter) const
-	{
-		OPENFILENAMEA ofn;       // common dialog box structure
-		CHAR szFile[260] = { 0 };       // if using TCHAR macros
-
-		// Initialize OPENFILENAME
-		ZeroMemory(&ofn, sizeof(OPENFILENAME));
-		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)Application::Get().GetWindow().GetNativeWindow());
-		ofn.lpstrFile = szFile;
-		ofn.nMaxFile = sizeof(szFile);
-		ofn.lpstrFilter = filter;
-		ofn.nFilterIndex = 1;
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-
-		if (GetSaveFileNameA(&ofn) == TRUE)
-		{
-			std::string fp = ofn.lpstrFile;
-			std::replace(fp.begin(), fp.end(), '\\', '/');
-			return std::filesystem::path(fp);
-		}
-
-		return std::filesystem::path();
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -130,13 +100,13 @@ namespace RockEngine
 	void Application::RenderImGui()
 	{
 		m_ImGuiLayer->Begin();
-		ImGui::Begin("Renderer");
+		/*ImGui::Begin("Renderer");
 		auto& caps = RendererAPI::GetCapabilities();
 		ImGui::Text("Vendor: %s", caps.Vendor.c_str());
 		ImGui::Text("Renderer: %s", caps.Renderer.c_str());
 		ImGui::Text("Version: %s", caps.Version.c_str());
 		ImGui::Text("Frame Time: %.2fms\n", m_TimeStep.GetMilliseconds());
-		ImGui::End();
+		ImGui::End();*/
 
 		for (Layer* layer : m_LayerStack)
 			layer->OnImGuiRender();

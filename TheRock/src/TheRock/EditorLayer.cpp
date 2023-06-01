@@ -214,18 +214,17 @@ namespace RockEngine
 		static bool p_open = true;
 
 		static bool opt_fullscreen_persistant = true;
-		static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_None;
 		bool opt_fullscreen = opt_fullscreen_persistant;
 
 		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 		// because it would be confusing to have two docking targets within each others.
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar ;
 		if (opt_fullscreen)
 		{
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
 			ImGui::SetNextWindowPos(viewport->Pos);
 			ImGui::SetNextWindowSize(viewport->Size);
-			ImGui::SetNextWindowViewport(viewport->ID);
+			//ImGui::SetNextWindowViewport(viewport->ID);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
@@ -244,11 +243,11 @@ namespace RockEngine
 
 		// Dockspace
 		ImGuiIO& io = ImGui::GetIO();
-		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		/*if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), opt_flags);
-		}
+		}*/
 
 
 		if (ImGui::BeginMenuBar())
@@ -426,7 +425,7 @@ namespace RockEngine
 
 	void EditorLayer::SaveSceneAs()
 	{
-		auto& app = Application::Get();
+		/*auto& app = Application::Get();
 		auto filepath = app.SaveFileDialog("TheRock Scene (*.sctr)\0*.sctr\0");
 		if (!filepath.empty())
 		{
@@ -434,15 +433,15 @@ namespace RockEngine
 			serializer.Serialize(filepath.string());
 
 			UpdateWindowTitle(Utils::GetFilename(filepath.string()));
-		}
+		}*/
 	}
 	
 	void EditorLayer::OpenScene()
-	{
+	{/*
 		auto& app = Application::Get();
 		std::string filepath = app.OpenFileDialog("TheRock Scene (*.sctr)\0*.sctr\0");
 		if (!filepath.empty())
-			OpenScene(filepath);
+			OpenScene(filepath);*/
 	}
 
 	void EditorLayer::OpenScene(const std::string& filepath)
