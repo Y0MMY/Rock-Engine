@@ -24,12 +24,30 @@ namespace RockEngine
 		Depth = DEPTH24STENCIL8
 	};
 
-	struct FramebufferSpec
+	struct FramebufferTextureSpecification
+	{
+		FramebufferTextureSpecification() = default;
+		FramebufferTextureSpecification(FramebufferTextureFormat format) : TextureFormat(format) {}
+
+		FramebufferTextureFormat TextureFormat;
+		// TODO: filtering/wrap
+	};
+
+	struct FramebufferAttachmentSpecification
+	{
+		FramebufferAttachmentSpecification() = default;
+		FramebufferAttachmentSpecification(const std::initializer_list<FramebufferTextureSpecification>& attachments)
+			: Attachments(attachments) {}
+
+		std::vector<FramebufferTextureSpecification> Attachments;
+	};
+
+	struct FramebufferSpecification
 	{
 		uint32_t Width = 1280;
 		uint32_t Height = 720;
 		glm::vec4 ClearColor;
-
+		FramebufferAttachmentSpecification Attachments;
 		u32 Samples = 1;
 
 		FramebufferTextureFormat Format;
@@ -45,23 +63,23 @@ namespace RockEngine
 	public:
 		virtual ~Framebuffer() {}
 
-		virtual const FramebufferSpec& GetSpecification() const = 0;
+		virtual const FramebufferSpecification& GetSpecification() const = 0;
 
 		virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) = 0;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
-		virtual void BindTexture(u32 slot = 0) const = 0;
+		virtual void BindTexture(size_t attachmentIndex = 0, size_t slot = 0) const = 0;
 
 		virtual RendererID GetRendererID() const = 0;
-		virtual RendererID GetColorAttachmentRendererID() const = 0;
+		virtual RendererID GetColorAttachmentRendererID(size_t index = 0) const = 0;
 		virtual RendererID GetDepthAttachmentRendererID() const = 0;
 
 		virtual u32 GetWidth() const = 0;
 		virtual u32 GetHeight() const = 0;
 
-		static Ref<Framebuffer> Create(const FramebufferSpec& spec);
+		static Ref<Framebuffer> Create(const FramebufferSpecification& spec);
 	};
 
 	class FramebufferPool final

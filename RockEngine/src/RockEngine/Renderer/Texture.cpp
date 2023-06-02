@@ -15,7 +15,7 @@ namespace RockEngine
 		return nullptr;
 	}
 
-	Ref<Texture2D> Texture2D::Create(const std::string& path, bool srgb)
+	Ref<Texture2D> Texture2D::Create(const std::filesystem::path& path, bool srgb)
 	{
 		switch (RendererAPI::Current())
 		{
@@ -37,7 +37,7 @@ namespace RockEngine
 		return nullptr;
 	}
 
-	Ref<TextureCube> TextureCube::Create(const std::string& path)
+	Ref<TextureCube> TextureCube::Create(const std::filesystem::path& path)
 	{
 		switch (RendererAPI::Current())
 		{

@@ -16,3 +16,8 @@
 #include "RockEngine/Core/Log.h"
 #include "RockEngine/Core/Core.h"
 #include "RockEngine/Core/Input.h"
+
+// Memory
+#include "RockEngine/Memory/Ref.h"
+#include "RockEngine/Memory/Unique.h"
+#include "RockEngine/Memory/Buffer.h"

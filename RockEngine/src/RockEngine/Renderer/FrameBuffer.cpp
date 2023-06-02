@@ -5,7 +5,7 @@
 
 namespace RockEngine
 {
-	Ref<Framebuffer> Framebuffer::Create(const FramebufferSpec& spec)
+	Ref<Framebuffer> Framebuffer::Create(const FramebufferSpecification& spec)
 	{
 		Ref<Framebuffer> result = nullptr;
 

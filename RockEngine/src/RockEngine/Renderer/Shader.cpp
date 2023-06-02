@@ -6,7 +6,7 @@ namespace RockEngine
 {
 	std::vector<Ref<Shader>> Shader::s_AllShaders;
 
-	Ref<Shader> Shader::Create(const std::string& path)
+	Ref<Shader> Shader::Create(const std::filesystem::path& path)
 	{
 		Ref<Shader> shader = nullptr;
 		switch (RendererAPI::Current())
@@ -25,14 +25,14 @@ namespace RockEngine
 		m_Shaders[name] = shader;
 	}
 
-	void ShaderLibrary::Load(const std::string& filepath)
+	void ShaderLibrary::Load(const std::filesystem::path& filepath)
 	{
 		auto shader = Ref<Shader>(Shader::Create(filepath));
 		auto& name = shader->GetName();
 		RE_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end(),"");
 		m_Shaders[name] = shader;
 	}
-	void ShaderLibrary::Load(const std::string& name, const std::string& filepath)
+	void ShaderLibrary::Load(const std::string& name, const std::filesystem::path& filepath)
 	{
 		RE_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end(),"");
 		m_Shaders[name] = Ref<Shader>(Shader::Create(filepath));

@@ -11,9 +11,9 @@ namespace RockEngine
 	public:
 		SceneSerializer(const Ref<Scene>& scene);
 
-		void Serialize(const std::string& filepath);
+		void Serialize(const std::filesystem::path& filepath);
 
-		void Deserialize(const std::string& filepath);
+		void Deserialize(const std::filesystem::path& filepath);
 	private:
 		void SerializeEntity(YAML::Emitter& out, Entity* entity);
 		void SerializeEnvironment(YAML::Emitter& out, const Ref<Scene>& scene);

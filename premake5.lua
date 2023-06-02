@@ -63,6 +63,8 @@ project "RockEngine"
 		"imgui"
 	}
     
+	filter "files:RockEngine/src/RockEngine/Vendor/**.cpp"
+	flags { "NoPCH" }
 	filter "files:RockEngine/vendor/yaml-cpp/src/**.cpp"
 	flags { "NoPCH" }
 
@@ -82,60 +84,6 @@ project "RockEngine"
         defines "RE_DEBUG"
 		runtime "Debug"
         symbols "On"
-
-project "RockEngine-ScriptCore"
-    location "RockEngine-ScriptCore"
-    kind "StaticLib"
-    language "C++"
-    
-	targetdir ("build/bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("build/bin-int/" .. outputdir .. "/%{prj.name}")
-
-	dependson 
-	{ 
-		"RockEngine"
-    }
-    
-	files 
-	{ 
-		"%{prj.name}/src/**.h", 
-		"%{prj.name}/src/**.c", 
-		"%{prj.name}/src/**.hpp", 
-		"%{prj.name}/src/**.cpp" 
-	}
-    
-	includedirs 
-	{
-        "%{prj.name}/src",
-        "RockEngine/src",
-        "RockEngine/vendor",
-		"%{IncludeDir.glm}",
-		"%{IncludeDir.yaml}",
-    }
-	
-	filter "system:windows"
-        cppdialect "C++17"
-        staticruntime "On"
-        
-		links 
-		{ 
-			"RockEngine",
-			"%{LinksDir.ImGui}",
-			"%{LinksDir.assimp}"
-
-		}
-        
-		defines 
-		{ 
-            "RE_PLATFORM_WINDOWS",
-			"RE_SCRIPT_CORE"
-		}
-    
-   filter "configurations:Debug"
-        defines "RE_DEBUG"
-		runtime "Debug"
-        symbols "On"
-group ""
 
 group "Tools"
 project "TheRock"
@@ -195,8 +143,8 @@ project "TheRockLauncher"
 		kind "ConsoleApp"
 		language "C++"
 
-		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+		targetdir ("build/bin/" .. outputdir .. "/%{prj.name}")
+		objdir ("build/bin-int/" .. outputdir .. "/%{prj.name}")
 
 		links
 		{

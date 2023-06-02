@@ -36,4 +36,14 @@ namespace RockEngine::Utils
 		return fs::exists(fs::path(filepath));
 	}
 
+	std::string FileSystem::GetFileName(const std::filesystem::path& filepath)
+	{
+		return filepath.filename().string();
+	}
+
+	std::string FileSystem::GetFileName(const std::string& filepath)
+	{
+		return GetFileName(std::filesystem::path(filepath).string());
+	}
+
 }

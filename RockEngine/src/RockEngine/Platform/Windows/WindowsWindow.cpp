@@ -25,7 +25,7 @@ namespace RockEngine
 		m_Data.Width = m_Specification.Width;
 		m_Data.Height = m_Specification.Height;
 
-		RE_CORE_INFO("Creating window {0} ({1}, {2})", m_Specification.Title, m_Specification.Width, m_Specification.Height);
+		RE_CORE_INFO_TAG("Application", "Creating window {0} ({1}, {2})", m_Specification.Title, m_Specification.Width, m_Specification.Height);
 
 		if (!s_GLFWInitialized)
 		{

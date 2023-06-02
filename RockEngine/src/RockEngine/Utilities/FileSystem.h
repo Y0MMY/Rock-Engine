@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RockEngine/Core/Buffer.h"
+#include "RockEngine/Memory/Buffer.h"
 
 //NOTE: This is a workaround for Microsoft macros so that 
 //we can use names like CreateDirectory, etc
@@ -22,6 +22,8 @@ namespace RockEngine::Utils
 	class FileSystem
 	{
 	public:
+		static std::string GetFileName(const std::filesystem::path& filepath);
+		static std::string GetFileName(const std::string& filepath);
 		static bool CreateDirectory(const std::filesystem::path& directory);
 		static bool CreateDirectory(const std::string& directory);
 		static bool Exists(const std::filesystem::path& filepath);

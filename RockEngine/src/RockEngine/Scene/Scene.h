@@ -5,6 +5,7 @@
 #include "RockEngine/Renderer/Mesh.h"
 #include "RockEngine/Renderer/SceneEnvironment.h"
 
+#include "Components.h"
 #include <RockEngine/Core/REVector.h>
 
 namespace RockEngine

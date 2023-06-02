@@ -38,8 +38,9 @@ namespace RockEngine {
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
-		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+		io.ConfigViewportsNoAutoMerge = true;
+		io.ConfigViewportsNoTaskBarIcon = true;
+
 
 		UI::Fonts::Add("Bold", "Resources/Fonts/Roboto/Roboto-Bold.ttf", 18.0f);
 		UI::Fonts::Add("Large", "Resources/Fonts/Roboto/Roboto-Regular.ttf", 30.0f);
@@ -49,12 +50,23 @@ namespace RockEngine {
 		ImGui::StyleColorsDark();
 		//ImGui::StyleColorsClassic();
 
+		// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+		ImGuiStyle& style = ImGui::GetStyle();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
+		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.15f, 0.15f, 0.15f, style.Colors[ImGuiCol_WindowBg].w);
+
 		Application& app = Application::Get();
 		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
 
 		// Setup Platform/Renderer bindings
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 430");
+		ImGui_ImplOpenGL3_Init("#version 410");
+
+		SetDarkTheme();
 	}
 
 	void ImGuiLayer::SetDarkTheme()

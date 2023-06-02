@@ -11,18 +11,6 @@ public:
 
 	void OnInit() override
 	{
-		auto dllHandle = LoadLibraryA("TestTemplate.dll");
-		if (dllHandle != NULL)
-		{
-			typedef RockEngine::Layer* (*ScriptClass)();
-			ScriptClass LoadScriptClass = (ScriptClass)GetProcAddress(dllHandle, "CreateInstanceApplication");
-			if (LoadScriptClass != NULL)
-			{
-				auto object = LoadScriptClass();
-				PushLayer(object);
-			}
-		}
-		//FreeLibrary(dllHandle);
 		PushLayer(new RockEngine::EditorLayer());
 	}
 };
@@ -33,6 +21,6 @@ RockEngine::Application* RockEngine::CreateApplication(int argc, char** argv)
 	specification.WindowHeight = 1600;
 	specification.WindowWidth = 1600;
 	specification.Name = "Title";
-	specification.LoadFlags = ApplicationSpecification::StartMaximized | ApplicationSpecification::EnableImGui;
+	specification.LoadFlags = ApplicationSpecification::WindowDecorated | ApplicationSpecification::EnableImGui | ApplicationSpecification::StartMaximized;
 	return new Sandbox(specification);
 }

@@ -49,21 +49,21 @@ namespace RockEngine
 		m_ImageData.Allocate(width * height * Utils::GetImageFormatBPP(m_Format));
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool srgb)
+	OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path, bool srgb)
 		: m_FilePath(path)
 	{
 		int width, height, channels;
-		if (stbi_is_hdr(path.c_str()))
+		if (stbi_is_hdr(path.string().c_str()))
 		{
-			RE_CORE_INFO("Loading HDR texture {0}, srgb={1}", path, srgb);
-			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 0);
+			RE_CORE_INFO("Loading HDR texture {0}, srgb={1}", path.string(), srgb);
+			m_ImageData.Data = (byte*)stbi_loadf(path.string().c_str(), &width, &height, &channels, 0);
 			m_IsHDR = true;
 			m_Format = TextureFormat::Float16;
 		}
 		else
 		{
-			RE_CORE_INFO("Loading texture {0}, srgb={1}", path, srgb);
-			m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, srgb ? STBI_rgb : STBI_rgb_alpha);
+			RE_CORE_INFO("Loading texture {0}, srgb={1}", path.string(), srgb);
+			m_ImageData.Data = stbi_load(path.string().c_str(), &width, &height, &channels, srgb ? STBI_rgb : STBI_rgb_alpha);
 			RE_CORE_ASSERT(m_ImageData.Data, "Could not read image!");
 			m_Format = TextureFormat::RGBA;
 		}
@@ -163,12 +163,12 @@ namespace RockEngine
 
 	// TODO: Revisit this, as currently env maps are being loaded as equirectangular 2D images
 	//       so this is an old path
-	OpenGLTextureCube::OpenGLTextureCube(const std::string& path)
+	OpenGLTextureCube::OpenGLTextureCube(const std::filesystem::path& path)
 		: m_FilePath(path)
 	{
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(false);
-		m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb);
+		m_ImageData.Data = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb);
 
 		m_Width = width;
 		m_Height = height;

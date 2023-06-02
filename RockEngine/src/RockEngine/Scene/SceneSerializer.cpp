@@ -108,7 +108,7 @@ namespace RockEngine
 				out << YAML::Key << "MeshComponent";
 				out << YAML::BeginMap; // MeshComponent
 
-				out << YAML::Key << "AssetPath" << YAML::Value << mesh->GetFilePath();
+				out << YAML::Key << "AssetPath" << YAML::Value << mesh->GetFilePath().string();
 
 				out << YAML::EndMap; // MeshComponent
 			}
@@ -147,7 +147,7 @@ namespace RockEngine
 
 	}
 		
-	void SceneSerializer::Serialize(const std::string& filepath)
+	void SceneSerializer::Serialize(const std::filesystem::path& filepath)
 	{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -170,7 +170,7 @@ namespace RockEngine
 		fout << out.c_str();
 	}
 
-	void SceneSerializer::Deserialize(const std::string& filepath)
+	void SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 	{
 		std::ifstream stream(filepath);
 		std::stringstream strStream;

@@ -1,12 +1,13 @@
 #pragma once
 
 #include <memory>
-#include "Ref.h"
+#include "RockEngine/Memory/Ref.h"
 
 #define BUILD_ID "v0.1a"
 
 namespace RockEngine
 {
+	using namespace Memory;
 	void InitializeCore();
 }
 

@@ -15,6 +15,7 @@ namespace RockEngine
 
 	void LayerStack::PushLayer(Layer* layer)
 	{
+		RE_CORE_INFO("Adding Layer {}", layer->GetName());
 		m_Layers.push_back(layer);
 	}
 

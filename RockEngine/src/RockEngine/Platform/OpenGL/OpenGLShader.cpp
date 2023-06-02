@@ -3,6 +3,7 @@
 
 #include "RockEngine/Renderer/Renderer.h"
 
+#include "RockEngine/Utilities/FileSystem.h"
 #include "RockEngine/Utilities/StringUtils.h"
 
 namespace RockEngine
@@ -34,11 +35,11 @@ namespace RockEngine
 		return GL_NONE;
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& filepath)
+	OpenGLShader::OpenGLShader(const std::filesystem::path& filepath)
 		: m_AssetPath(filepath)
 	{
 		ReadShaderFromFile(filepath);
-		m_Name = Utils::GetFilename(filepath);
+		m_Name = Utils::FileSystem::GetFileName(filepath);
 		Reload();
 	}
 
@@ -76,10 +77,9 @@ namespace RockEngine
 		m_Loaded = true;
 	}
 
-	const std::string OpenGLShader::ReadShaderFromFile(const std::string& filepath)
+	const std::string OpenGLShader::ReadShaderFromFile(const std::filesystem::path& filepath)
 	{
-	
-		return Utils::ReadFromFile(filepath.c_str());
+		return Utils::ReadFromFile(filepath);
 	}
 	void OpenGLShader::Bind() const {
 		Renderer::Submit([=]()
@@ -313,7 +313,7 @@ namespace RockEngine
 				std::vector<GLchar> infoLog(maxLength);
 				glGetShaderInfoLog(shaderRendererID, maxLength, &maxLength, &infoLog[0]);
 
-				RE_CORE_ERROR("Shader compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
+				RE_CORE_ERROR_TAG("Renderer", "Shader compilation failed ({0}):\n{1}", m_AssetPath.string(), &infoLog[0]);
 
 				// We don't need the shader anymore.
 				glDeleteShader(shaderRendererID);
@@ -339,7 +339,7 @@ namespace RockEngine
 			// The maxLength includes the NULL character
 			std::vector<GLchar> infoLog(maxLength);
 			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-			RE_CORE_ERROR("Shader linking failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
+			RE_CORE_ERROR("Shader linking failed ({0}):\n{1}", m_AssetPath.string(), &infoLog[0]);
 
 			// We don't need the program anymore.
 			glDeleteProgram(program);
@@ -470,7 +470,7 @@ namespace RockEngine
 				resource->m_Register = sampler;
 				if (location != -1)
 					UploadUniformInt(location, sampler);
-
+					
 				sampler++;
 			}
 			else if (resource->GetCount() > 1)
@@ -686,10 +686,10 @@ namespace RockEngine
 			UploadUniformMat3(uniform->GetLocation(), *(glm::mat3*)&buffer.Data[offset]);
 			break;
 		case OpenGLShaderUniformDecl::Type::MAT4:
-			UploadUniformMat4(uniform->GetLocation(), *(glm::mat4*)&buffer.Data[offset]);
+			UploadUniformMat4(uniform->GetLocation(), *(glm::mat4*)&(buffer.Data[offset]));
 			break;
 			case OpenGLShaderUniformDecl::Type::STRUCT:
-				UploadUniformStruct(uniform, buffer.Data, offset);
+				UploadUniformStruct(uniform, (byte*)buffer.Data, offset);
 			break;
 		default:
 			RE_CORE_ASSERT(false, "Unknown uniform type!");

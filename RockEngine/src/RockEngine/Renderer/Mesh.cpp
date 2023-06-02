@@ -17,6 +17,7 @@
 #include <assimp/LogStream.hpp>
 
 #include "RockEngine/Utilities/StringUtils.h"
+#include "RockEngine/Utilities/FileSystem.h"
 
 #include <RockEngine/Renderer/Renderer.h>
 
@@ -62,17 +63,17 @@ namespace RockEngine
 
 	static Assimp::Importer importer;
 
-	Mesh::Mesh(const std::string& filename)
+	Mesh::Mesh(const std::filesystem::path& filename)
 		: m_FilePath(filename)
 	{
-		m_Name = Utils::GetFilename(filename);
+		m_Name = Utils::FileSystem::GetFileName(filename);
 		LogStream::Initialize();
 
-		RE_CORE_INFO("Loading mesh: {0}", filename.c_str());
+		RE_CORE_INFO("Loading mesh: {0}", filename.string().c_str());
 
-		const aiScene* scene = importer.ReadFile(filename, s_MeshImportFlags);
+		const aiScene* scene = importer.ReadFile(filename.string(), s_MeshImportFlags);
 		if (!scene || !scene->HasMeshes())
-			RE_CORE_ERROR("Failed to load mesh file: {0}", filename);
+			RE_CORE_ERROR("Failed to load mesh file: {0}", filename.string());
 
 		m_Scene = scene;
 

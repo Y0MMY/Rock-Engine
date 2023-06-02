@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RockEngine/Renderer/VertexBuffer.h"
-#include <RockEngine/Core/Buffer.h>
+#include <RockEngine/Memory/Buffer.h>
 
 namespace RockEngine
 {

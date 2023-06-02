@@ -28,9 +28,18 @@ namespace RockEngine
 
 		Ref<Texture2D> BRDFLUT;
 		Ref<Shader> CompositeShader;
+		Ref<Shader> ShadowMapShader;
 
+		Ref<RenderPass> ShadowMapRenderPass[4];
 		Ref<RenderPass> GeoPass;
 		Ref<RenderPass> CompositePass;
+
+		// Shadows Map
+		struct ShadowMapSettings
+		{
+			RendererID ShadowMapSampler;
+		};
+		ShadowMapSettings s_ShadowMap;
 
 		struct DrawCommand
 		{
@@ -40,6 +49,7 @@ namespace RockEngine
 		};
 		std::vector<DrawCommand> DrawList;
 		std::vector<DrawCommand> SelectedMeshDrawList;
+		std::vector<DrawCommand> ShadowPassDrawList;
 		SceneRendererOptions Options;
 
 		// Grid
@@ -53,29 +63,64 @@ namespace RockEngine
 	void SceneRenderer::Init()
 	{
 		s_Data = new SceneRendererData();
-		FramebufferSpec geoFramebufferSpec;
-		geoFramebufferSpec.Width = 1280;
-		geoFramebufferSpec.Height = 720;
-		geoFramebufferSpec.Format = FramebufferTextureFormat::RGBA16F;
-		geoFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+
+		////////////////////////////////////////////////////////////////////////////////////
+
+		FramebufferSpecification geoFramebufferSpec;
+		geoFramebufferSpec.Attachments = { FramebufferTextureFormat::RGBA16F, FramebufferTextureFormat::RGBA16F, FramebufferTextureFormat::Depth };
 		geoFramebufferSpec.Samples = 8;
+		geoFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 
 		RenderPassSpecification geoRenderPassSpec;
 		geoRenderPassSpec.TargetFramebuffer = Framebuffer::Create(geoFramebufferSpec);
 		s_Data->GeoPass = RenderPass::Create(geoRenderPassSpec);
 
-		FramebufferSpec compFramebufferSpec;
-		compFramebufferSpec.Width = 1280;
-		compFramebufferSpec.Height = 720;
-		compFramebufferSpec.Format = FramebufferTextureFormat::RGBA8;
-		compFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+		////////////////////////////////////////////////////////////////////////////////////
+
+		FramebufferSpecification compFramebufferSpec;
+		compFramebufferSpec.Attachments = { FramebufferTextureFormat::RGBA8 };
+		compFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 
 		RenderPassSpecification compRenderPassSpec;
 		compRenderPassSpec.TargetFramebuffer = Framebuffer::Create(compFramebufferSpec);
 		s_Data->CompositePass = RenderPass::Create(compRenderPassSpec);
 
+		////////////////////////////////////////////////////////////////////////////////////
+
+		//Shadows
+		FramebufferSpecification shadowFrameBufferSpec;
+		shadowFrameBufferSpec.Attachments = { FramebufferTextureFormat::DEPTH32F };
+		shadowFrameBufferSpec.Width = 2000;
+		shadowFrameBufferSpec.Width = 2000;
+		shadowFrameBufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+
+
+		RenderPassSpecification shadowRenderPassSpec;
+
+		for (int i = 0; i < 4; i++)
+		{
+			shadowRenderPassSpec.TargetFramebuffer = Framebuffer::Create(shadowFrameBufferSpec);
+			s_Data->ShadowMapRenderPass[i] = RenderPass::Create(shadowRenderPassSpec);
+		}
+
+		Renderer::Submit([]()
+			{
+				glGenSamplers(1, &s_Data->s_ShadowMap.ShadowMapSampler);
+
+				// Setup the shadowmap depth sampler
+				glSamplerParameteri(s_Data->s_ShadowMap.ShadowMapSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glSamplerParameteri(s_Data->s_ShadowMap.ShadowMapSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glSamplerParameteri(s_Data->s_ShadowMap.ShadowMapSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glSamplerParameteri(s_Data->s_ShadowMap.ShadowMapSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+			});
+		////////////////////////////////////////////////////////////////////////////////////
+
 		s_Data->BRDFLUT = Texture2D::Create("assets/textures/BRDF_LUT.tga");
 		s_Data->CompositeShader = Shader::Create("assets/shaders/SceneComposite.glsl");
+
+		// Shadows 
+		s_Data->ShadowMapShader = Shader::Create("assets/shaders/ShadowMap.glsl");
 
 		// Outline
 		auto outlineShader = Shader::Create("assets/shaders/Outline.glsl");
@@ -130,32 +175,23 @@ namespace RockEngine
 		return s_Data->Options;
 	}
 
-	/*void SceneRenderer::SubmitEntity(Entity* entity)
-	{
-		if (!entity->HasComponent<RockEngine::MeshComponent>())
-			return;
-		auto mesh = entity->GetComponent<RockEngine::MeshComponent>().Mesh;
-		if (!mesh)
-			return;
-		auto& a = mesh->GetMaterial();
-		s_Data->DrawList.push_back({ mesh, mesh->GetMaterial(), entity->Transform().GetTransform() });
-	}*/
-
 	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance> overrideMaterial)
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data->DrawList.push_back({ mesh, overrideMaterial, transform });
+		s_Data->ShadowPassDrawList.push_back({mesh, overrideMaterial, transform });
 	}
 
 	void SceneRenderer::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform)
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data->SelectedMeshDrawList.push_back({ mesh, nullptr, transform });
+		s_Data->ShadowPassDrawList.push_back({ mesh, nullptr, transform });
 	}
 
 	static Ref<Shader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
 
-	std::pair<Ref<TextureCube>, Ref<TextureCube>> SceneRenderer::CreateEnvironmentMap(const std::string& filepath)
+	std::pair<Ref<TextureCube>, Ref<TextureCube>> SceneRenderer::CreateEnvironmentMap(const std::filesystem::path& filepath)
 	{
 		const uint32_t cubemapSize = 2048;
 		const uint32_t irradianceMapSize = 32;
@@ -229,6 +265,7 @@ namespace RockEngine
 	uint32_t SceneRenderer::GetFinalColorBufferRendererID()
 	{
 		return s_Data->CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID();
+		return 0;
 	}
 
 	Ref<RenderPass> SceneRenderer::GetFinalRenderPass()
@@ -401,4 +438,8 @@ namespace RockEngine
 		Renderer::EndRenderPass();
 	}
 
+	void SceneRenderer::ShadowMapPass()
+	{
+		
+	}
 }

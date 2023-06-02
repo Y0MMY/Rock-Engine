@@ -11,6 +11,7 @@
 
 namespace RockEngine
 {
+	using namespace Memory;
 	class EditorLayer : public Layer
 	{
 	public:
@@ -23,7 +24,7 @@ namespace RockEngine
 
 		void NewScene();
 		void OpenScene();
-		void OpenScene(const std::string& filepath);
+		void OpenScene(const std::filesystem::path& filepath);
 		void SaveScene();
 		void SaveSceneAs();
 
@@ -106,7 +107,7 @@ namespace RockEngine
 		struct ShaderFileProps
 		{
 			Ref<RockEngine::Shader> Shader;
-			std::string_view Path;
+			std::filesystem::path Path;
 			std::string Text;
 		};
 

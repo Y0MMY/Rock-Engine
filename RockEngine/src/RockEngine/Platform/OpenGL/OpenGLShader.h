@@ -10,14 +10,14 @@ namespace RockEngine
 	class OpenGLShader : public Shader
 	{
 	public:
-		OpenGLShader(const std::string& filepath);
+		OpenGLShader(const std::filesystem::path& filepath);
 
 		virtual void Bind() const override;
 
 		virtual RendererID GetRendererID() const override { return m_RendererID; }
 
 		virtual const std::string& GetName() const override { return m_Name; }
-		virtual const std::string& GetPath() const override { return m_AssetPath; }
+		virtual const std::filesystem::path& GetPath() const override { return m_AssetPath; }
 
 		virtual void UploadUniformBuffer(const UniformBufferBase& uniformBuffer) override {}
 
@@ -76,7 +76,7 @@ namespace RockEngine
 		}
 
 	private:
-		const std::string ReadShaderFromFile(const std::string& filepath);
+		const std::string ReadShaderFromFile(const std::filesystem::path& filepath);
 		void Reload();
 		void Load(const std::string& source);
 		void Parse();
@@ -95,7 +95,7 @@ namespace RockEngine
 		//void UploadUniformFloat4(const std::string& name, const glm::vec4& values);
 	private:
 		RendererID m_RendererID = 0;
-		std::string m_AssetPath;
+		std::filesystem::path m_AssetPath;
 		std::string m_Name;
 
 		bool m_IsCompute = false;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RockEngine/Renderer/Texture.h"
-#include "RockEngine/Core/Buffer.h"
+#include "RockEngine/Memory/Buffer.h"
 
 namespace RockEngine
 {
@@ -9,7 +9,7 @@ namespace RockEngine
 
 	public:
 		OpenGLTexture2D(TextureFormat format, u32 width, u32 height, TextureWrap wrap);
-		OpenGLTexture2D(const std::string& path, bool srgb = false);
+		OpenGLTexture2D(const std::filesystem::path& path, bool srgb = false);
 
 		virtual ~OpenGLTexture2D() override;
 
@@ -31,7 +31,7 @@ namespace RockEngine
 			return m_RendererID == ((OpenGLTexture2D&)other).m_RendererID;
 		}
 
-		virtual const std::string& GetPath() const override { return m_FilePath; }
+		virtual const std::filesystem::path& GetPath() const override { return m_FilePath; }
 	private:
 		Buffer m_ImageData;
 		RendererID m_RendererID = 0;
@@ -41,14 +41,14 @@ namespace RockEngine
 
 		bool m_IsHDR = false;
 		bool m_Loaded = false;
-		std::string m_FilePath;
+		const std::filesystem::path m_FilePath;
 	};
 
 	class OpenGLTextureCube : public TextureCube
 	{
 	public:
 		OpenGLTextureCube(TextureFormat format, uint32_t width, uint32_t height);
-		OpenGLTextureCube(const std::string& path);
+		OpenGLTextureCube(const std::filesystem::path& path);
 		virtual ~OpenGLTextureCube() override;
 
 		virtual void Bind(u32 slot) const override;
@@ -69,7 +69,7 @@ namespace RockEngine
 			return m_RendererID == ((OpenGLTextureCube&)other).m_RendererID;
 		}
 
-		virtual const std::string& GetPath() const override { return m_FilePath; }
+		virtual const std::filesystem::path& GetPath() const override { return m_FilePath; }
 	private:
 		RendererID m_RendererID;
 		TextureFormat m_Format;
@@ -77,6 +77,6 @@ namespace RockEngine
 
 		Buffer m_ImageData;
 
-		std::string m_FilePath;
+		const std::filesystem::path m_FilePath;
 	};
 }

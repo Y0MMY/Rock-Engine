@@ -43,8 +43,6 @@ namespace Launcher
     void LauncherLayer::OnAttach()
     {
 		RockEngine::ImGuiLayer::SetDarkTheme();
-
-        m_RecentsTexture = RockEngine::Texture2D::Create("Resources/Textures/OpenRecent.jpg");
     }
 
 	void LauncherLayer::OnImGuiRender()

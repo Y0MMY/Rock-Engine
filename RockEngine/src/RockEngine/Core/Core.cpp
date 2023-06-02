@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Core.h"
 
-#define BUILD_ID "v0.1a"
+#define BUILD_ID "v0.9a"
 
 namespace RockEngine
 {

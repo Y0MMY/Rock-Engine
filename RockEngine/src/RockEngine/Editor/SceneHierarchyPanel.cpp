@@ -392,7 +392,7 @@ namespace RockEngine
 					if (!file.empty())
 					{
 						slc.SceneEnvironment = Environment::Load(file);
-						slc.Name = Utils::GetFilename(file);
+						slc.Name = Utils::FileSystem::GetFileName(file);
 					}
 				}
 

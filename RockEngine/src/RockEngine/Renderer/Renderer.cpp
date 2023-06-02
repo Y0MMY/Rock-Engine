@@ -28,6 +28,18 @@ namespace RockEngine
 	RenderCommandQueue* s_CommandQueue = nullptr;
 	RendererData* s_Data = nullptr;
 
+	static RendererAPI* s_RendererAPI = nullptr;
+	static RendererAPI* InitRendererAPI()
+	{
+		switch (RendererAPI::Current())
+		{
+		//case RendererAPIType::OpenGL: return new OpenGLRenderer();
+		}
+		RE_CORE_ASSERT(false, "Unknown RendererAPI");
+		return nullptr;
+	}
+
+
 	void Renderer::BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear)
 	{
 		RE_CORE_ASSERT(renderPass, "Render pass cannot be null!");
@@ -89,6 +101,23 @@ namespace RockEngine
 		}
 	}
 
+	void Renderer::SubmitMeshWithShader(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Shader> shader)
+	{
+		shader->Bind();
+		mesh->m_VertexBuffer->Bind();
+		mesh->m_IndexBuffer->Bind();
+
+		for (Submesh submesh : mesh->m_Submeshes)
+		{
+			shader->SetMat4("u_Transform", transform * submesh.Transform);
+			Renderer::Submit([submesh]()
+				{
+					glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount,
+					GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+				});
+		}
+	}
+
 	void Renderer::DrawAABB(const Math::AABB& aabb, const glm::mat4& transform, const glm::vec4& color /*= glm::vec4(1.0f)*/)
 	{
 		glm::vec4 min = { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f };
@@ -145,6 +174,9 @@ namespace RockEngine
 
 		s_Data->m_ShaderLibrary->Load("assets/shaders/ShaderPBR.glsl");
 		s_Data->m_ShaderLibrary->Load("assets/shaders/ShaderPBRAnim.glsl");
+		s_Data->m_ShaderLibrary->Load("assets/shaders/EnvironmentMipFilter.glsl");
+		s_Data->m_ShaderLibrary->Load("assets/shaders/EquirectangularToCubeMap.glsl");
+		s_Data->m_ShaderLibrary->Load("assets/shaders/EnvironmentIrradiance.glsl");
 		SceneRenderer::Init();
 
 		// Create fullscreen quad
@@ -193,14 +225,20 @@ namespace RockEngine
 	void Renderer::SubmitQuad(Ref<MaterialInstance> material, const glm::mat4& transform)
 	{
 		bool depthTest = true;
+		bool cullFace = true;
 		if (material)
 		{
 			material->Bind();
 			depthTest = material->GetFlag(MaterialFlag::DepthTest);
-
+			cullFace = !material->GetFlag(MaterialFlag::TwoSided);
 			auto shader = material->GetShader();
 			shader->SetMat4("u_Transform", transform);
 		}
+
+		if (cullFace)
+			Renderer::Submit([]() { glEnable(GL_CULL_FACE); });
+		else
+			Renderer::Submit([]() { glDisable(GL_CULL_FACE); });
 
 		s_Data->m_FullscreenQuadVertexBuffer->Bind();
 		s_Data->m_FullscreenQuadPipeline->Bind();
@@ -211,11 +249,18 @@ namespace RockEngine
 	void Renderer::SubmitFullscreenQuad(Ref<MaterialInstance> material)
 	{
 		bool depthTest = true;
+		bool cullFace = true;
 		if (material)
 		{
 			material->Bind();
+			cullFace = !material->GetFlag(MaterialFlag::TwoSided);
 			depthTest = material->GetFlag(MaterialFlag::DepthTest);
 		}
+
+		if (cullFace)
+			Renderer::Submit([]() { glEnable(GL_CULL_FACE); });
+		else
+			Renderer::Submit([]() { glDisable(GL_CULL_FACE); });
 
 		s_Data->m_FullscreenQuadVertexBuffer->Bind();
 		s_Data->m_FullscreenQuadPipeline->Bind();

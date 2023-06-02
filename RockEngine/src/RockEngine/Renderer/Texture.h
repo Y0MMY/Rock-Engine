@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RockEngine/Core/Buffer.h"
+#include "RockEngine/Memory/Buffer.h"
 #include "RockEngine/Renderer/RendererAPI.h"
 
 #include <glm/glm.hpp>
@@ -62,20 +62,20 @@ namespace RockEngine
 
 		virtual bool operator==(const Texture& other) const = 0;
 
-		virtual const std::string& GetPath() const = 0;
+		virtual const std::filesystem::path& GetPath() const = 0;
 	};
 
 	class Texture2D : public Texture
 	{
 	public:
 		static Ref<Texture2D> Create(TextureFormat format, u32 width, u32 height, TextureWrap = TextureWrap::Clamp);
-		static Ref<Texture2D> Create(const std::string& path, bool srgb = false);
+		static Ref<Texture2D> Create(const std::filesystem::path& path, bool srgb = false);
 	};
 
 	class TextureCube : public Texture
 	{
 	public:
 		static Ref<TextureCube> Create(TextureFormat format, u32 width, u32 height);
-		static Ref<TextureCube> Create(const std::string& path);
+		static Ref<TextureCube> Create(const std::filesystem::path& path);
 	};
 }

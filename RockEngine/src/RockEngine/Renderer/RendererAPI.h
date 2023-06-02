@@ -1,8 +1,9 @@
 #pragma once
 
+#include "RendererTypes.h"
+
 namespace RockEngine
 {
-	using RendererID = unsigned int;
 
 	// TODO: move into separate header
 	enum class PrimitiveType

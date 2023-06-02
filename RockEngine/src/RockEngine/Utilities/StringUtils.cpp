@@ -10,10 +10,9 @@
 
 namespace RockEngine::Utils
 {
-	std::string GetFilename(const std::string& filepath)
+	std::string GetFilename(const std::filesystem::path& filepath)
 	{
-		auto file = std::filesystem::path(filepath);
-		return file.filename().string();
+		return filepath.filename().string();
 	}
 
 	std::vector<std::string> SplitString(const std::string_view string, const std::string_view& delimiters)
@@ -38,9 +37,9 @@ namespace RockEngine::Utils
 		return result;
 	}
 
-	auto ReadFromFile(std::string_view path) -> std::string
+	auto ReadFromFile(const std::filesystem::path& path) -> std::string
 	{
-		std::ifstream in(path.data(), std::ios::out);
+		std::ifstream in(path, std::ios::out);
 		std::string result;
 
 		if (in)
@@ -60,17 +59,16 @@ namespace RockEngine::Utils
 		return result;
 	}
 
-	void SaveToFile(std::string_view path, std::string_view source)
+	void SaveToFile(const std::filesystem::path& path, std::string_view source)
 	{
-		std::ofstream output(path.data());
+		std::ofstream output(path);
 		output << (source);
 		output.close();
 	}
 
-	std::string GetExtension(const std::string& filename)
+	std::string GetExtension(const  std::filesystem::path& filename)
 	{
-		auto file = std::filesystem::path(filename);
-		return file.extension().string();
+		return filename.extension().string();
 	}
 
 }

@@ -4,7 +4,7 @@
 #include <RockEngine/Renderer/Shader.h>
 #include "Texture.h"
 
-#include <RockEngine/Core/Buffer.h>
+#include <RockEngine/Memory/Buffer.h>
 
 #include <unordered_set>
 

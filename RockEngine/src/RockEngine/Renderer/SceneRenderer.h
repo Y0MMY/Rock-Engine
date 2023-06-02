@@ -27,6 +27,7 @@ namespace RockEngine
 	public:
 		static void Init();
 		static void Shutdown();
+		static void OnImGuiRender();
 
 		static void SetViewportSize(u32 width, u32 height);
 
@@ -38,10 +39,12 @@ namespace RockEngine
 
 		static SceneRendererOptions& GetOptions();
 
-		static std::pair<Ref<TextureCube>, Ref<TextureCube>> CreateEnvironmentMap(const std::string& filepath);
+		static std::pair<Ref<TextureCube>, Ref<TextureCube>> CreateEnvironmentMap(const std::filesystem::path& filepath);
 
 		static Ref<Texture2D> GetFinalColorBuffer();
-		static Ref<RenderPass> GetFinalRenderPass();
+		static Ref<RenderPass> GetFinalRenderPass();	
+
+		static void SetFocusPoint(const glm::vec2& point);
 
 		// TODO: Temp
 		static uint32_t GetFinalColorBufferRendererID();
@@ -49,6 +52,8 @@ namespace RockEngine
 		static void FlushDrawList();
 		static void GeometryPass();
 		static void CompositePass();
+		static void ShadowMapPass();
+
 		Ref<Texture2D> BRDFLUT;
 
 	};

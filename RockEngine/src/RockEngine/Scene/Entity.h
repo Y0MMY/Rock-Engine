@@ -28,7 +28,7 @@ namespace RockEngine
 		{
 			RE_CORE_ASSERT(m_Scene);
 			RE_CORE_ASSERT(!HasComponent<T>(), "Entity already has component!");
-			return m_Scene->m_Registry.emplace<T>(m_Handle,std::forward<Args>(args)...);
+			return m_Scene->m_Registry.emplace<T>(m_Handle, std::forward<Args>(args)...);
 		}
 
 		template<typename T>

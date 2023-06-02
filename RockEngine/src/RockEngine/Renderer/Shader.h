@@ -6,7 +6,7 @@
 #include "RockEngine/Renderer/RendererAPI.h"
 #include "ShaderUniform.h"
 
-#include <RockEngine/Core/Buffer.h>
+#include <RockEngine/Memory/Buffer.h>
 
 namespace RockEngine
 {
@@ -53,7 +53,7 @@ namespace RockEngine
 		virtual void UploadUniformBuffer(const UniformBufferBase& uniformBuffer) = 0;
 
 		virtual const std::string& GetName() const = 0;
-		virtual const std::string& GetPath() const = 0;
+		virtual const std::filesystem::path& GetPath() const = 0;
 
 		// Temporary while we don't have materials
 		virtual void SetFloat(const std::string& name, float value) = 0;
@@ -78,7 +78,7 @@ namespace RockEngine
 
 		virtual void SetIntArray(const std::string& name, int* values, uint32_t size) = 0;
 
-		static Ref<Shader> Create(const std::string& path);
+		static Ref<Shader> Create(const std::filesystem::path& path);
 
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) = 0;
 
@@ -100,8 +100,8 @@ namespace RockEngine
 		}
 
 		void Add(const Ref<Shader>& shader);
-		void Load(const std::string& name, const std::string& filepath);
-		void Load(const std::string& filepath);
+		void Load(const std::string& name, const std::filesystem::path& filepath);
+		void Load(const std::filesystem::path& filepath);
 
 		const Ref<Shader>& Get(const std::string& name) const;
 	private:
