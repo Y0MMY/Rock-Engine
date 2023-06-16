@@ -38,6 +38,7 @@ namespace RockEngine
 		void Set(const std::string& name, const T& value)
 		{
 			auto decl = FindUniformDeclaration(name);
+			if(!decl)RE_CORE_FATAL("Could not find uniform with name {}", name);
 			RE_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
 			auto& buffer = GetUniformBufferTarget(decl);
 			buffer.Write((byte*)&value, decl->GetSize(), decl->GetOffset());

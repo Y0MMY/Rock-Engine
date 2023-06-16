@@ -143,6 +143,9 @@ namespace RockEngine
 	{
 		s_Data->GeoPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 		s_Data->CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
+
+		//m_ViewportWidth = width;
+		//m_ViewportHeight = height;
 	}
 
 	void SceneRenderer::Shutdown()
@@ -317,6 +320,9 @@ namespace RockEngine
 		s_Data->SceneData.SkyboxMaterial->Set("u_SkyIntensity", s_Data->SceneData.SceneEnvironmentIntensity);
 		Renderer::SubmitFullscreenQuad(s_Data->SceneData.SkyboxMaterial);
 
+		// Point Lights
+		size_t pointLightsCount = s_Data->SceneData.SceneLightEnvironment.PointLights.size();
+
 		// Render entities
 		for (auto& dc : s_Data->DrawList)
 		{
@@ -332,6 +338,32 @@ namespace RockEngine
 			// Set lights (TODO: move to light environment and don't do per mesh)
 			auto directionalLight = s_Data->SceneData.SceneLightEnvironment.DirectionalLights[0];
 			baseMaterial->Set("u_DirectionalLights", directionalLight);
+
+			if (pointLightsCount)
+			{
+				baseMaterial->Set("u_PointLightsCount", pointLightsCount);
+				size_t pointLightIndex = 0;
+				for (const auto l : s_Data->SceneData.SceneLightEnvironment.PointLights)
+				{
+					std::string unifromName = "u_PointLights[" + std::to_string(pointLightIndex) + "]";
+					std::string Position = unifromName + ".Position";
+					std::string Intensity = unifromName + ".Intensity";
+					std::string Radiance = unifromName + ".Radiance";
+					std::string MinRadius = unifromName + ".MinRadius";
+					std::string Radius = unifromName + ".Radius";
+					std::string Falloff = unifromName + ".Falloff";
+					std::string LightSize = unifromName + ".LightSize";
+
+					baseMaterial->GetShader()->SetFloat3(Position, l.Position);
+					baseMaterial->GetShader()->SetFloat(Intensity, l.Intensity);
+					baseMaterial->GetShader()->SetFloat3(Radiance, l.Radiance);
+					baseMaterial->GetShader()->SetFloat(MinRadius, l.MinRadius);
+					baseMaterial->GetShader()->SetFloat(Radius, l.Radius);
+					baseMaterial->GetShader()->SetFloat(Falloff, l.Falloff);
+					baseMaterial->GetShader()->SetFloat(LightSize, l.SourceSize);
+					pointLightIndex++;
+				}
+			}
 
 			auto overrideMaterial = nullptr; // dc.Material;
 			Renderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);

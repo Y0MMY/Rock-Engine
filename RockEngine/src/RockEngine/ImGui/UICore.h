@@ -2,6 +2,8 @@
 
 #include "imgui/imgui.h"
 
+#include "RockEngine/Utilities/StringUtils.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -141,5 +143,56 @@ namespace RockEngine::UI
 	{
 		ImGui::Columns(1);
 		PopID();
+	}
+
+	static void Image(void* textureID, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
+	{
+		ImGui::Image(textureID, size, uv0, uv1, tint_col, border_col);
+	}
+
+	static bool Button(const char* label, const ImVec2& size = ImVec2(0, 0))
+	{
+		bool result = ImGui::Button(label, size);
+		ImGui::NextColumn();
+		return result;
+	}
+
+
+	static bool PropertyGridHeader(const std::string& name, bool openByDefault = true)
+	{
+		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed
+			| ImGuiTreeNodeFlags_SpanAvailWidth
+			| ImGuiTreeNodeFlags_AllowItemOverlap
+			| ImGuiTreeNodeFlags_FramePadding;
+
+		if (openByDefault)
+			treeNodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+		bool open = false;
+		const float framePaddingX = 6.0f;
+		const float framePaddingY = 6.0f; // affects height of the header
+
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ framePaddingX, framePaddingY });
+
+		//UI::PushID();
+		ImGui::PushID(name.c_str());
+		open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags, RockEngine::Utils::ToUpper(name).c_str());
+		//UI::PopID();
+		ImGui::PopID();
+
+		ImGui::PopStyleVar();
+		ImGui::PopStyleVar();
+		return open;
+	}
+
+	static void EndTreeNode()
+	{
+		ImGui::TreePop();
+	}
+
+	static void ShiftCursorY(float distance)
+	{
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + distance);
 	}
 }

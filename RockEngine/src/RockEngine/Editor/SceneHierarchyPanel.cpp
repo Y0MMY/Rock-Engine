@@ -18,7 +18,7 @@
 #include <iostream>
 #include <RockEngine/Scene/Components.h>
 
-#include "RockEngine/ImGui/ImGui.h"
+#include "RockEngine/ImGui/UICore.h"
 
 namespace RockEngine
 {
@@ -170,33 +170,40 @@ namespace RockEngine
 		m_Context = scene;
 	}
 	
-	void SceneHierarchyPanel::OnImGuiRender()
+	void SceneHierarchyPanel::DrawComponentsList()
 	{
-		ImGui::Begin("Scene Hierarchy");
-
-		uint32_t entityCount = 0, meshCount = 0;
-		auto& sceneEntities = m_Context->GetAllEntities();
-		for (const auto& [key, entity] : sceneEntities)
-			DrawEntityNode(entity, entityCount, meshCount);
-
 		if (m_Context)
 		{
-			if (ImGui::BeginPopupContextWindow(0, 1, false))
+			if (ImGui::Button("Add"))
 			{
-				if (ImGui::BeginMenu("Create"))
+				ImGui::OpenPopup("AddEntityMenu");
+			}
+
+			ImGui::SetNextWindowPos(ImVec2(400, 70));
+			if (ImGui::BeginPopup("AddEntityMenu"))
+			{
+				ImGui::Indent(20.0f); 
+
+				if (ImGui::MenuItem("Empty Entity"))
 				{
-					if (ImGui::MenuItem("Empty Entity"))
-					{
-						decltype(auto) newEntity = m_Context->CreateEntity("Empty Entity");
-					}
+					decltype(auto) newEntity = m_Context->CreateEntity("Empty Entity");
+				}
 
-					if (ImGui::MenuItem("Mesh"))
-					{
-						decltype(auto) newEntity = m_Context->CreateEntity("Mesh");
-						newEntity->AddComponent<MeshComponent>();
-						m_Context->SetSelected(newEntity);
-					}
+				ImGui::Spacing();
 
+				if (ImGui::MenuItem("Mesh"))
+				{
+					decltype(auto) newEntity = m_Context->CreateEntity("Mesh");
+					newEntity->AddComponent<MeshComponent>();
+					m_Context->SetSelected(newEntity);
+				}
+
+				ImGui::Spacing();
+				ImGui::Separator();
+				ImGui::Spacing();
+
+				if (ImGui::BeginMenu("Light"))
+				{
 					if (ImGui::MenuItem("Sky Light"))
 					{
 						decltype(auto) newEntity = m_Context->CreateEntity("Sky Light");
@@ -205,6 +212,8 @@ namespace RockEngine
 						m_Context->SetSelected(newEntity);
 					}
 
+					ImGui::Spacing();
+
 					if (ImGui::MenuItem("Directional Light"))
 					{
 						decltype(auto) newEntity = m_Context->CreateEntity("Directional Light");
@@ -212,11 +221,33 @@ namespace RockEngine
 						m_Context->SetSelected(newEntity);
 					}
 
+					ImGui::Spacing();
+
+					if (ImGui::MenuItem("Point Light"))
+					{
+						decltype(auto) newEntity = m_Context->CreateEntity("Point Light");
+						newEntity->AddComponent<PointLightComponent>();
+						m_Context->SetSelected(newEntity);
+					}
+
 					ImGui::EndMenu();
 				}
+
+				ImGui::Unindent();
 				ImGui::EndPopup();
 			}
 		}
+	}
+
+
+	void SceneHierarchyPanel::OnImGuiRender()
+	{
+		ImGui::Begin("Outliner");
+
+		uint32_t entityCount = 0, meshCount = 0;
+		auto& sceneEntities = m_Context->GetAllEntities();
+		for (const auto& [key, entity] : sceneEntities)
+			DrawEntityNode(entity, entityCount, meshCount);
 
 		ImGui::End();
 
@@ -413,6 +444,18 @@ namespace RockEngine
 				UI::PropertyColor("Radiance", dlc.Radiance);
 				UI::Property("Intensity", dlc.Intensity);
 				UI::Property("Source Size", dlc.LightSize);
+				UI::EndPropertyGrid();
+			});
+
+		DrawComponent<PointLightComponent>("Point Light", entity, [](PointLightComponent& dlc)
+			{
+				UI::BeginPropertyGrid();
+				UI::PropertyColor("Radiance", dlc.Radiance);
+				UI::Property("Intensity", dlc.Intensity);
+				UI::Property("Source Size", dlc.LightSize);
+				UI::Property("Min Radius", dlc.MinRadius);
+				UI::Property("Radius", dlc.Radius);
+				UI::Property("Falloff", dlc.Falloff);
 				UI::EndPropertyGrid();
 			});
 	}

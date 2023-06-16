@@ -4,6 +4,8 @@
 #include "RockEngine/Core/Layer.h"
 #include "GLFW/include/GLFW/glfw3.h"
 
+#include "Panels/SceneRendererPanel.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -28,6 +30,10 @@ namespace RockEngine
 		void SaveScene();
 		void SaveSceneAs();
 
+		// UI
+		void UI_DrawMenubar();
+		void UI_DrawGizmos();
+	public:
 		std::pair<float, float> GetMouseViewportSpace();
 		std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my);
 	public:
@@ -91,6 +97,7 @@ namespace RockEngine
 
 		Ref<Scene> m_EditorScene;
 		std::unique_ptr<SceneHierarchyPanel> m_SceneHierarchyPanel;
+		std::unique_ptr<SceneRendererPanel> m_SceneRendererPanel;
 
 		int m_GizmoType = -1; // -1 = no gizmo
 

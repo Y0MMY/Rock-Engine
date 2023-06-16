@@ -22,7 +22,7 @@ namespace RockEngine
 		float FOV;
 	};
 
-	class SceneRenderer
+	class SceneRenderer : public RefCounted
 	{
 	public:
 		static void Init();
@@ -53,6 +53,7 @@ namespace RockEngine
 		static void GeometryPass();
 		static void CompositePass();
 		static void ShadowMapPass();
+	private:
 
 		Ref<Texture2D> BRDFLUT;
 

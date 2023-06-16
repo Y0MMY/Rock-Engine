@@ -71,4 +71,15 @@ namespace RockEngine::Utils
 		return filename.extension().string();
 	}
 
+	std::string ToUpper(const std::string_view& string)
+	{
+		std::string result;
+		for (const auto& character : string)
+		{
+			result += std::toupper(character);
+		}
+
+		return result;
+	}
+
 }

@@ -50,6 +50,20 @@ struct DirectionalLight {
 	float Multiplier;
 };
 
+struct PointLight 
+{
+	vec3 Position;
+	float Intensity;
+	vec3 Radiance;
+	float MinRadius;
+	float Radius;
+	float Falloff;
+	float LightSize;
+};
+
+uniform int u_PointLightsCount;
+uniform PointLight u_PointLights[10];
+
 in VertexOutput
 {
 	vec3 WorldPosition;
@@ -259,6 +273,34 @@ vec3 Lighting(vec3 F0)
 	return result;
 }
 
+vec3 CalculatePointLight()
+{
+    vec3 result = vec3(0.0);
+    for(int i = 0; i < u_PointLightsCount; i++)
+    {
+        PointLight pointLight = u_PointLights[i];
+
+
+        vec3 L = pointLight.Position - vs_Input.WorldPosition;
+        float distance = length(L);
+        L = normalize(L);
+
+        float attenuation = clamp(1.0 - (distance - pointLight.MinRadius) / (pointLight.Radius - pointLight.MinRadius), 0.0, 1.0);
+        float falloff = pow(attenuation, pointLight.Falloff);
+
+        float lightSize = pointLight.LightSize;
+        float lightSizeAttenuation = 1.0 - smoothstep(0.0, lightSize, distance);
+
+        float intensity = pointLight.Intensity * falloff * lightSizeAttenuation;
+
+        vec3 lightContribution = pointLight.Radiance * intensity;
+
+        result += lightContribution;
+    }
+    return result;
+}
+
+
 vec3 IBL(vec3 F0, vec3 Lr)
 {
 	vec3 irradiance = texture(u_EnvIrradianceTex, m_Params.Normal).rgb;
@@ -277,6 +319,7 @@ vec3 IBL(vec3 F0, vec3 Lr)
 
 	return kd * diffuseIBL + specularIBL;
 }
+
 
 void main()
 {
@@ -305,7 +348,7 @@ void main()
 
 	vec3 lightContribution = Lighting(F0);
 	vec3 iblContribution = IBL(F0, Lr);
+	vec3 pointLight = CalculatePointLight();
 
-	color = vec4(lightContribution + iblContribution, 1.0);
+	color = vec4(pointLight + lightContribution + iblContribution, 1.0);
 }
-                                                                                                                                                                                                                                                                                                                      

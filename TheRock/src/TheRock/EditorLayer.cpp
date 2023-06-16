@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "EditorLayer.h"
 
-#include "RockEngine/ImGui/ImGui.h"
+#include "RockEngine/ImGui/UICore.h"
 #include "RockEngine/Core/Math/Ray.h"
 
 #include "RockEngine/ImGui/ImGuizmo.h"
@@ -71,7 +71,7 @@ namespace RockEngine
 			}
 			break;
 		case KeyCode::A:
-			
+
 			if (RockEngine::Input::IsKeyPressed(KeyCode::A))
 				m_EditorScene->SetSelected(m_MeshEntity);
 			break;
@@ -92,7 +92,7 @@ namespace RockEngine
 				m_EditorScene->SetSelected({});
 
 				auto& meshEntities = m_EditorScene->GetAllEntitiesWith<MeshComponent>();
-				
+
 				for (auto e : meshEntities)
 				{
 					auto mesh = e->GetComponent<MeshComponent>().Mesh;
@@ -118,7 +118,7 @@ namespace RockEngine
 								if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
 								{
 									RE_WARN("INTERSECTION: {0}, t={1}", submesh.NodeName, t);
-									m_EditorScene->m_SelectionContext.push_back({ e, &submesh, t});
+									m_EditorScene->m_SelectionContext.push_back({ e, &submesh, t });
 									break;
 								}
 							}
@@ -211,51 +211,141 @@ namespace RockEngine
 
 	void EditorLayer::OnImGuiRender()
 	{
-		static bool p_open = true;
+		// ImGui + Dockspace Setup ------------------------------------------------------------------------------
+		ImGuiIO& io = ImGui::GetIO();
+		ImGuiStyle& style = ImGui::GetStyle();
+		auto boldFont = io.Fonts->Fonts[0];
+		auto largeFont = io.Fonts->Fonts[1];
 
-		static bool opt_fullscreen_persistant = true;
-		static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_None;
-		bool opt_fullscreen = opt_fullscreen_persistant;
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || (ImGui::IsMouseClicked(ImGuiMouseButton_Right)))
+		{
+		}
+
+		io.ConfigWindowsResizeFromEdges = io.BackendFlags & ImGuiBackendFlags_HasMouseCursors;
 
 		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 		// because it would be confusing to have two docking targets within each others.
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-		if (opt_fullscreen)
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_MenuBar;
+
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->Pos);
+		ImGui::SetNextWindowSize(viewport->Size);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+		bool isMaximized = (bool)glfwGetWindowAttrib(window, GLFW_MAXIMIZED);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, isMaximized ? ImVec2(6.0f, 6.0f) : ImVec2(1.0f, 1.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 3.0f);
+		ImGui::PushStyleColor(ImGuiCol_MenuBarBg, ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f });
+		ImGui::Begin("DockSpace Demo", nullptr, window_flags);
+		ImGui::PopStyleColor(); // MenuBarBg
+		ImGui::PopStyleVar(2);
+
+		ImGui::PopStyleVar(2);
+
 		{
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(viewport->Pos);
-			ImGui::SetNextWindowSize(viewport->Size);
-			ImGui::SetNextWindowViewport(viewport->ID);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
 		}
+		UI_DrawMenubar();
 
-		// When using ImGuiDockNodeFlags_PassthruDockspace, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
-		//if (opt_flags & ImGuiDockNodeFlags_PassthruDockspace)
-		//	window_flags |= ImGuiWindowFlags_NoBackground;
+		ImGui::SetCursorPosY(25); //TODO: 25 is random value, set a calculated value
+		auto cursorPos = ImGui::GetCursorPosX();
+		ImGui::SetCursorPosX(400);
 
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin("DockSpace Demo", &p_open, window_flags);
-		ImGui::PopStyleVar();
+		m_SceneHierarchyPanel->DrawComponentsList();
 
-		if (opt_fullscreen)
-			ImGui::PopStyleVar(2);
+		ImGui::SetCursorPosY(70); //TODO: 70 is random value, set a calculated value
+		ImGui::SetCursorPosX(cursorPos);
 
 		// Dockspace
-		ImGuiIO& io = ImGui::GetIO();
-		ImGuiStyle& style = ImGui::GetStyle();
 		float minWinSizeX = style.WindowMinSize.x;
 		style.WindowMinSize.x = 370.0f;
-		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-		{
-			ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
-			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), opt_flags);
-		}
-
+		ImGui::DockSpace(ImGui::GetID("MyDockspace"));
 		style.WindowMinSize.x = minWinSizeX;
 
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		ImGui::Begin("Viewport");
+		{
+			auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
+			auto viewportSize = ImGui::GetContentRegionAvail();
+
+			SceneRenderer::SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+
+			m_EditorCamera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
+			m_EditorCamera.SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+
+			ImGui::Image((void*)SceneRenderer::GetFinalColorBufferRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
+
+			static int counter = 0;
+			auto windowSize = ImGui::GetWindowSize();
+			ImVec2 minBound = ImGui::GetWindowPos();
+			minBound.x += viewportOffset.x;
+			minBound.y += viewportOffset.y;
+
+			ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
+			m_ViewportBounds[0] = { minBound.x, minBound.y };
+			m_ViewportBounds[1] = { maxBound.x, maxBound.y };
+		}
+
+		UI_DrawGizmos();
+
+		ImGui::End();
+		ImGui::PopStyleVar();
+
+		m_SceneHierarchyPanel->OnImGuiRender();
+		m_SceneRendererPanel->OnImGuiRender(false);
+
+		ImGui::End();
+	}
+
+	void EditorLayer::SaveSceneAs()
+	{
+		/*auto& app = Application::Get();
+		auto filepath = app.SaveFileDialog("TheRock Scene (*.sctr)\0*.sctr\0");
+		if (!filepath.empty())
+		{
+			SceneSerializer serializer(m_EditorScene);
+			serializer.Serialize(filepath.string());
+
+			UpdateWindowTitle(Utils::GetFilename(filepath.string()));
+		}*/
+	}
+
+	void EditorLayer::OpenScene()
+	{
+		std::string filepath = Utils::FileSystem::OpenFileDialog("TheRock Scene (*.sctr)\0*.sctr\0").string();
+		if (!filepath.empty())
+			OpenScene(filepath);
+	}
+
+	void EditorLayer::OpenScene(const std::filesystem::path& filepath)
+	{
+		Ref<Scene> newScene = Ref<Scene>::Create("New Scene");
+		SceneSerializer serializer(newScene);
+		serializer.Deserialize(filepath);
+
+		m_EditorScene = newScene;
+
+		UpdateWindowTitle(Utils::FileSystem::GetFileName(filepath));
+		m_SceneHierarchyPanel->SetContext(m_EditorScene);
+
+		m_EditorScene->SetSelected({});
+		m_EditorScene->m_SelectionContext.clear();
+	}
+
+	void EditorLayer::SaveScene()
+	{
+
+	}
+
+	void EditorLayer::UI_DrawMenubar()
+	{
+		ImGui::BeginGroup();
 
 		if (ImGui::BeginMenuBar())
 		{
@@ -272,35 +362,16 @@ namespace RockEngine
 					SaveSceneAs();
 
 				ImGui::Separator();
-				if (ImGui::MenuItem("Exit"))
-					p_open = false;
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
 		}
+		ImGui::EndGroup();
 
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		ImGui::Begin("Viewport");
+	}
 
-		auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
-		auto viewportSize = ImGui::GetContentRegionAvail();
-		SceneRenderer::SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-		m_EditorCamera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
-		m_EditorCamera.SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-		ImGui::Image((void*)SceneRenderer::GetFinalColorBufferRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
-
-		static int counter = 0;
-		auto windowSize = ImGui::GetWindowSize();
-		ImVec2 minBound = ImGui::GetWindowPos();
-		minBound.x += viewportOffset.x;
-		minBound.y += viewportOffset.y;
-
-		ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
-		m_ViewportBounds[0] = { minBound.x, minBound.y };
-		m_ViewportBounds[1] = { maxBound.x, maxBound.y };
-		//m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound);
-
-		// Gizmos
+	void EditorLayer::UI_DrawGizmos()
+	{
 		if (m_GizmoType != -1 && m_EditorScene->m_SelectionContext.size())
 		{
 			auto& selection = m_EditorScene->m_SelectionContext[0];
@@ -340,135 +411,5 @@ namespace RockEngine
 
 		}
 
-		ImGui::End();
-		ImGui::PopStyleVar();
-		if(m_EditShaderText)
-		{
-			ImGui::Begin("Editor", &m_EditShaderText, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_MenuBar);
-			if (ImGui::BeginMenuBar())
-			{
-				if (ImGui::Button("Save"))
-				{
-					m_ShaderStruct.Text = m_TextEditor.GetText();
-					Utils::SaveToFile(m_ShaderStruct.Path, m_ShaderStruct.Text);
-				}
-
-				if (ImGui::Button("Close"))
-				{
-					m_EditShaderText = !m_EditShaderText;
-					m_TextEditor.SetText("");
-					m_ShaderStruct = {};
-				}
-
-				if (ImGui::BeginMenu("View"))
-				{
-					if (ImGui::MenuItem("Dark palette"))
-						m_TextEditor.SetPalette(TextEditor::GetDarkPalette());
-					if (ImGui::MenuItem("Light palette"))
-						m_TextEditor.SetPalette(TextEditor::GetLightPalette());
-					if (ImGui::MenuItem("Retro blue palette"))
-						m_TextEditor.SetPalette(TextEditor::GetRetroBluePalette());
-					ImGui::EndMenu();
-				}
-
-				ImGui::EndMenuBar();
-			}
-			m_TextEditor.Render("###Code", ImVec2(ImGui::GetWindowSize()));
-			ImGui::End();
-		}
-		// Settings ImGui
-		{
-			ImGui::Begin("Settings");
-
-			UI::BeginPropertyGrid();
-			ImGui::AlignTextToFramePadding();
-			UI::PropertySlider("Skybox LOD", m_EditorScene->GetSkyboxLod(), 0.0f, Utils::CalculateMipCount(viewportSize.x, viewportSize.y));
-			
-			UI::PropertySlider("Exposure", m_Camera.GetExposure(), 0.0f, 5.0f);
-			UI::PropertySlider("Env Map Rotation", m_EnvMapRotation, -360.0f, 360.0f);
-			UI::Property("Show Bounding Boxes", SceneRenderer::GetOptions().ShowBoundingBoxes);
-			UI::Property("Show grid", SceneRenderer::GetOptions().ShowGrid);
-			UI::Property("Draw Outline", SceneRenderer::GetOptions().DrawOutline);
-			UI::EndPropertyGrid();
-
-			ImGui::Separator();
-
-			ImGui::Text("Renderer Settings");
-
-			if (ImGui::TreeNode("Shaders"))
-			{
-				auto& shaders = Shader::s_AllShaders;
-				for (auto& shader : shaders)
-				{
-					if (ImGui::TreeNode(shader->GetName().c_str()))
-					{
-						std::string buttonName = "Reload##" + shader->GetName();
-						if (ImGui::Button(buttonName.c_str()))
-							shader->Reload();
-
-						ImGui::SameLine();
-
-						buttonName = "Edit##" + shader->GetName();
-						if (ImGui::Button(buttonName.c_str()))
-						{
-							m_ShaderStruct = { shader, shader->GetPath(), Utils::ReadFromFile(shader->GetPath().string())};
-							m_TextEditor.SetText(m_ShaderStruct.Text);
-							m_EditShaderText = true;
-						}
-						ImGui::TreePop();
-					}
-				}
-				ImGui::TreePop();
-			}
-
-			ImGui::End();
-		} // End Of Setting ImGui
-
-		m_SceneHierarchyPanel->OnImGuiRender();
-
-		ImGui::End();
-
 	}
-
-	void EditorLayer::SaveSceneAs()
-	{
-		/*auto& app = Application::Get();
-		auto filepath = app.SaveFileDialog("TheRock Scene (*.sctr)\0*.sctr\0");
-		if (!filepath.empty())
-		{
-			SceneSerializer serializer(m_EditorScene);
-			serializer.Serialize(filepath.string());
-
-			UpdateWindowTitle(Utils::GetFilename(filepath.string()));
-		}*/
-	}
-	
-	void EditorLayer::OpenScene()
-	{
-		std::string filepath = Utils::FileSystem::OpenFileDialog("TheRock Scene (*.sctr)\0*.sctr\0").string();
-		if (!filepath.empty())
-			OpenScene(filepath);
-	}
-
-	void EditorLayer::OpenScene(const std::filesystem::path& filepath)
-	{
-		Ref<Scene> newScene = Ref<Scene>::Create("New Scene");
-		SceneSerializer serializer(newScene);
-		serializer.Deserialize(filepath);
-
-		m_EditorScene = newScene;
-
-		UpdateWindowTitle(Utils::FileSystem::GetFileName(filepath));
-		m_SceneHierarchyPanel->SetContext(m_EditorScene);
-		
-		m_EditorScene->SetSelected({});
-		m_EditorScene->m_SelectionContext.clear();
-	}
-
-	void EditorLayer::SaveScene()
-	{
-
-	}
-
-
 }

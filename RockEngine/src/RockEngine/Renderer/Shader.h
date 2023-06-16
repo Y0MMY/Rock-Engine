@@ -104,6 +104,7 @@ namespace RockEngine
 		void Load(const std::filesystem::path& filepath);
 
 		const Ref<Shader>& Get(const std::string& name) const;
+		std::unordered_map<std::string, Ref<Shader>>& GetShaders() { return m_Shaders; }
 	private:
 		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 	};

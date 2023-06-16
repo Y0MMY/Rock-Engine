@@ -20,9 +20,21 @@ namespace RockEngine
 		bool CastShadows = true;
 	};
 
+	struct PointLight
+	{
+		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+		float Intensity = 0.0f;
+		glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
+		float MinRadius = 0.001f;
+		float Radius = 25.0f;
+		float Falloff = 1.f;
+		float SourceSize = 0.1f;
+	};
+
 	struct LightEnvironment
 	{
 		DirectionalLight DirectionalLights[4];
+		std::vector<PointLight> PointLights;
 	};
 
 	class Entity;

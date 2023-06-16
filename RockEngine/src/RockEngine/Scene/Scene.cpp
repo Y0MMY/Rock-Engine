@@ -40,9 +40,9 @@ namespace RockEngine
 	void Scene::OnRenderEditor(Timestep ts, const EditorCamera& editorCamera)
 	{
 
+		// Directional Lights	
 		{
 			m_LightEnvironment = LightEnvironment();
-			//auto lights = m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
 			uint32_t directionalLightIndex = 0;
 			for (const auto& [key, entity] : m_EntityIDMap)
 			{
@@ -59,6 +59,30 @@ namespace RockEngine
 						lightComponent.Intensity,
 					};
 				}
+			}
+		}
+
+		// Point Lights
+		{
+			auto pointLights = m_Registry.group<PointLightComponent>();
+			auto pointlightEntity = GetAllEntitiesWith<PointLightComponent>();
+			if (pointLights.size() != m_LightEnvironment.PointLights.size())
+				m_LightEnvironment.PointLights.resize(pointLights.size());
+
+			uint32_t pointLightIndex = 0;
+			for (auto e : pointLights)
+			{
+				auto transform = pointlightEntity[pointLightIndex]->GetComponent<TransformComponent>();
+				m_LightEnvironment.PointLights[pointLightIndex++] = {
+							transform.Translation,
+							e->Intensity,
+							e->Radiance,
+							e->MinRadius,
+							e->Radius,
+							e->Falloff,
+							e->LightSize,
+				};
+
 			}
 		}
 

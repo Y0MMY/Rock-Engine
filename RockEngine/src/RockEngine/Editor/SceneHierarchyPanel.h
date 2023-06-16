@@ -12,6 +12,8 @@ namespace RockEngine
 
 		void SetContext(const Ref<Scene>& scene);
 		void OnImGuiRender();
+
+		void DrawComponentsList();
 	private:
 		void DrawComponents(Entity* entity);
 
