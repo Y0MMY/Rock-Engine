@@ -20,7 +20,7 @@ namespace RockEngine
 
 	struct UniformDecl
 	{
-		UniformType type;
+		UniformType Type;
 		std::string Name;
 		u32 Offset;
 	};

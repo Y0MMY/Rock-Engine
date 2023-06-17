@@ -32,33 +32,33 @@ namespace RockEngine
 		
 	}
 
-	void Scene::OnRenderRuntime(Timestep ts)
+	void Scene::OnRenderRuntime(Ref<SceneRenderer> renderer,Timestep ts)
 	{
 
 	}
 
-	void Scene::OnRenderEditor(Timestep ts, const EditorCamera& editorCamera)
+	void Scene::OnRenderEditor(Ref<SceneRenderer> renderer,Timestep ts, const EditorCamera& editorCamera)
 	{
 
 		// Directional Lights	
 		{
 			m_LightEnvironment = LightEnvironment();
+			auto lights = GetAllEntitiesWith<DirectionalLightComponent>();
 			uint32_t directionalLightIndex = 0;
-			for (const auto& [key, entity] : m_EntityIDMap)
-			{
-				if (entity->HasComponent<DirectionalLightComponent>())
-				{
-					auto transformComponent = entity->GetComponent<TransformComponent>();
-					auto lightComponent = entity->GetComponent<DirectionalLightComponent>();
 
-					glm::vec3 direction = -glm::normalize(glm::mat3(transformComponent.GetTransform()) * glm::vec3(1.0f));
-					m_LightEnvironment.DirectionalLights[directionalLightIndex++] =
-					{
-						direction,
-						lightComponent.Radiance,
-						lightComponent.Intensity,
-					};
-				}
+			for (const auto e : lights)
+			{
+				auto transform = e->GetComponent<TransformComponent>().GetTransform();
+				auto lightComponent = e->GetComponent<DirectionalLightComponent>();
+
+				glm::vec3 direction = -glm::normalize(glm::mat3(transform) * glm::vec3(1.0f));
+				m_LightEnvironment.DirectionalLights[directionalLightIndex++] =
+				{
+					direction,
+					lightComponent.Radiance,
+					lightComponent.Intensity,
+					lightComponent.CastShadows
+				};
 			}
 		}
 
@@ -101,7 +101,8 @@ namespace RockEngine
 
 		m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
 
-		SceneRenderer::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix(), 0.1f, 1000.0f, 45.0f });
+		//renderer->SetScene(this);
+		renderer->BeginScene(this, { editorCamera, editorCamera.GetViewMatrix()});
 		for (const auto& [key, entity] : m_EntityIDMap)
 		{
 			if (entity->HasComponent<MeshComponent>())
@@ -112,14 +113,14 @@ namespace RockEngine
 					auto& transformComponent = entity->GetComponent<TransformComponent>();
 
 					meshComponent.Mesh->OnUpdate(ts);
-					if (m_SelectedEntity == entity && SceneRenderer::GetOptions().DrawOutline)
-						SceneRenderer::SubmitSelectedMesh(meshComponent, transformComponent.GetTransform());
+					if (m_SelectedEntity == entity && renderer->GetOptions().DrawOutline)
+						renderer->SubmitSelectedMesh(meshComponent, transformComponent.GetTransform());
 					else
-						SceneRenderer::SubmitMesh(meshComponent, transformComponent.GetTransform());
+						renderer->SubmitMesh(meshComponent, transformComponent.GetTransform());
 				}
 			}
 		}
-		SceneRenderer::EndScene();
+		renderer->EndScene();
 	}
 
 	void Scene::SetSelected(Entity* entity)

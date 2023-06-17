@@ -95,9 +95,12 @@ namespace RockEngine
 
 		float m_EnvMapRotation = 0.0f;
 
-		Ref<Scene> m_EditorScene;
+		Ref<Scene> m_RuntimeScene, m_EditorScene, m_CurrentScene;
 		std::unique_ptr<SceneHierarchyPanel> m_SceneHierarchyPanel;
 		std::unique_ptr<SceneRendererPanel> m_SceneRendererPanel;
+
+		Ref<SceneRenderer> m_ViewportRenderer;
+		Ref<SceneRenderer> m_SecondViewportRenderer;
 
 		int m_GizmoType = -1; // -1 = no gizmo
 

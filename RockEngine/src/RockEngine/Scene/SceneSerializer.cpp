@@ -4,6 +4,8 @@
 #include "RockEngine/Core/Math/Math.h"
 #include "RockEngine/Utilities/StringUtils.h"
 
+#include "RockEngine/Renderer/SceneRenderer.h"
+
 #include "Components.h"
 
 namespace YAML
@@ -132,7 +134,7 @@ namespace RockEngine
 			out << YAML::BeginMap; // SkyLightComponent
 
 			auto& skyLightComponent = entity->GetComponent<SkyLightComponent>();
-			out << YAML::Key << "EnvironmentAssetPath" << YAML::Value << skyLightComponent.SceneEnvironment.FilePath;
+			out << YAML::Key << "EnvironmentAssetPath" << YAML::Value << skyLightComponent.FilePath;
 			out << YAML::Key << "Intensity" << YAML::Value << skyLightComponent.Intensity;
 			out << YAML::Key << "Angle" << YAML::Value << skyLightComponent.Angle;
 
@@ -238,7 +240,7 @@ namespace RockEngine
 					std::string env = skyLightComponent["EnvironmentAssetPath"].as<std::string>();
 					if (!env.empty())
 					{
-						component.SceneEnvironment = Environment::Load(env);
+						component.SceneEnvironment = SceneRenderer::CreateEnvironmentMap(env);
 					}
 					component.Intensity = skyLightComponent["Intensity"].as<float>();
 					component.Angle = skyLightComponent["Angle"].as<float>();

@@ -156,7 +156,10 @@ namespace RockEngine
 		for (auto& fb : fbs)
 		{
 			if (!fb->GetSpecification().NoResize)
-				fb->Resize(width, height);
+			{
+				if (!fb->GetSpecification().NoResize)
+					fb->Resize(width, height);
+			}
 		}
 
 		return false;

@@ -118,6 +118,27 @@ namespace RockEngine::UI
 		return modified;
 	}
 
+	static bool PropertySlider(const char* label, int& value, int min, int max)
+	{
+		bool modified = false;
+
+		ImGui::Text(label);
+		ImGui::NextColumn();
+		ImGui::PushItemWidth(-1);
+
+		s_IDBuffer[0] = '#';
+		s_IDBuffer[1] = '#';
+		memset(s_IDBuffer + 2, 0, 14);
+		itoa(s_Counter++, s_IDBuffer + 2, 16);
+		if (ImGui::SliderInt(s_IDBuffer, &value, min, max))
+			modified = true;
+
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+
+		return modified;
+	}
+
 	static bool PropertySlider(const char* label, float& value, float min, float max)
 	{
 		bool modified = false;
@@ -186,13 +207,22 @@ namespace RockEngine::UI
 		return open;
 	}
 
-	static void EndTreeNode()
-	{
-		ImGui::TreePop();
-	}
-
 	static void ShiftCursorY(float distance)
 	{
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + distance);
+	}
+
+	static bool BeginTreeNode(const char* name, bool defaultOpen)
+	{
+		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+		if (defaultOpen)
+			treeNodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+		return ImGui::TreeNodeEx(name, treeNodeFlags);
+	}
+
+	static void EndTreeNode()
+	{
+		ImGui::TreePop();
 	}
 }

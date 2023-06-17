@@ -177,7 +177,6 @@ namespace RockEngine
 		s_Data->m_ShaderLibrary->Load("assets/shaders/EnvironmentMipFilter.glsl");
 		s_Data->m_ShaderLibrary->Load("assets/shaders/EquirectangularToCubeMap.glsl");
 		s_Data->m_ShaderLibrary->Load("assets/shaders/EnvironmentIrradiance.glsl");
-		SceneRenderer::Init();
 
 		// Create fullscreen quad
 		float x = -1;
@@ -309,9 +308,12 @@ namespace RockEngine
 
 	void Renderer::Shutdown()
 	{
-		SceneRenderer::Shutdown();
-
 		delete s_Data;
 		delete s_CommandQueue;
+	}
+
+	Environment Renderer::CreateEnvironmentMap(const std::filesystem::path& filepath)
+	{
+		return SceneRenderer::CreateEnvironmentMap(filepath);
 	}
 }

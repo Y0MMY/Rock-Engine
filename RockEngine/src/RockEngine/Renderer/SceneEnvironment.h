@@ -5,17 +5,19 @@
 namespace RockEngine 
 {
 
-	struct Environment
+	class Environment
 	{
-
-		std::string FilePath;
+	public:
 		Ref<TextureCube> RadianceMap;
 		Ref<TextureCube> IrradianceMap;
 
-		static Environment Load(const std::string& filepath);
-
-		operator bool() { return RadianceMap; }
+		Environment() = default;
+		Environment(const Ref<TextureCube>& radianceMap, const Ref<TextureCube>& irradianceMap)
+			: RadianceMap(radianceMap), IrradianceMap(irradianceMap)
+		{
+		}
 	};
+
 
 
 }

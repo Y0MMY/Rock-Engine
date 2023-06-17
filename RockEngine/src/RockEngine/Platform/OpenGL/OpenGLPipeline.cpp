@@ -46,48 +46,58 @@ namespace RockEngine
 	void OpenGLPipeline::Invalidate()
 	{
 		RE_CORE_ASSERT(m_Specification.Layout.GetElements().size(), "Layout is empty!");
+
 		Ref<OpenGLPipeline> instance = this;
 		Renderer::Submit([instance]() mutable
-		{
-			if(instance->m_RendererID)
-				glDeleteVertexArrays(1, &instance->m_RendererID);
+			{
+				auto& vertexArrayRendererID = instance->m_RendererID;
 
-			glGenVertexArrays(1, &instance->m_RendererID);
-			//glBindVertexArray(instance->m_RendererID);
+				if (vertexArrayRendererID)
+					glDeleteVertexArrays(1, &vertexArrayRendererID);
 
-		});
+				glGenVertexArrays(1, &vertexArrayRendererID);
+				glBindVertexArray(vertexArrayRendererID);
+
+
+
+				glBindVertexArray(0);
+			});
 
 	}
 
 	void OpenGLPipeline::Bind() const
 	{
 		Ref<const OpenGLPipeline> instance = this;
-		Renderer::Submit([instance]() mutable
-		{
-			if(instance->m_RendererID)
-				glDeleteVertexArrays(1, &instance->m_RendererID);
-
-			glBindVertexArray(instance->m_RendererID);
-			const auto& layout = instance->m_Specification.Layout;
-			uint32_t attribIndex = 0;
-
-			for (const auto& element : layout)
+		Renderer::Submit([instance]()
 			{
-				auto base = OpenGLShaderDataType(element.Type);
-				glEnableVertexAttribArray(attribIndex);
+				glBindVertexArray(instance->m_RendererID);
 
-				if (base = GL_INT)
+				const auto& layout = instance->m_Specification.Layout;
+				uint32_t attribIndex = 0;
+				for (const auto& element : layout)
 				{
-					glVertexAttribIPointer(attribIndex, element.GetComponentCount(), GL_INT, layout.GetStride(), (const void*)(intptr_t)element.Offset);
+					auto glBaseType = OpenGLShaderDataType(element.Type);
+					glEnableVertexAttribArray(attribIndex);
+					if (glBaseType == GL_INT)
+					{
+						glVertexAttribIPointer(attribIndex,
+							element.GetComponentCount(),
+							glBaseType,
+							layout.GetStride(),
+							(const void*)(intptr_t)element.Offset);
+					}
+					else
+					{
+						glVertexAttribPointer(attribIndex,
+							element.GetComponentCount(),
+							glBaseType,
+							element.Normalized ? GL_TRUE : GL_FALSE,
+							layout.GetStride(),
+							(const void*)(intptr_t)element.Offset);
+					}
+					attribIndex++;
 				}
-				else
-					glVertexAttribPointer(attribIndex, element.GetComponentCount(), base, element.Normalized ? GL_TRUE : GL_FALSE,
-						layout.GetStride(), (const void*)(intptr_t)element.Offset);
-
-				attribIndex++;
-			}
-
-		});
+			});
 
 	}
 

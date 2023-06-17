@@ -38,6 +38,7 @@ namespace RockEngine
 	};
 
 	class Entity;
+	class SceneRenderer;
 	using EntityMap = std::unordered_map<UUID, Entity*>;
 
 	class Scene : public RefCounted
@@ -49,8 +50,8 @@ namespace RockEngine
 		void Init();
 
 		void OnUpdate(Timestep ts);
-		void OnRenderRuntime(Timestep ts);
-		void OnRenderEditor(Timestep ts, const EditorCamera& editorCamera);
+		void OnRenderRuntime(Ref<SceneRenderer> renderer, Timestep ts);
+		void OnRenderEditor(Ref<SceneRenderer> renderer, Timestep ts, const EditorCamera& editorCamera);
 
 		void SetName(const std::string& name) { m_DebugName = name; }
 		const std::string& GetName() const { return m_DebugName; }

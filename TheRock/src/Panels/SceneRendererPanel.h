@@ -16,8 +16,8 @@ namespace RockEngine {
 		void SetContext(const Ref<SceneRenderer>& context) { m_Context = context; }
 		void OnImGuiRender(bool isOpen);
 	private:
-		Ref<SceneRenderer> m_Context;
+		Ref<SceneRenderer> m_Context = nullptr;
 	};
 
 }
-#pragma once
+

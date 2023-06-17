@@ -21,6 +21,12 @@ namespace RockEngine
 		glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
 
+		glm::vec3 WorldTranslation = { 0.0f, 0.0f, 0.0f };
+
+		glm::vec3 Up = { 0.0F, 1.0F, 0.0F };
+		glm::vec3 Right = { 1.0F, 0.0F, 0.0F };
+		glm::vec3 Forward = { 0.0F, 0.0F, -1.0F };
+
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent& other) = default;
 		TransformComponent(const glm::vec3& translation)
@@ -32,7 +38,9 @@ namespace RockEngine
 				* glm::toMat4(glm::quat(Rotation))
 				* glm::scale(glm::mat4(1.0f), Scale);
 		}
+
 	};
+
 
 	struct TagComponent
 	{
@@ -62,6 +70,7 @@ namespace RockEngine
 	struct SkyLightComponent
 	{
 		std::string Name;
+		std::string FilePath;
 
 		Environment SceneEnvironment;
 		float Intensity = 1.0f;
@@ -73,6 +82,9 @@ namespace RockEngine
 		glm::vec3 Radiance = { 1.0f, 1.0f, 1.0f };
 		float Intensity = 1.0f;
 		float LightSize = 0.5f; // For PCSS
+
+		bool CastShadows = true;
+		bool SoftShadows = true;
 	};
 
 	struct PointLightComponent

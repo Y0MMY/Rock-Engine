@@ -20,6 +20,8 @@
 
 #include "RockEngine/ImGui/UICore.h"
 
+#include "RockEngine/Renderer/SceneRenderer.h"
+
 namespace RockEngine
 {
 	static glm::mat4 Mat4FromAssimpMat4(const aiMatrix4x4& from)
@@ -208,7 +210,6 @@ namespace RockEngine
 					{
 						decltype(auto) newEntity = m_Context->CreateEntity("Sky Light");
 						newEntity->AddComponent<SkyLightComponent>();
-						newEntity->GetComponent<TransformComponent>().Rotation = glm::radians(glm::vec3{ 80.0f, 10.0f, 0.0f });
 						m_Context->SetSelected(newEntity);
 					}
 
@@ -412,18 +413,19 @@ namespace RockEngine
 				float itemHeight = 28.0f;
 
 				std::string buttonName;
-				if (slc.SceneEnvironment)
+				if (slc.SceneEnvironment.IrradianceMap)
 					buttonName = slc.Name;
 				else
 					buttonName = "Null";
 
 				if(ImGui::Button(buttonName.c_str(), { width, itemHeight }))
 				{
-					std::string file = Utils::FileSystem::OpenFileDialog("*.hdr").string();
+					std::filesystem::path file = Utils::FileSystem::OpenFileDialog("*.hdr").string();
 					if (!file.empty())
 					{
-						slc.SceneEnvironment = Environment::Load(file);
+						slc.SceneEnvironment = SceneRenderer::CreateEnvironmentMap(file);
 						slc.Name = Utils::FileSystem::GetFileName(file);
+						slc.FilePath = file.string();
 					}
 				}
 
@@ -443,6 +445,8 @@ namespace RockEngine
 				UI::BeginPropertyGrid();
 				UI::PropertyColor("Radiance", dlc.Radiance);
 				UI::Property("Intensity", dlc.Intensity);
+				UI::Property("Cast Shadows", dlc.CastShadows);
+				UI::Property("Soft Shadows", dlc.SoftShadows);
 				UI::Property("Source Size", dlc.LightSize);
 				UI::EndPropertyGrid();
 			});

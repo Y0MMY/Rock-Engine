@@ -4,6 +4,7 @@
 
 #include "Mesh.h"
 #include "RenderPass.h"
+#include "SceneEnvironment.h"
 
 namespace RockEngine
 {
@@ -38,6 +39,8 @@ namespace RockEngine
 
 		static void WaitAndRender();
 		static void Shutdown();
+
+		static Environment CreateEnvironmentMap(const std::filesystem::path& filepath);
 
 		template <typename FuncT>
 		static void Submit(FuncT&& func)

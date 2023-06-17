@@ -60,7 +60,7 @@ namespace RockEngine
 		case KeyCode::G:
 			// Toggle grid
 			if (RockEngine::Input::IsKeyPressed(KeyCode::LeftControl))
-				SceneRenderer::GetOptions().ShowGrid = !SceneRenderer::GetOptions().ShowGrid;
+				m_ViewportRenderer->GetOptions().ShowGrid = !m_ViewportRenderer->GetOptions().ShowGrid;
 			break;
 		case KeyCode::B:
 			// Toggle bounding boxes 
@@ -104,8 +104,8 @@ namespace RockEngine
 					{
 						auto& submesh = submeshes[i];
 						Math::Ray ray = {
-							glm::inverse(e->Transform().GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f),
-							glm::inverse(glm::mat3(e->Transform().GetTransform()) * glm::mat3(submesh.Transform)) * direction
+							glm::inverse(e->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f),
+							glm::inverse(glm::mat3(e->GetTransform()) * glm::mat3(submesh.Transform)) * direction
 						};
 
 						float t;
@@ -137,7 +137,7 @@ namespace RockEngine
 
 	void EditorLayer::ShowBoundingBoxes(bool show, bool onTop)
 	{
-		SceneRenderer::GetOptions().ShowBoundingBoxes = show;
+		m_ViewportRenderer->GetOptions().ShowBoundingBoxes = show;
 	}
 
 	void EditorLayer::OnEvent(Event& e)
@@ -149,16 +149,18 @@ namespace RockEngine
 
 	void EditorLayer::OnAttach()
 	{
-		{
-			// Editor
-			m_CheckerboardTex = Texture2D::Create("assets/editor/Checkerboard.tga");
-			m_SceneHierarchyPanel = std::make_unique<SceneHierarchyPanel>(m_EditorScene);
+		m_SceneRendererPanel = std::make_unique<SceneRendererPanel>();
+		// Editor
+		m_CheckerboardTex = Texture2D::Create("assets/editor/Checkerboard.tga");
+		m_SceneHierarchyPanel = std::make_unique<SceneHierarchyPanel>(m_EditorScene);
 
-			m_TextEditor.SetLanguageDefinition(GetLang(TextEditorLang::GLSL));
-			m_TextEditor.SetShowWhitespaces(false);
+		m_TextEditor.SetLanguageDefinition(GetLang(TextEditorLang::GLSL));
+		m_TextEditor.SetShowWhitespaces(false);
 
-			NewScene();
-		}
+		m_ViewportRenderer = Ref<SceneRenderer>::Create(m_CurrentScene);
+		m_SceneRendererPanel->SetContext(m_ViewportRenderer);
+
+		NewScene();
 	}
 
 	void EditorLayer::UpdateWindowTitle(const std::string& sceneName)
@@ -178,20 +180,23 @@ namespace RockEngine
 
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
+		auto [x, y] = GetMouseViewportSpace();
+		m_ViewportRenderer->SetFocusPoint({ x * 0.5f + 0.5f, y * 0.5f + 0.5f });
+
 		m_EditorScene->OnUpdate(ts);
 
 		m_EditorCamera.OnUpdate(ts);
-		m_EditorScene->OnRenderEditor(ts, m_EditorCamera);
+		m_EditorScene->OnRenderEditor(m_ViewportRenderer, ts, m_EditorCamera);
 
 		if (m_EditorScene->m_SelectionContext.size())
 		{
 			auto& selection = m_EditorScene->m_SelectionContext[0];
 
-			RockEngine::Renderer::BeginRenderPass(RockEngine::SceneRenderer::GetFinalRenderPass(), false);
+			RockEngine::Renderer::BeginRenderPass(m_ViewportRenderer->GetFinalRenderPass(), false);
 			auto viewProj = m_EditorCamera.GetViewProjection();
 			RockEngine::Renderer2D::BeginScene(viewProj, false);
 			auto& submesh = m_EditorScene->m_SelectionContext[0];
-			Renderer::DrawAABB(selection.Mesh->BoundingBox, selection.Entity->Transform().GetTransform() * selection.Mesh->Transform);
+			Renderer::DrawAABB(selection.Mesh->BoundingBox, selection.Entity->GetTransform() * selection.Mesh->Transform);
 			RockEngine::Renderer2D::EndScene();
 			RockEngine::Renderer::EndRenderPass();
 		}
@@ -274,12 +279,12 @@ namespace RockEngine
 			auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
 			auto viewportSize = ImGui::GetContentRegionAvail();
 
-			SceneRenderer::SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+			m_ViewportRenderer->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 
 			m_EditorCamera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
 			m_EditorCamera.SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 
-			ImGui::Image((void*)SceneRenderer::GetFinalColorBufferRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
+			ImGui::Image((void*)m_ViewportRenderer->GetFinalColorBufferRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
 
 			static int counter = 0;
 			auto windowSize = ImGui::GetWindowSize();
@@ -384,7 +389,7 @@ namespace RockEngine
 
 			bool snap = Input::IsKeyPressed(KeyCode::LeftControl);
 
-			TransformComponent& entityTransform = selection.Entity->Transform();
+			TransformComponent& entityTransform = selection.Entity->GetComponent<TransformComponent>();
 			glm::mat4 transform = entityTransform.GetTransform();
 
 			float snapValue = GetSnapValue();

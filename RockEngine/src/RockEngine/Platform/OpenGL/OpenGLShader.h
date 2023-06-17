@@ -19,7 +19,7 @@ namespace RockEngine
 		virtual const std::string& GetName() const override { return m_Name; }
 		virtual const std::filesystem::path& GetPath() const override { return m_AssetPath; }
 
-		virtual void UploadUniformBuffer(const UniformBufferBase& uniformBuffer) override {}
+		virtual void UploadUniformBuffer(const UniformBufferBase& uniformBuffer) override;
 
 		void UploadUniformInt(uint32_t location, int32_t value);
 		void UploadUniformIntArray(uint32_t location, int32_t* values, int32_t count);
@@ -76,7 +76,7 @@ namespace RockEngine
 		}
 
 	private:
-		const std::string ReadShaderFromFile(const std::filesystem::path& filepath);
+		std::string ReadShaderFromFile(const std::filesystem::path& filepath) const;
 		void Reload();
 		void Load(const std::string& source);
 		void Parse();

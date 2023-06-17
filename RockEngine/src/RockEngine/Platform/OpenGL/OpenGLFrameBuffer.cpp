@@ -108,7 +108,7 @@ namespace RockEngine
 		}
 
 
-		RE_CORE_INFO_TAG("Render", "Creating FrameBuffer {} : {}", spec.Width, spec.Height);
+		RE_CORE_INFO_TAG("Renderer", "Creating FrameBuffer {} : {}", spec.Width, spec.Height);
 		Resize(m_Width, m_Height, true);
 	}
 
