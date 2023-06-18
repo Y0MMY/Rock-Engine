@@ -207,31 +207,7 @@ namespace RockEngine
 				{
 					glDrawBuffer(GL_NONE);
 				}
-#if 0
-				RGBA8 = 1,
-					RGBA16F = 2,
-					RGBA32F = 3,
-					RG32F = 4,
-				Utils::CreateTexures(instance->m_Specification.Samples > 1, &instance->m_ColorAttachment, 1);
-				Utils::BindTexture(instance->m_Specification.Samples > 1, instance->m_ColorAttachment);
 
-				if (instance->m_Specification.Format == FramebufferTextureFormat::RGBA16F)
-				{
-					Utils::AttachColorTexture(instance->m_ColorAttachment, instance->m_Specification.Samples, GL_RGBA16F, instance->m_Width, instance->m_Height, 0);
-
-				}
-				else if (instance->m_Specification.Format == FramebufferTextureFormat::RGBA8)
-				{
-				
-					Utils::AttachColorTexture(instance->m_ColorAttachment, instance->m_Specification.Samples, GL_RGBA, instance->m_Width, instance->m_Height, 0);
-				}
-				
-
-				Utils::CreateTexures(instance->m_Specification.Samples > 1, &instance->m_DepthAttachment, 1);
-				Utils::BindTexture(instance->m_Specification.Samples > 1, instance->m_DepthAttachment);
-
-				Utils::AttachDepthTexture(instance->m_DepthAttachment, instance->m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, instance->m_Width, instance->m_Height);
-#endif
 				if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 					RE_CORE_ERROR("Framebuffer is incomplete!");
 

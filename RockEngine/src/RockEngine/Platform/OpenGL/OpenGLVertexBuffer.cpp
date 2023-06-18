@@ -18,55 +18,65 @@ namespace RockEngine
 		return 0;
 	}
 
-	OpenGLVertexBuffer::OpenGLVertexBuffer(void* data, uint32_t size, VertexBufferUsage usage)
-		: m_Size(size), m_Usage(usage)
+	OpenGLVertexBuffer::OpenGLVertexBuffer(void* data, u32 size, VertexBufferUsage usage)
+		: m_Size(size)
 	{
 		m_LocalData = Buffer::Copy(data, size);
-
 		Ref<OpenGLVertexBuffer> instance = this;
 		Renderer::Submit([instance]() mutable
 			{
-				glCreateBuffers(1, &instance->m_RendererID);
-				glNamedBufferData(instance->m_RendererID, instance->m_Size, instance->m_LocalData.Data, OpenGLUsage(instance->m_Usage));
-			});
+				glGenBuffers(1, &instance->m_RendererID);
+
+				glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
+				glBufferData(GL_ARRAY_BUFFER, instance->m_LocalData.Size, instance->m_LocalData.Data, GL_STATIC_DRAW);
+			}
+		);
 	}
 
-	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size, VertexBufferUsage usage)
-		: m_Size(size), m_Usage(usage)
+	OpenGLVertexBuffer::OpenGLVertexBuffer(u32 size, VertexBufferUsage usage)
+		: m_Size(size)
 	{
 		Ref<OpenGLVertexBuffer> instance = this;
 		Renderer::Submit([instance]() mutable
 			{
-				glCreateBuffers(1, &instance->m_RendererID);
-				glNamedBufferData(instance->m_RendererID, instance->m_Size, nullptr, OpenGLUsage(instance->m_Usage));
-			});
+				glGenBuffers(1, &instance->m_RendererID);
+			}
+		);
 	}
 
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
-		GLuint rendererID = m_RendererID;
-		Renderer::Submit([rendererID]() {
-			glDeleteBuffers(1, &rendererID);
-			});
+		Ref<OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
+			{
+				glDeleteBuffers(1, &instance->m_RendererID);
+			}
+		);
 	}
 
-	void OpenGLVertexBuffer::SetData(void* data, uint32_t size, uint32_t offset)
+	void OpenGLVertexBuffer::Bind() const {
+
+		Ref<const OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
+			{
+				glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
+
+			}
+		);
+
+	}
+
+	void OpenGLVertexBuffer::SetData(void* data, u32 size, u32 offset)
 	{
 		m_LocalData = Buffer::Copy(data, size);
 		m_Size = size;
+
 		Ref<OpenGLVertexBuffer> instance = this;
-		Renderer::Submit([instance, offset]() {
-			glNamedBufferSubData(instance->m_RendererID, offset, instance->m_Size, instance->m_LocalData.Data);
-			});
+		Renderer::Submit([instance]() mutable
+			{
+				glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
+				glBufferData(GL_ARRAY_BUFFER, instance->m_LocalData.Size, instance->m_LocalData.Data, GL_STATIC_DRAW);
+			}
+		);
 	}
-
-	void OpenGLVertexBuffer::Bind() const
-	{
-		Ref<const OpenGLVertexBuffer> instance = this;
-		Renderer::Submit([instance]() {
-			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
-			});
-	}
-
-
 }

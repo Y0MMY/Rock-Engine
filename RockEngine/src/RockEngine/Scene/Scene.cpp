@@ -101,8 +101,8 @@ namespace RockEngine
 
 		m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
 
-		//renderer->SetScene(this);
-		renderer->BeginScene(this, { editorCamera, editorCamera.GetViewMatrix()});
+		renderer->SetScene(this);
+		renderer->BeginScene({ editorCamera, editorCamera.GetViewMatrix()});
 		for (const auto& [key, entity] : m_EntityIDMap)
 		{
 			if (entity->HasComponent<MeshComponent>())

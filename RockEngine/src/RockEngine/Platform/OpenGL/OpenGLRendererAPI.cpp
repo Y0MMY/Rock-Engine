@@ -63,8 +63,8 @@ namespace RockEngine
 			RE_CORE_ERROR("OpenGL Error {0}", error);
 			error = glGetError();
 		}
-	}
 
+	}
 
 	void RendererAPI::Clear(float r, float g, float b, float a)
 	{

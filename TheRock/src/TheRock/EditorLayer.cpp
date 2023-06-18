@@ -149,6 +149,7 @@ namespace RockEngine
 
 	void EditorLayer::OnAttach()
 	{
+
 		m_SceneRendererPanel = std::make_unique<SceneRendererPanel>();
 		// Editor
 		m_CheckerboardTex = Texture2D::Create("assets/editor/Checkerboard.tga");
@@ -157,10 +158,11 @@ namespace RockEngine
 		m_TextEditor.SetLanguageDefinition(GetLang(TextEditorLang::GLSL));
 		m_TextEditor.SetShowWhitespaces(false);
 
+		NewScene();
+
+		m_CurrentScene = m_EditorScene;
 		m_ViewportRenderer = Ref<SceneRenderer>::Create(m_CurrentScene);
 		m_SceneRendererPanel->SetContext(m_ViewportRenderer);
-
-		NewScene();
 	}
 
 	void EditorLayer::UpdateWindowTitle(const std::string& sceneName)

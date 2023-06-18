@@ -62,24 +62,7 @@ struct DirectionalLight
 	vec3 Direction;
 	vec3 Radiance;
 	float Multiplier;
-
-	bool padding;
 };
-
-// Point Lights
-struct PointLight 
-{
-	vec3 Position;
-	float Intensity;
-	vec3 Radiance;
-	float MinRadius;
-	float Radius;
-	float Falloff;
-	float LightSize;
-};
-
-uniform int u_PointLightsCount;
-uniform PointLight u_PointLights[10];
 
 in VertexOutput
 {
@@ -94,7 +77,7 @@ in VertexOutput
 } vs_Input;
 
 layout(location = 0) out vec4 color;
-
+layout(location = 1) out vec4 o_BloomColor;
 
 uniform DirectionalLight u_DirectionalLights;
 uniform vec3 u_CameraPosition;
@@ -126,6 +109,8 @@ uniform float u_CascadeTransitionFade;
 uniform vec4 u_CascadeSplits;
 
 uniform float u_IBLContribution;
+
+uniform float u_BloomThreshold;
 
 ////////////////////////////////////////
 
@@ -503,33 +488,6 @@ float PCSS_DirectionalLight(sampler2D shadowMap, vec3 shadowCoords, float uvLigh
 
 /////////////////////////////////////////////
 
-vec3 CalculatePointLight()
-{
-    vec3 result = vec3(0.0);
-    for(int i = 0; i < u_PointLightsCount; i++)
-    {
-        PointLight pointLight = u_PointLights[i];
-
-
-        vec3 L = pointLight.Position - vs_Input.WorldPosition;
-        float distance = length(L);
-        L = normalize(L);
-
-        float attenuation = clamp(1.0 - (distance - pointLight.MinRadius) / (pointLight.Radius - pointLight.MinRadius), 0.0, 1.0);
-        float falloff = pow(attenuation, pointLight.Falloff);
-
-        float lightSize = pointLight.LightSize;
-        float lightSizeAttenuation = 1.0 - smoothstep(0.0, lightSize, distance);
-
-        float intensity = pointLight.Intensity * falloff * lightSizeAttenuation;
-
-        vec3 lightContribution = pointLight.Radiance * intensity;
-
-        result += lightContribution;
-    }
-    return result;
-}
-
 void main()
 {
 	// Standard PBR inputs
@@ -627,7 +585,13 @@ void main()
 	vec3 iblContribution = IBL(F0, Lr) * u_IBLContribution;
 	vec3 lightContribution = u_DirectionalLights.Multiplier > 0.0f ? (Lighting(F0) * shadowAmount) : vec3(0.0f);
 
-	color = vec4(CalculatePointLight() + lightContribution + iblContribution, 1.0);
+	color = vec4(lightContribution + iblContribution, 1.0);
+
+	// Bloom
+	float brightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
+	o_BloomColor = vec4(0.0, 0.0, 0.0, 1.0);
+	if (brightness > u_BloomThreshold)
+		o_BloomColor = color;
 
 	if (u_ShowCascades)
 	{
@@ -647,5 +611,5 @@ void main()
 			break;
 		}
 	}
-	// color = vec4(lightContribution, 1.0);
+
 }

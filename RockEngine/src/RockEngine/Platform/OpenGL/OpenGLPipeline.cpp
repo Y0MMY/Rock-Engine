@@ -11,22 +11,23 @@ namespace RockEngine
 	{
 		switch (type)
 		{
-			case ShaderDataType::Float:    return GL_FLOAT;
-			case ShaderDataType::Float2:   return GL_FLOAT;
-			case ShaderDataType::Float3:   return GL_FLOAT;
-			case ShaderDataType::Float4:   return GL_FLOAT;
-			case ShaderDataType::Mat3:     return GL_FLOAT;
-			case ShaderDataType::Mat4:     return GL_FLOAT;
-			case ShaderDataType::Int:      return GL_INT;
-			case ShaderDataType::Int2:     return GL_INT;
-			case ShaderDataType::Int3:     return GL_INT;
-			case ShaderDataType::Int4:     return GL_INT;
-			case ShaderDataType::Bool:     return GL_BOOL;
+		case ShaderDataType::Float:    return GL_FLOAT;
+		case ShaderDataType::Float2:   return GL_FLOAT;
+		case ShaderDataType::Float3:   return GL_FLOAT;
+		case ShaderDataType::Float4:   return GL_FLOAT;
+		case ShaderDataType::Mat3:     return GL_FLOAT;
+		case ShaderDataType::Mat4:     return GL_FLOAT;
+		case ShaderDataType::Int:      return GL_INT;
+		case ShaderDataType::Int2:     return GL_INT;
+		case ShaderDataType::Int3:     return GL_INT;
+		case ShaderDataType::Int4:     return GL_INT;
+		case ShaderDataType::Bool:     return GL_BOOL;
 		}
 
 		RE_CORE_ASSERT(false, "Unknown ShaderDataType!");
 		return 0;
 	}
+
 
 	OpenGLPipeline::OpenGLPipeline(const PipelineSpecification& spec)
 		: m_Specification(spec)
@@ -62,12 +63,11 @@ namespace RockEngine
 
 				glBindVertexArray(0);
 			});
-
 	}
 
 	void OpenGLPipeline::Bind() const
 	{
-		Ref<const OpenGLPipeline> instance = this;
+		const Ref<const OpenGLPipeline> instance = this;
 		Renderer::Submit([instance]()
 			{
 				glBindVertexArray(instance->m_RendererID);
@@ -98,7 +98,7 @@ namespace RockEngine
 					attribIndex++;
 				}
 			});
-
 	}
+
 
 }
