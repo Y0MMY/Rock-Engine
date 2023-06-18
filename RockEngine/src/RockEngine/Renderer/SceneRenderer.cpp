@@ -43,6 +43,7 @@ namespace RockEngine
 		m_CompositePass = RenderPass::Create(compRenderPassSpec);
 
 		m_CompositeShader = Shader::Create("assets/shaders/SceneComposite.glsl");
+
 		m_BRDFLUT = Texture2D::Create("assets/textures/BRDF_LUT.tga");
 
 		// Grid
@@ -62,12 +63,11 @@ namespace RockEngine
 		m_ShadowMapShader = Shader::Create("assets/shaders/ShadowMap.glsl");
 
 		FramebufferSpecification shadowMapFramebufferSpec;
-		shadowMapFramebufferSpec.Width = 4096 * 1;
-		shadowMapFramebufferSpec.Height = 4096 * 1;
+		shadowMapFramebufferSpec.Width = 1024 * 4;
+		shadowMapFramebufferSpec.Height = 1024 * 4;
 		shadowMapFramebufferSpec.Attachments = { FramebufferTextureFormat::DEPTH32F };
 		shadowMapFramebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 		shadowMapFramebufferSpec.NoResize = true;
-		shadowMapFramebufferSpec.Samples = 1;
 
 		// 4 cascades
 		for (int i = 0; i < 4; i++)
@@ -76,7 +76,6 @@ namespace RockEngine
 			shadowMapRenderPassSpec.TargetFramebuffer = Framebuffer::Create(shadowMapFramebufferSpec);
 			m_ShadowMapRenderPass[i] = RenderPass::Create(shadowMapRenderPassSpec);
 		}
-
 
 		Renderer::Submit([this]()
 			{
@@ -88,12 +87,6 @@ namespace RockEngine
 				glSamplerParameteri(m_ShadowMapSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glSamplerParameteri(m_ShadowMapSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			});
-	}
-
-	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
-	{
-		m_GeoPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-		m_CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
 	}
 
 	void SceneRenderer::BeginScene(const SceneRendererCamera& camera)
@@ -115,6 +108,19 @@ namespace RockEngine
 		RE_CORE_ASSERT(m_Active);
 		FlushDrawList();
 		m_Active = false;
+	}
+
+	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
+	{
+		if (m_ViewportWidth != width || m_ViewportHeight != height)
+		{
+			m_ViewportWidth = width;
+			m_ViewportHeight = height;
+
+			m_GeoPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			m_CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			//m_NeedsResize = true;
+		}
 	}
 
 	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance> overrideMaterial)
@@ -557,7 +563,7 @@ namespace RockEngine
 			return;
 		}
 
-		CascadeData cascades[4];
+		CascadeData cascades[4] = {};
 		CalculateCascades(cascades, directionalLights[0].Direction);
 		ShadowSettings.LightViewMatrix = cascades[0].View;
 

@@ -49,8 +49,6 @@ namespace RockEngine
 		Entity* m_MeshEntity = nullptr;
 		glm::vec2 m_ViewportBounds[2];
 
-		Camera m_Camera;
-
 		struct AlbedoInput
 		{
 			glm::vec3 Color = { 0.972f, 0.96f, 0.915f }; // Silver, from https://docs.unrealengine.com/en-us/Engine/Rendering/Materials/PhysicallyBased

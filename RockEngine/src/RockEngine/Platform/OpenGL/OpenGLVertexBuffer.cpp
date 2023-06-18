@@ -19,7 +19,7 @@ namespace RockEngine
 	}
 
 	OpenGLVertexBuffer::OpenGLVertexBuffer(void* data, u32 size, VertexBufferUsage usage)
-		: m_Size(size)
+		: m_Size(size), m_Usage(usage)
 	{
 		m_LocalData = Buffer::Copy(data, size);
 		Ref<OpenGLVertexBuffer> instance = this;
@@ -28,13 +28,13 @@ namespace RockEngine
 				glGenBuffers(1, &instance->m_RendererID);
 
 				glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
-				glBufferData(GL_ARRAY_BUFFER, instance->m_LocalData.Size, instance->m_LocalData.Data, GL_STATIC_DRAW);
+				glBufferData(GL_ARRAY_BUFFER, instance->m_LocalData.Size, instance->m_LocalData.Data, OpenGLUsage(instance->m_Usage));
 			}
 		);
 	}
 
 	OpenGLVertexBuffer::OpenGLVertexBuffer(u32 size, VertexBufferUsage usage)
-		: m_Size(size)
+		: m_Size(size), m_Usage(usage)
 	{
 		Ref<OpenGLVertexBuffer> instance = this;
 		Renderer::Submit([instance]() mutable
@@ -75,7 +75,7 @@ namespace RockEngine
 		Renderer::Submit([instance]() mutable
 			{
 				glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
-				glBufferData(GL_ARRAY_BUFFER, instance->m_LocalData.Size, instance->m_LocalData.Data, GL_STATIC_DRAW);
+				glBufferData(GL_ARRAY_BUFFER, instance->m_LocalData.Size, instance->m_LocalData.Data, OpenGLUsage(instance->m_Usage));
 			}
 		);
 	}
