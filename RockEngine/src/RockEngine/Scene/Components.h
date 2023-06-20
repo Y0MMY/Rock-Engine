@@ -64,6 +64,11 @@ namespace RockEngine
 		operator const std::string& () const { return Tag; }
 	};
 
+	struct RendererComponent
+	{
+		bool Visible = true;
+	};
+
 	struct MeshComponent
 	{
 		Ref<Mesh> Mesh;
@@ -106,5 +111,17 @@ namespace RockEngine
 		float MinRadius = 1.f;
 		float Radius = 10.0f;
 		float Falloff = 1.0f;
+	};
+
+	struct SphereColliderComponent // TODO: Set a virtual class, in Scnene Hierarchy we can change Colider
+	{
+		float Radius = 0.5F;
+		bool IsTrigger = false;
+
+		// The mesh that will be drawn in the editor to show the collision bounds
+		Ref<Mesh> DebugMesh;
+
+		SphereColliderComponent() = default;
+		SphereColliderComponent(const SphereColliderComponent& other) = default;
 	};
 }

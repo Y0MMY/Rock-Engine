@@ -2,6 +2,7 @@
 #include "SceneSerializer.h"
 
 #include "RockEngine/Core/Math/Math.h"
+
 #include "RockEngine/Utilities/StringUtils.h"
 
 #include "RockEngine/Renderer/SceneRenderer.h"
@@ -255,6 +256,10 @@ namespace RockEngine
 					auto& component = deserializedEntity->AddComponent<DirectionalLightComponent>();
 					component.Radiance = directionalLightComponent["Radiance"].as<glm::vec3>();
 					component.LightSize = directionalLightComponent["LightSize"].as<float>();
+
+
+					//deserializedEntity->AddComponent<MeshComponent>().Mesh = Math::CreateSphere(1);
+					//deserializedEntity->GetComponent<MeshComponent>().Target = DrawTarget::DrawSphere;
 				}
 			}
 		}

@@ -12,6 +12,13 @@ namespace RockEngine
 		{
 			ImGui::Text("Viewport Size: %d, %d", m_Context->m_ViewportWidth, m_Context->m_ViewportHeight);
 
+			UI::BeginPropertyGrid();
+			UI::Property("Draw Outline", m_Context->m_Options.DrawOutline);
+			UI::Property("Show Bounding Boxes", m_Context->m_Options.ShowBoundingBoxes);
+			UI::Property("Show Grid", m_Context->m_Options.ShowGrid);
+			UI::Property("SkyBox Lod", m_Context->m_Scene->m_SkyboxLod, 1.0f, 10.0f);
+			UI::EndPropertyGrid();
+
 			const float headerSpacingOffset = -(ImGui::GetStyle().ItemSpacing.y + 1.0f);
 			const bool shadersTreeNode = UI::PropertyGridHeader("Shaders", false);
 
@@ -19,9 +26,10 @@ namespace RockEngine
 			{
 				static std::string searchedString;
 				
-				auto& shaders = Renderer::GetShaderLibrary()->GetShaders();
-				for (auto& [name, shader] : shaders)
+				auto& shaders = Shader::s_AllShaders;
+				for (auto& shader : shaders)
 				{
+					std::string name = shader->GetName();
 					ImGui::Columns(2);
 					ImGui::Text(name.c_str());
 					ImGui::NextColumn();

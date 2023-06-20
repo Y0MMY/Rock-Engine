@@ -84,6 +84,9 @@ namespace RockEngine
 
 		// Temporary, before we have an asset manager
 		static std::vector<Ref<Shader>> s_AllShaders;
+
+	private:
+		friend class SceneRendererPanel;
 	};
 
 	class ShaderLibrary : public RefCounted

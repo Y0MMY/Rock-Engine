@@ -57,7 +57,7 @@ namespace RockEngine
 		void SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 		void SubmitMeshWithShader(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Shader> shader);
 
-		void SubmitSoliderSphere(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
+		void SubmitSoliderSphere(const SphereColliderComponent& component, const glm::mat4& transform = glm::mat4(1.0f));
 
 		SceneRendererOptions& GetOptions();
 		static Environment CreateEnvironmentMap(const std::filesystem::path& filepath);
@@ -99,7 +99,9 @@ namespace RockEngine
 		} m_SceneData;
 
 		Ref<Shader> m_CompositeShader;
+
 		Ref<Shader> m_ShadowMapShader;
+		Ref<Shader> m_ShadowMapAnimShader;
 
 		Ref<Shader> m_ColiderSphereSphere;
 

@@ -142,8 +142,7 @@ namespace RockEngine {
 	{
 	public:
 		Mesh(const std::filesystem::path& filename);
-		Mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const glm::mat4& transform);
-		Mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, Ref<Shader> shader, const glm::mat4& transform);
+		Mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices);
 		~Mesh() {}
 
 		void OnUpdate(Timestep ts);

@@ -48,6 +48,8 @@ namespace RockEngine
 
 			for (const auto e : lights)
 			{
+				if (!e->GetComponent<RendererComponent>().Visible)
+					continue;
 				auto transform = e->GetComponent<TransformComponent>().GetTransform();
 				auto lightComponent = e->GetComponent<DirectionalLightComponent>();
 
@@ -72,6 +74,8 @@ namespace RockEngine
 			uint32_t pointLightIndex = 0;
 			for (auto e : pointLights)
 			{
+				if (!pointlightEntity[pointLightIndex]->GetComponent<RendererComponent>().Visible)
+					continue;
 				auto transform = pointlightEntity[pointLightIndex]->GetComponent<TransformComponent>();
 				m_LightEnvironment.PointLights[pointLightIndex++] = {
 							transform.Translation,
@@ -97,42 +101,46 @@ namespace RockEngine
 					SetSkybox(m_Environment.RadianceMap);
 					break;
 				}
+				m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
 		}
 
-		m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
 
 		renderer->SetScene(this);
 		renderer->BeginScene({ editorCamera, editorCamera.GetViewMatrix(), 0.1f, 1000.0f, 45.0f });
-		for (const auto& [key, entity] : m_EntityIDMap)
-		{
-			if (entity->HasComponent<MeshComponent>())
-			{
-				auto& meshComponent = entity->GetComponent<MeshComponent>();
-				if (meshComponent.Target == DrawTarget::None)
-					continue;
-				if (meshComponent.Mesh)
-				{
-					auto& transformComponent = entity->GetComponent<TransformComponent>();
 
-					meshComponent.Mesh->OnUpdate(ts);
-					if (meshComponent.Target == DrawTarget::Draw)
+		{
+
+			for (const auto& [key, entity] : m_EntityIDMap)
+			{
+				if (!entity->GetComponent<RendererComponent>().Visible)
+					continue;
+
+				if (entity->HasComponent<MeshComponent>())
+				{
+					auto& meshComponent = entity->GetComponent<MeshComponent>();
+					if (meshComponent.Mesh)
 					{
+						auto& transformComponent = entity->GetComponent<TransformComponent>();
+
+						meshComponent.Mesh->OnUpdate(ts);
+
 						if (m_SelectedEntity == entity && renderer->GetOptions().DrawOutline)
 							renderer->SubmitSelectedMesh(meshComponent, transformComponent.GetTransform());
 						else
 							renderer->SubmitMesh(meshComponent, transformComponent.GetTransform());
+
 					}
-					else if (meshComponent.Target == DrawTarget::DrawWithShader)
-					{
-						renderer->SubmitMeshWithShader(meshComponent, transformComponent.GetTransform(), meshComponent.Mesh->GetMeshShader());
-					}
-					else if (meshComponent.Target == DrawTarget::DrawSphere)
-					{
-						renderer->SubmitSoliderSphere(meshComponent, transformComponent.GetTransform()); // TODO: Move to ColiderComponent
-					}
+				}
+
+				if (entity->HasComponent<SphereColliderComponent>())
+				{
+					auto& collider = entity->GetComponent<SphereColliderComponent>();
+					renderer->SubmitSoliderSphere(collider, entity->GetComponent<TransformComponent>().GetTransform());
 				}
 			}
 		}
+
+
 		renderer->EndScene();
 	}
 
@@ -170,7 +178,8 @@ namespace RockEngine
 
 		if (!name.empty())
 			entity->AddComponent<TagComponent>(name);
-		entity->AddComponent<TransformComponent>();
+		entity->AddComponent<TransformComponent>(); // NOTE: Entity always has TransformComponent
+		entity->AddComponent<RendererComponent>();  // NOTE: Entity always has RendererComponent
 
 		m_EntitysCount++;
 		AddEntity(entity);
@@ -198,7 +207,8 @@ namespace RockEngine
 
 		if (!name.empty())
 			entity->AddComponent<TagComponent>(name);
-		entity->AddComponent<TransformComponent>();
+		entity->AddComponent<TransformComponent>(); // NOTE: Entity always has TransformComponent
+		entity->AddComponent<RendererComponent>();  // NOTE: Entity always has RendererComponent
 
 		m_EntitysCount++;
 		AddEntity(entity);

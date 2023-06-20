@@ -46,6 +46,54 @@ void main()
 	gl_Position = u_ViewProjectionMatrix * u_Transform * vec4(a_Position, 1.0);
 }
 
+#type vertex
+#version 430 core
+
+layout(location = 0) in vec3 a_Position;
+layout(location = 1) in vec3 a_Normal;
+layout(location = 2) in vec3 a_Tangent;
+layout(location = 3) in vec3 a_Binormal;
+layout(location = 4) in vec2 a_TexCoord;
+
+uniform mat4 u_ViewProjectionMatrix;
+uniform mat4 u_ViewMatrix;
+uniform mat4 u_Transform;
+
+uniform mat4 u_LightMatrixCascade0;
+uniform mat4 u_LightMatrixCascade1;
+uniform mat4 u_LightMatrixCascade2;
+uniform mat4 u_LightMatrixCascade3;
+
+out VertexOutput
+{
+	vec3 WorldPosition;
+    vec3 Normal;
+	vec2 TexCoord;
+	mat3 WorldNormals;
+	mat3 WorldTransform;
+	vec3 Binormal;
+	vec4 ShadowMapCoords[4];
+	vec3 ViewPosition;
+} vs_Output;
+
+void main()
+{
+	vs_Output.WorldPosition = vec3(u_Transform * vec4(a_Position, 1.0));
+    vs_Output.Normal = mat3(u_Transform) * a_Normal;
+	vs_Output.TexCoord = vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
+	vs_Output.WorldNormals = mat3(u_Transform) * mat3(a_Tangent, a_Binormal, a_Normal);
+	vs_Output.WorldTransform = mat3(u_Transform);
+	vs_Output.Binormal = a_Binormal;
+
+	vs_Output.ShadowMapCoords[0] = u_LightMatrixCascade0 * vec4(vs_Output.WorldPosition, 1.0);
+	vs_Output.ShadowMapCoords[1] = u_LightMatrixCascade1 * vec4(vs_Output.WorldPosition, 1.0);
+	vs_Output.ShadowMapCoords[2] = u_LightMatrixCascade2 * vec4(vs_Output.WorldPosition, 1.0);
+	vs_Output.ShadowMapCoords[3] = u_LightMatrixCascade3 * vec4(vs_Output.WorldPosition, 1.0);
+	vs_Output.ViewPosition = vec3(u_ViewMatrix * vec4(vs_Output.WorldPosition, 1.0));
+	
+	gl_Position = u_ViewProjectionMatrix * u_Transform * vec4(a_Position, 1.0);
+}
+
 #type fragment
 #version 430 core
 
@@ -63,6 +111,21 @@ struct DirectionalLight
 	vec3 Radiance;
 	float Multiplier;
 };
+
+// Point light
+struct PointLight 
+{
+	vec3 Position;
+	float Intensity;
+	vec3 Radiance;
+	float MinRadius;
+	float Radius;
+	float Falloff;
+	float LightSize;
+};
+
+uniform int u_PointLightsCount;
+uniform PointLight u_PointLights[100];
 
 in VertexOutput
 {
@@ -488,6 +551,33 @@ float PCSS_DirectionalLight(sampler2D shadowMap, vec3 shadowCoords, float uvLigh
 
 /////////////////////////////////////////////
 
+vec3 CalculatePointLight()
+{
+    vec3 result = vec3(0.0);
+    for(int i = 0; i < u_PointLightsCount; i++)
+    {
+        PointLight pointLight = u_PointLights[i];
+
+
+        vec3 L = pointLight.Position - vs_Input.WorldPosition;
+        float distance = length(L);
+        L = normalize(L);
+
+        float attenuation = clamp(1.0 - (distance - pointLight.MinRadius) / (pointLight.Radius - pointLight.MinRadius), 0.0, 1.0);
+        float falloff = pow(attenuation, pointLight.Falloff);
+
+        float lightSize = pointLight.LightSize;
+        float lightSizeAttenuation = 1.0 - smoothstep(0.0, lightSize, distance);
+
+        float intensity = pointLight.Intensity * falloff * lightSizeAttenuation;
+
+        vec3 lightContribution = pointLight.Radiance * intensity;
+
+        result += lightContribution;
+    }
+    return result;
+}
+
 void main()
 {
 	// Standard PBR inputs
@@ -584,8 +674,9 @@ void main()
 
 	vec3 iblContribution = IBL(F0, Lr) * u_IBLContribution;
 	vec3 lightContribution = u_DirectionalLights.Multiplier > 0.0f ? (Lighting(F0) * shadowAmount) : vec3(0.0f);
+	vec3 PointLight = CalculatePointLight();
 
-	color = vec4(lightContribution + iblContribution, 1.0);
+	color = vec4(PointLight + lightContribution + iblContribution, 1.0);
 
 	// Bloom
 	float brightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));

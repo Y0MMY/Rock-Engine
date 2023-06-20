@@ -8,6 +8,8 @@
 #include "RockEngine/Utilities/FileSystem.h"
 #include "RockEngine/Core/Math/Math.h"
 
+#include "RockEngine/Renderer/MeshFactory.h"
+
 #include "RockEngine/Core/Application.h"
 #include "RockEngine/Renderer/Mesh.h"
 #include <assimp/scene.h>
@@ -21,8 +23,6 @@
 #include "RockEngine/ImGui/UICore.h"
 
 #include "RockEngine/Renderer/SceneRenderer.h"
-
-#include "RockEngine/Core/Math/PrimitiveShapes.h"
 
 namespace RockEngine
 {
@@ -203,6 +203,17 @@ namespace RockEngine
 					m_Context->SetSelected(newEntity);
 				}
 
+				if (ImGui::BeginMenu("3D"))
+				{
+					if (ImGui::Button("Sphere Collider"))
+					{
+						decltype(auto) newEntity = m_Context->CreateEntity("Mesh Colider");
+						newEntity->AddComponent<SphereColliderComponent>();
+					}
+
+					ImGui::EndMenu();
+				}
+
 				ImGui::Spacing();
 				ImGui::Separator();
 				ImGui::Spacing();
@@ -223,8 +234,8 @@ namespace RockEngine
 						decltype(auto) newEntity = m_Context->CreateEntity("Directional Light");
 						newEntity->AddComponent<DirectionalLightComponent>();
 
-						newEntity->AddComponent<MeshComponent>().Mesh = Math::CreateSphere(1);
-						newEntity->GetComponent<MeshComponent>().Target = DrawTarget::DrawSphere;
+						/*newEntity->AddComponent<MeshComponent>().Mesh = Math::CreateSphere(1);
+						newEntity->GetComponent<MeshComponent>().Target = DrawTarget::DrawSphere;*/
 						m_Context->SetSelected(newEntity);
 					}
 
@@ -367,6 +378,17 @@ namespace RockEngine
 	
 			});
 
+		DrawComponent<RendererComponent>("Renderer", entity, [=](RendererComponent& component) mutable
+			{
+
+				UI::BeginPropertyGrid();
+
+				UI::Property("Visible", component.Visible);
+
+				UI::EndPropertyGrid();
+
+			});
+
 		DrawComponent<MeshComponent>("Mesh", entity, [=](MeshComponent& mc) mutable
 			{
 				UI::BeginPropertyGrid();
@@ -398,6 +420,17 @@ namespace RockEngine
 				UI::PopID();
 				ImGui::GetStyle().ButtonTextAlign = originalButtonTextAlign;
 				ImGui::PopItemWidth();
+
+				UI::EndPropertyGrid();
+
+				UI::BeginPropertyGrid();
+
+				if (mc.Mesh && mc.Mesh->IsAnimated())
+				{
+					UI::Property("Play Animation", mc.Mesh->m_AnimationPlaying);
+					UI::PropertySlider("Animation Time", mc.Mesh->m_AnimationTime, 1.f, (float)mc.Mesh->m_Scene->mAnimations[0]->mDuration);
+					UI::DragFloat("Time Scale", mc.Mesh->m_TimeMultiplier, 0.05f, 0.0f, 10.0f);
+				}
 
 				UI::EndPropertyGrid();
 			});
@@ -466,6 +499,20 @@ namespace RockEngine
 				UI::Property("Min Radius", dlc.MinRadius);
 				UI::Property("Radius", dlc.Radius);
 				UI::Property("Falloff", dlc.Falloff);
+				UI::EndPropertyGrid();
+			});
+
+		DrawComponent<SphereColliderComponent>("Sphere Collider", entity, [](SphereColliderComponent& scc)
+			{
+				UI::BeginPropertyGrid();
+
+				if (UI::Property("Radius", scc.Radius))
+				{
+					scc.DebugMesh = MeshFactory::CreateSphere(scc.Radius);
+				}
+
+				UI::Property("Is Trigger", scc.IsTrigger);
+
 				UI::EndPropertyGrid();
 			});
 	}
