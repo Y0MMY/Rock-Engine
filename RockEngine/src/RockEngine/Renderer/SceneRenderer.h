@@ -93,12 +93,18 @@ namespace RockEngine
 			LightEnvironment SceneLightEnvironment;
 		} m_SceneData;
 
-		Ref<Shader> m_CompositeShader;
-		Ref<Shader> m_ShadowMapShader;
-
-		Ref<RenderPass> m_ShadowMapRenderPass[4];
 		Ref<RenderPass> m_GeoPass;
 		Ref<RenderPass> m_CompositePass;
+		Ref<RenderPass> m_ShadowMapRenderPass[4];
+
+		Ref<Shader> m_CompositeShader;
+		Ref<Shader> m_ShadowMapShader;
+		Ref<Shader> m_ShadowMapAnimShader;
+
+		// Grid
+		Ref<MaterialInstance> m_GridMaterial;
+		// Outline
+		Ref<MaterialInstance> m_OutlineMaterial, m_OutlineAnimMaterial;
 
 		// Shadows Map
 		struct ShadowMapSettings
@@ -137,11 +143,6 @@ namespace RockEngine
 		std::vector<DrawCommand> m_SelectedMeshDrawList;
 		std::vector<DrawCommand> m_ShadowPassDrawList;
 		SceneRendererOptions m_Options;
-
-		// Grid
-		Ref<MaterialInstance> m_GridMaterial;
-
-		Ref<MaterialInstance> m_OutlineMaterial, m_OutlineAnimMaterial;
 	private:
 		friend class SceneRendererPanel;
 	};

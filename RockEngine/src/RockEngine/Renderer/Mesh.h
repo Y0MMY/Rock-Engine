@@ -145,7 +145,6 @@ namespace RockEngine {
 		~Mesh() {}
 
 		void OnUpdate(Timestep ts);
-		void DumpVertexBuffer();
 
 		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
 		const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }

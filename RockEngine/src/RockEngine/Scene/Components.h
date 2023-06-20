@@ -41,6 +41,10 @@ namespace RockEngine
 
 	};
 
+	struct RendererComponent
+	{
+		bool Visible = true;
+	};
 
 	struct TagComponent
 	{

@@ -247,7 +247,8 @@ namespace RockEngine
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					auto texture = Texture2D::Create(texturePath, true);
+					#if 0
+auto texture = Texture2D::Create(texturePath, true);
 					if (texture->Loaded())
 					{
 						m_Textures[i] = texture;
@@ -255,6 +256,7 @@ namespace RockEngine
 						mi->Set("u_AlbedoTexToggle", 1.0f);
 					}
 					else
+#endif // 1
 					{
 						RE_CORE_ERROR("Could not load texture: {0}", texturePath);
 						// Fallback to albedo color
@@ -274,13 +276,15 @@ namespace RockEngine
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					auto texture = Texture2D::Create(texturePath);
+#if 0
+auto texture = Texture2D::Create(texturePath);
 					if (texture->Loaded())
 					{
 						mi->Set("u_NormalTexture", texture);
 						mi->Set("u_NormalTexToggle", 1.0f);
 					}
 					else
+#endif // 1
 					{
 						RE_CORE_ERROR("    Could not load texture: {0}", texturePath);
 					}
@@ -298,13 +302,15 @@ namespace RockEngine
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					auto texture = Texture2D::Create(texturePath);
+#if 0
+auto texture = Texture2D::Create(texturePath);
 					if (texture->Loaded())
 					{
 						mi->Set("u_RoughnessTexture", texture);
 						mi->Set("u_RoughnessTexToggle", 1.0f);
 					}
 					else
+#endif // 1
 					{
 						RE_CORE_ERROR("    Could not load texture: {0}", texturePath);
 					}
@@ -333,13 +339,15 @@ namespace RockEngine
 							auto parentPath = path.parent_path();
 							parentPath /= str;
 							std::string texturePath = parentPath.string();
-							auto texture = Texture2D::Create(texturePath);
+#if 0
+auto texture = Texture2D::Create(texturePath);
 							if (texture->Loaded())
 							{
 								mi->Set("u_MetalnessTexture", texture);
 								mi->Set("u_MetalnessTexToggle", 1.0f);
 							}
 							else
+#endif // 1
 							{
 								RE_CORE_ERROR("    Could not load texture: {0}", texturePath);
 								mi->Set("u_Metalness", metalness);

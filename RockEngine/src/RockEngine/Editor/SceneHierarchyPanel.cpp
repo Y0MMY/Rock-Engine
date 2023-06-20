@@ -271,7 +271,7 @@ namespace RockEngine
 
 		if (ImGui::IsItemClicked())
 		{
-			m_Context->SetSelected(entity);	
+			m_Context->SetSelected(entity);
 		}
 
 		if (opened)
@@ -361,6 +361,17 @@ namespace RockEngine
 	
 			});
 
+		DrawComponent<RendererComponent>("Renderer", entity, [=](RendererComponent& component) mutable
+			{
+
+				UI::BeginPropertyGrid();
+
+				UI::Property("Visible", component.Visible);
+
+				UI::EndPropertyGrid();
+
+			});
+
 		DrawComponent<MeshComponent>("Mesh", entity, [=](MeshComponent& mc) mutable
 			{
 				UI::BeginPropertyGrid();
@@ -394,6 +405,18 @@ namespace RockEngine
 				ImGui::PopItemWidth();
 
 				UI::EndPropertyGrid();
+
+				UI::BeginPropertyGrid();
+
+				if (mc.Mesh && mc.Mesh->IsAnimated())
+				{
+					UI::Property("Play Animation", mc.Mesh->m_AnimationPlaying);
+					UI::PropertySlider("Animation Time", mc.Mesh->m_AnimationTime, 1.f, (float)mc.Mesh->m_Scene->mAnimations[0]->mDuration);
+					UI::DragFloat("Time Scale", mc.Mesh->m_TimeMultiplier, 0.05f, 0.0f, 10.0f);
+				}
+
+				UI::EndPropertyGrid();
+
 			});
 
 		DrawComponent<SkyLightComponent>("Sky Light", entity, [=](SkyLightComponent& slc) mutable

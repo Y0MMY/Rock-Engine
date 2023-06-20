@@ -1,4 +1,4 @@
-// Outline Anim Shader
+// Shadow Map shader
 
 #type vertex
 #version 430
@@ -25,13 +25,11 @@ void main()
 	gl_Position = u_ViewProjection * u_Transform * localPosition;
 }
 
-
 #type fragment
 #version 430
 
-layout(location = 0) out vec4 color;
+layout(location = 0) out vec4 o_Color;
 
 void main()
 {
-	color = vec4(1.f);
 }

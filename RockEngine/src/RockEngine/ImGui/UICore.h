@@ -160,6 +160,27 @@ namespace RockEngine::UI
 		return modified;
 	}
 
+	static bool DragFloat(const char* label, float& value, float speed, float min, float max)
+	{
+		bool modified = false;
+
+		ImGui::Text(label);
+		ImGui::NextColumn();
+		ImGui::PushItemWidth(-1);
+
+		s_IDBuffer[0] = '#';
+		s_IDBuffer[1] = '#';
+		memset(s_IDBuffer + 2, 0, 14);
+		_itoa(s_Counter++, s_IDBuffer + 2, 16);
+		if (ImGui::DragFloat(s_IDBuffer, &value, speed, min, max))
+			modified = true;
+
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+
+		return modified;
+	}
+
 	static void EndPropertyGrid()
 	{
 		ImGui::Columns(1);
