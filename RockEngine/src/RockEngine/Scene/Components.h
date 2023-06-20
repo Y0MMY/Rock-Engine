@@ -10,6 +10,14 @@
 
 namespace RockEngine
 {
+	enum class DrawTarget // TODO: Move to Assets
+	{
+		None = 0, 
+		Draw,
+		DrawWithShader,
+		DrawSphere
+	};
+
 	struct IDComponent
 	{
 		UUID ID = 0;
@@ -41,10 +49,6 @@ namespace RockEngine
 
 	};
 
-	struct RendererComponent
-	{
-		bool Visible = true;
-	};
 
 	struct TagComponent
 	{
@@ -69,6 +73,8 @@ namespace RockEngine
 			: Mesh(mesh) {}
 
 		operator Ref<RockEngine::Mesh>() { return Mesh; }
+
+		DrawTarget Target = DrawTarget::None;
 	};
 
 	struct SkyLightComponent
@@ -89,6 +95,7 @@ namespace RockEngine
 
 		bool CastShadows = true;
 		bool SoftShadows = true;
+
 	};
 
 	struct PointLightComponent

@@ -1,0 +1,29 @@
+[20:15:41] [trace] ENGINE: BUILD VERSION: v0.9a
+[20:15:41] [info] ENGINE: [Application] Creating window Title (1600, 1600)
+[20:15:41] [info] ENGINE: Adding Layer ImGuiLayer
+[20:15:41] [warning] ENGINE: Could not find uniform 'u_DirectionalLights.Direction' in shader ShaderPBRAnim.glsl
+[20:15:41] [warning] ENGINE: Could not find uniform 'u_DirectionalLights.Radiance' in shader ShaderPBRAnim.glsl
+[20:15:41] [warning] ENGINE: Could not find uniform 'u_DirectionalLights.Multiplier' in shader ShaderPBRAnim.glsl
+[20:15:41] [warning] ENGINE: Could not find uniform 'u_RadiancePrefilter' in shader ShaderPBRAnim.glsl
+[20:15:41] [info] ENGINE: Adding Layer Layer
+[20:15:41] [info] ENGINE: Loading texture assets/editor/Checkerboard.tga, srgb=false
+[20:15:41] [info] ENGINE: [Renderer] Creating FrameBuffer 1280 : 720
+[20:15:41] [info] ENGINE: [Renderer] Creating FrameBuffer 1280 : 720
+[20:15:41] [info] ENGINE: Loading texture assets/textures/BRDF_LUT.tga, srgb=false
+[20:15:41] [info] ENGINE: [Renderer] Creating FrameBuffer 4096 : 4096
+[20:15:41] [info] ENGINE: [Renderer] Creating FrameBuffer 4096 : 4096
+[20:15:41] [info] ENGINE: [Renderer] Creating FrameBuffer 4096 : 4096
+[20:15:41] [info] ENGINE: [Renderer] Creating FrameBuffer 4096 : 4096
+[20:15:44] [info] ENGINE: Deserializing scene 'Scene Name'
+[20:15:44] [info] ENGINE: Deserialized entity with ID = 3180515428195599773, name = Mesh
+[20:15:44] [info] ENGINE: Loading mesh: D:\Programming\C++\RockEngine\TheRock\assets\meshes\TestScene.fbx
+[20:15:44] [error] ENGINE: Assimp error: Error, T10412: FBX: no material assigned to mesh, setting default material
+
+[20:15:44] [error] ENGINE: Assimp error: Skipping one or more lines with the same contents
+
+[20:15:44] [info] ENGINE:   Mesh Asset Path: D:\Programming\C++\RockEngine\TheRock\assets\meshes\TestScene.fbx
+[20:15:44] [info] ENGINE: Deserialized entity with ID = 13456131509643744593, name = Sky Light
+[20:15:44] [info] ENGINE: Loading HDR texture D:\Programming\C++\RockEngine\TheRock\assets\env\birchwood_4k.hdr, srgb=false
+[20:15:45] [info] ENGINE: Deserialized entity with ID = 1860228945068287744, name = Directional Light
+[20:15:49] [warning] ENGINE: [OpenGL Debug MEDIUM] Program/shader state performance warning: Vertex shader in program 25 is being recompiled based on GL state.
+[20:15:54] [warning] ENGINE: [OpenGL Debug MEDIUM] Program/shader state performance warning: Vertex shader in program 13 is being recompiled based on GL state.

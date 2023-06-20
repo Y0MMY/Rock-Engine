@@ -113,7 +113,6 @@ namespace RockEngine
 
 		friend class SceneRenderer;
 		friend class SceneHierarchyPanel;
-		friend class SceneRendererPanel;
 		friend class EditorLayer;
 		friend class Entity;
 	};

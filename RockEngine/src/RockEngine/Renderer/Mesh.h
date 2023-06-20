@@ -137,14 +137,17 @@ namespace RockEngine {
 		std::string NodeName, MeshName;
 	};
 
+	// Dynamic Mesh - supports skeletal animation and retains hierarchy
 	class Mesh : public RefCounted
 	{
 	public:
 		Mesh(const std::filesystem::path& filename);
 		Mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const glm::mat4& transform);
+		Mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, Ref<Shader> shader, const glm::mat4& transform);
 		~Mesh() {}
 
 		void OnUpdate(Timestep ts);
+		void DumpVertexBuffer();
 
 		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
 		const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
@@ -191,7 +194,7 @@ namespace RockEngine {
 		std::vector<Index> m_Indices;
 		std::unordered_map<std::string, uint32_t> m_BoneMapping;
 		std::vector<glm::mat4> m_BoneTransforms;
-		const aiScene* m_Scene;
+		const aiScene* m_Scene = nullptr;
 
 		// Materials
 		Ref<Shader> m_MeshShader;
@@ -209,10 +212,16 @@ namespace RockEngine {
 		float m_TimeMultiplier = 1.0f;
 		bool m_AnimationPlaying = true;
 
-		std::filesystem::path m_FilePath;
-		std::string m_Name;
+		std::filesystem::path m_FilePath = "";
+		std::string m_Name = "";
 
 		friend class Renderer;
 		friend class SceneHierarchyPanel;
+	};
+
+	// Static Mesh - no skeletal animation, flattened hierarchy
+	class StaticMesh
+	{
+
 	};
 }

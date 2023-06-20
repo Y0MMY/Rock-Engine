@@ -10,7 +10,7 @@
 namespace RockEngine
 {
 	EditorLayer::EditorLayer()
-		: m_EditorCamera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 10000.0f))
+		: m_EditorCamera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f))
 
 	{
 
@@ -177,7 +177,7 @@ namespace RockEngine
 		m_SceneHierarchyPanel->SetContext(m_EditorScene);
 		UpdateWindowTitle("Empty Scene");
 
-		m_EditorCamera = EditorCamera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 10000.0f));
+		m_EditorCamera = EditorCamera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
 	}
 
 	void EditorLayer::OnUpdate(Timestep ts)
@@ -379,49 +379,9 @@ namespace RockEngine
 
 	void EditorLayer::UI_DrawGizmos()
 	{
-		if (m_GizmoType != -1 && m_EditorScene->m_SelectedEntity) // TODO: Merge with SelectedContext
+		if (m_GizmoType != -1 && m_EditorScene->m_SelectionContext.size())
 		{
-			auto& selection = m_EditorScene->m_SelectedEntity;
-
-			float rw = (float)ImGui::GetWindowWidth();
-			float rh = (float)ImGui::GetWindowHeight();
-			ImGuizmo::SetOrthographic(false);
-			ImGuizmo::SetDrawlist();
-			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
-
-			bool snap = Input::IsKeyPressed(KeyCode::LeftControl);
-
-			TransformComponent& entityTransform = selection->GetComponent<TransformComponent>();
-			auto& meshComponent = selection->GetComponent<MeshComponent>();
-			glm::mat4 transform = entityTransform.GetTransform();
-
-			float snapValue = GetSnapValue();
-			float snapValues[3] = { snapValue, snapValue, snapValue };
-
-			ImGuizmo::Manipulate(glm::value_ptr(m_EditorCamera.GetViewMatrix()),
-				glm::value_ptr(m_EditorCamera.GetProjectionMatrix()),
-				(ImGuizmo::OPERATION)m_GizmoType,
-				ImGuizmo::LOCAL,
-				glm::value_ptr(transform),
-				nullptr,
-				snap ? snapValues : nullptr);
-
-			if (ImGuizmo::IsUsing() && meshComponent.Mesh)
-			{
-				glm::vec3 translation, rotation, scale;
-				Math::DecomposeTransform(transform, translation, rotation, scale);
-
-				glm::vec3 deltaRotation = rotation - entityTransform.Rotation;
-				entityTransform.Translation = translation;
-				entityTransform.Rotation += deltaRotation;
-				entityTransform.Scale = scale;
-			}
-
-		}
-
-		else if (m_GizmoType != -1 && m_EditorScene->m_SelectionContext.size() )
-		{
-			auto& selection = m_EditorScene->m_SelectionContext[0] ;
+			auto& selection = m_EditorScene->m_SelectionContext[0];
 
 			float rw = (float)ImGui::GetWindowWidth();
 			float rh = (float)ImGui::GetWindowHeight();

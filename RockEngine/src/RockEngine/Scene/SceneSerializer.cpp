@@ -228,7 +228,10 @@ namespace RockEngine
 					std::string meshPath = meshComponent["AssetPath"].as<std::string>();
 					
 					if (!deserializedEntity->HasComponent<MeshComponent>())
+					{
 						deserializedEntity->AddComponent<MeshComponent>(Ref<Mesh>::Create(meshPath));
+						deserializedEntity->GetComponent<MeshComponent>().Target = DrawTarget::Draw;
+					}
 
 					RE_CORE_INFO("  Mesh Asset Path: {0}", meshPath);
 				}

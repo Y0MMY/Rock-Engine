@@ -22,6 +22,8 @@
 
 #include "RockEngine/Renderer/SceneRenderer.h"
 
+#include "RockEngine/Core/Math/PrimitiveShapes.h"
+
 namespace RockEngine
 {
 	static glm::mat4 Mat4FromAssimpMat4(const aiMatrix4x4& from)
@@ -197,6 +199,7 @@ namespace RockEngine
 				{
 					decltype(auto) newEntity = m_Context->CreateEntity("Mesh");
 					newEntity->AddComponent<MeshComponent>();
+					newEntity->GetComponent<MeshComponent>().Target = DrawTarget::Draw;
 					m_Context->SetSelected(newEntity);
 				}
 
@@ -219,6 +222,9 @@ namespace RockEngine
 					{
 						decltype(auto) newEntity = m_Context->CreateEntity("Directional Light");
 						newEntity->AddComponent<DirectionalLightComponent>();
+
+						newEntity->AddComponent<MeshComponent>().Mesh = Math::CreateSphere(1);
+						newEntity->GetComponent<MeshComponent>().Target = DrawTarget::DrawSphere;
 						m_Context->SetSelected(newEntity);
 					}
 
@@ -271,7 +277,7 @@ namespace RockEngine
 
 		if (ImGui::IsItemClicked())
 		{
-			m_Context->SetSelected(entity);
+			m_Context->SetSelected(entity);	
 		}
 
 		if (opened)
@@ -361,17 +367,6 @@ namespace RockEngine
 	
 			});
 
-		DrawComponent<RendererComponent>("Renderer", entity, [=](RendererComponent& component) mutable
-			{
-
-				UI::BeginPropertyGrid();
-
-				UI::Property("Visible", component.Visible);
-
-				UI::EndPropertyGrid();
-
-			});
-
 		DrawComponent<MeshComponent>("Mesh", entity, [=](MeshComponent& mc) mutable
 			{
 				UI::BeginPropertyGrid();
@@ -405,18 +400,6 @@ namespace RockEngine
 				ImGui::PopItemWidth();
 
 				UI::EndPropertyGrid();
-
-				UI::BeginPropertyGrid();
-
-				if (mc.Mesh && mc.Mesh->IsAnimated())
-				{
-					UI::Property("Play Animation", mc.Mesh->m_AnimationPlaying);
-					UI::PropertySlider("Animation Time", mc.Mesh->m_AnimationTime, 1.f, (float)mc.Mesh->m_Scene->mAnimations[0]->mDuration);
-					UI::DragFloat("Time Scale", mc.Mesh->m_TimeMultiplier, 0.05f, 0.0f, 10.0f);
-				}
-
-				UI::EndPropertyGrid();
-
 			});
 
 		DrawComponent<SkyLightComponent>("Sky Light", entity, [=](SkyLightComponent& slc) mutable

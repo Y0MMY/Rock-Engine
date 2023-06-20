@@ -52,8 +52,13 @@ namespace RockEngine
 		void SetViewportSize(u32 width, u32 height);
 		void BeginScene(const SceneRendererCamera& camera);
 		void EndScene();
+
 		void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<MaterialInstance> overrideMaterial = nullptr);
 		void SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
+		void SubmitMeshWithShader(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Shader> shader);
+
+		void SubmitSoliderSphere(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
+
 		SceneRendererOptions& GetOptions();
 		static Environment CreateEnvironmentMap(const std::filesystem::path& filepath);
 		Ref<Texture2D> GetFinalColorBuffer();
@@ -93,18 +98,14 @@ namespace RockEngine
 			LightEnvironment SceneLightEnvironment;
 		} m_SceneData;
 
-		Ref<RenderPass> m_GeoPass;
-		Ref<RenderPass> m_CompositePass;
-		Ref<RenderPass> m_ShadowMapRenderPass[4];
-
 		Ref<Shader> m_CompositeShader;
 		Ref<Shader> m_ShadowMapShader;
-		Ref<Shader> m_ShadowMapAnimShader;
 
-		// Grid
-		Ref<MaterialInstance> m_GridMaterial;
-		// Outline
-		Ref<MaterialInstance> m_OutlineMaterial, m_OutlineAnimMaterial;
+		Ref<Shader> m_ColiderSphereSphere;
+
+		Ref<RenderPass> m_ShadowMapRenderPass[4];
+		Ref<RenderPass> m_GeoPass;
+		Ref<RenderPass> m_CompositePass;
 
 		// Shadows Map
 		struct ShadowMapSettings
@@ -139,10 +140,30 @@ namespace RockEngine
 			Ref<MaterialInstance> Material;
 			glm::mat4 Transform;
 		};
+
+		struct DrawCommandWithShader
+		{
+			Ref<Mesh> Mesh;
+			Ref<Shader> Shader;
+			glm::mat4 Transform;
+		};
+
+		std::vector<DrawCommandWithShader> m_DrawListWithShader;
+
 		std::vector<DrawCommand> m_DrawList;
+		std::vector<DrawCommand> m_DrawColiderSphere;
 		std::vector<DrawCommand> m_SelectedMeshDrawList;
 		std::vector<DrawCommand> m_ShadowPassDrawList;
 		SceneRendererOptions m_Options;
+
+		// Grid
+		Ref<MaterialInstance> m_GridMaterial;
+
+		// Outline
+		Ref<MaterialInstance> m_OutlineMaterial, m_OutlineAnimMaterial;
+
+		// SphereSun
+		Ref<MaterialInstance> m_ColiderSphereMaterial;
 	private:
 		friend class SceneRendererPanel;
 	};

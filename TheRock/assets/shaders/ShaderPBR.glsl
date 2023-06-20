@@ -64,21 +64,6 @@ struct DirectionalLight
 	float Multiplier;
 };
 
-// Point light
-struct PointLight 
-{
-	vec3 Position;
-	float Intensity;
-	vec3 Radiance;
-	float MinRadius;
-	float Radius;
-	float Falloff;
-	float LightSize;
-};
-
-uniform int u_PointLightsCount;
-uniform PointLight u_PointLights[100];
-
 in VertexOutput
 {
 	vec3 WorldPosition;
@@ -503,33 +488,6 @@ float PCSS_DirectionalLight(sampler2D shadowMap, vec3 shadowCoords, float uvLigh
 
 /////////////////////////////////////////////
 
-vec3 CalculatePointLight()
-{
-    vec3 result = vec3(0.0);
-    for(int i = 0; i < u_PointLightsCount; i++)
-    {
-        PointLight pointLight = u_PointLights[i];
-
-
-        vec3 L = pointLight.Position - vs_Input.WorldPosition;
-        float distance = length(L);
-        L = normalize(L);
-
-        float attenuation = clamp(1.0 - (distance - pointLight.MinRadius) / (pointLight.Radius - pointLight.MinRadius), 0.0, 1.0);
-        float falloff = pow(attenuation, pointLight.Falloff);
-
-        float lightSize = pointLight.LightSize;
-        float lightSizeAttenuation = 1.0 - smoothstep(0.0, lightSize, distance);
-
-        float intensity = pointLight.Intensity * falloff * lightSizeAttenuation;
-
-        vec3 lightContribution = pointLight.Radiance * intensity;
-
-        result += lightContribution;
-    }
-    return result;
-}
-
 void main()
 {
 	// Standard PBR inputs
@@ -626,9 +584,8 @@ void main()
 
 	vec3 iblContribution = IBL(F0, Lr) * u_IBLContribution;
 	vec3 lightContribution = u_DirectionalLights.Multiplier > 0.0f ? (Lighting(F0) * shadowAmount) : vec3(0.0f);
-	vec3 PointLight = CalculatePointLight();
 
-	color = vec4(PointLight + lightContribution + iblContribution, 1.0);
+	color = vec4(lightContribution + iblContribution, 1.0);
 
 	// Bloom
 	float brightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));

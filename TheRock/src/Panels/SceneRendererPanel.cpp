@@ -11,12 +11,6 @@ namespace RockEngine
 		if (ImGui::Begin("Scene Renderer", &isOpen))
 		{
 			ImGui::Text("Viewport Size: %d, %d", m_Context->m_ViewportWidth, m_Context->m_ViewportHeight);
-			UI::BeginPropertyGrid();
-			UI::Property("Draw Outline", m_Context->m_Options.DrawOutline);
-			UI::Property("Show Bounding Boxes", m_Context->m_Options.ShowBoundingBoxes);
-			UI::Property("Show Grid", m_Context->m_Options.ShowGrid);
-			UI::Property("SkyBox Lod", m_Context->m_Scene->m_SkyboxLod, 1.0f, 10.0f);
-			UI::EndPropertyGrid();
 
 			const float headerSpacingOffset = -(ImGui::GetStyle().ItemSpacing.y + 1.0f);
 			const bool shadersTreeNode = UI::PropertyGridHeader("Shaders", false);
@@ -77,15 +71,6 @@ namespace RockEngine
 					UI::PropertySlider("Cascade Index", cascadeIndex, 0, 3);
 					UI::EndPropertyGrid();
 					ImGui::Image((ImTextureID)id, { size, size }, { 0, 1 }, { 1, 0 });
-					UI::EndTreeNode();
-				}
-
-				if (UI::BeginTreeNode("Pass Timer", false))
-				{
-					ImGui::Text("Shadow Pass: %d", m_Context->m_Stats.ShadowPass);
-					ImGui::Text("Geometry Pass: %d", m_Context->m_Stats.GeometryPass);
-					ImGui::Text("Composite Pass: %d", m_Context->m_Stats.CompositePass);
-
 					UI::EndTreeNode();
 				}
 

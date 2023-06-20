@@ -247,8 +247,7 @@ namespace RockEngine
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					#if 0
-auto texture = Texture2D::Create(texturePath, true);
+					auto texture = Texture2D::Create(texturePath, true);
 					if (texture->Loaded())
 					{
 						m_Textures[i] = texture;
@@ -256,7 +255,6 @@ auto texture = Texture2D::Create(texturePath, true);
 						mi->Set("u_AlbedoTexToggle", 1.0f);
 					}
 					else
-#endif // 1
 					{
 						RE_CORE_ERROR("Could not load texture: {0}", texturePath);
 						// Fallback to albedo color
@@ -276,15 +274,13 @@ auto texture = Texture2D::Create(texturePath, true);
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-#if 0
-auto texture = Texture2D::Create(texturePath);
+					auto texture = Texture2D::Create(texturePath);
 					if (texture->Loaded())
 					{
 						mi->Set("u_NormalTexture", texture);
 						mi->Set("u_NormalTexToggle", 1.0f);
 					}
 					else
-#endif // 1
 					{
 						RE_CORE_ERROR("    Could not load texture: {0}", texturePath);
 					}
@@ -302,15 +298,13 @@ auto texture = Texture2D::Create(texturePath);
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-#if 0
-auto texture = Texture2D::Create(texturePath);
+					auto texture = Texture2D::Create(texturePath);
 					if (texture->Loaded())
 					{
 						mi->Set("u_RoughnessTexture", texture);
 						mi->Set("u_RoughnessTexToggle", 1.0f);
 					}
 					else
-#endif // 1
 					{
 						RE_CORE_ERROR("    Could not load texture: {0}", texturePath);
 					}
@@ -339,15 +333,13 @@ auto texture = Texture2D::Create(texturePath);
 							auto parentPath = path.parent_path();
 							parentPath /= str;
 							std::string texturePath = parentPath.string();
-#if 0
-auto texture = Texture2D::Create(texturePath);
+							auto texture = Texture2D::Create(texturePath);
 							if (texture->Loaded())
 							{
 								mi->Set("u_MetalnessTexture", texture);
 								mi->Set("u_MetalnessTexToggle", 1.0f);
 							}
 							else
-#endif // 1
 							{
 								RE_CORE_ERROR("    Could not load texture: {0}", texturePath);
 								mi->Set("u_Metalness", metalness);
@@ -401,6 +393,30 @@ auto texture = Texture2D::Create(texturePath);
 
 	Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const glm::mat4& transform)
 		: m_StaticVertices(vertices), m_Indices(indices), m_IsAnimated(false)
+	{
+		Submesh submesh;
+		submesh.BaseVertex = 0;
+		submesh.BaseIndex = 0;
+		submesh.IndexCount = indices.size() * 3;
+		submesh.Transform = transform;
+		m_Submeshes.push_back(submesh);
+
+		m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), m_StaticVertices.size() * sizeof(Vertex));
+		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size() * sizeof(Index));
+
+		PipelineSpecification pipelineSpecification;
+		pipelineSpecification.Layout = {
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float3, "a_Normal" },
+			{ ShaderDataType::Float3, "a_Tangent" },
+			{ ShaderDataType::Float3, "a_Binormal" },
+			{ ShaderDataType::Float2, "a_TexCoord" },
+		};
+		m_Pipeline = Pipeline::Create(pipelineSpecification);
+	}
+
+	Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, Ref<Shader> shader, const glm::mat4& transform)
+		: m_StaticVertices(vertices), m_Indices(indices), m_IsAnimated(false), m_MeshShader(shader)
 	{
 		Submesh submesh;
 		submesh.BaseVertex = 0;

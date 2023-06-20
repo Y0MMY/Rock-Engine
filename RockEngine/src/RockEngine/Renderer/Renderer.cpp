@@ -225,7 +225,7 @@ namespace RockEngine
 				for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
 				{
 					std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-					shader->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
+					mesh->m_MeshShader->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
 				}
 			}
 			shader->SetMat4("u_Transform", transform * submesh.Transform);
@@ -254,14 +254,6 @@ namespace RockEngine
 
 		for (Submesh& submesh : mesh->m_Submeshes)
 		{
-			if (mesh->IsAnimated())
-			{
-				for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
-				{
-					std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-					shader->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
-				}
-			}
 			shader->SetMat4("u_Transform", transform * submesh.Transform);
 
 			Renderer::Submit([submesh]() {

@@ -59,13 +59,13 @@ namespace RockEngine
 		m_OutlineMaterial = MaterialInstance::Create(Material::Create(outlineShader));
 		m_OutlineMaterial->SetFlag(MaterialFlag::DepthTest, false);
 
-		auto outlineAnimShader = Shader::Create("assets/shaders/Outline_Anim.glsl");
-		m_OutlineAnimMaterial = MaterialInstance::Create(Material::Create(outlineAnimShader));
-		m_OutlineAnimMaterial->SetFlag(MaterialFlag::DepthTest, false);
+		// Shere Sun
+		auto sphereShader = Shader::Create("assets/shaders/Outline.glsl");
+		m_ColiderSphereMaterial = MaterialInstance::Create(Material::Create(sphereShader));
+		m_ColiderSphereMaterial->SetFlag(MaterialFlag::DepthTest, false);
 
 		// Shadow Map
 		m_ShadowMapShader = Shader::Create("assets/shaders/ShadowMap.glsl");
-		m_ShadowMapAnimShader = Shader::Create("assets/shaders/ShadowMapAnim.glsl");
 
 		FramebufferSpecification shadowMapFramebufferSpec;
 		shadowMapFramebufferSpec.Width = 1024 * 4;
@@ -141,6 +141,16 @@ namespace RockEngine
 		m_ShadowPassDrawList.push_back({ mesh, nullptr, transform });
 	}
 
+	void SceneRenderer::SubmitMeshWithShader(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Shader> shader)
+	{
+		m_DrawListWithShader.push_back({ mesh, shader, transform});
+	}
+
+	void SceneRenderer::SubmitSoliderSphere(Ref<Mesh> mesh, const glm::mat4& transform)
+	{
+		m_DrawColiderSphere.push_back({ mesh, m_ColiderSphereMaterial, transform });
+	}
+
 	static Ref<Shader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
 
 	Environment SceneRenderer::CreateEnvironmentMap(const std::filesystem::path& filepath)
@@ -208,6 +218,7 @@ namespace RockEngine
 	void SceneRenderer::GeometryPass()
 	{
 		bool outline = m_SelectedMeshDrawList.size() > 0;
+		bool collider = m_DrawColiderSphere.size() > 0;
 
 		if (outline)
 		{
@@ -241,10 +252,6 @@ namespace RockEngine
 		float aspectRatio = (float)m_GeoPass->GetSpecification().TargetFramebuffer->GetWidth() / (float)m_GeoPass->GetSpecification().TargetFramebuffer->GetHeight();
 		float frustumSize = 2.0f * sceneCamera.Near * glm::tan(sceneCamera.FOV * 0.5f) * aspectRatio;
 
-		// Point Lights
-		size_t pointLightsCount = m_SceneData.SceneLightEnvironment.PointLights.size();
-
-		// Render entities
 		for (auto& dc : m_DrawList)
 		{
 			auto baseMaterial = dc.Mesh->GetMaterial();
@@ -274,32 +281,6 @@ namespace RockEngine
 			// Set lights (TODO: move to light environment and don't do per mesh)
 			auto directionalLight = m_SceneData.SceneLightEnvironment.DirectionalLights[0];
 			baseMaterial->Set("u_DirectionalLights", directionalLight);
-			
-			if (pointLightsCount)
-			{
-				baseMaterial->Set("u_PointLightsCount", pointLightsCount);
-				size_t pointLightIndex = 0;
-				for (const auto l : m_SceneData.SceneLightEnvironment.PointLights)
-				{
-					std::string unifromName = "u_PointLights[" + std::to_string(pointLightIndex) + "]";
-					std::string Position = unifromName + ".Position";
-					std::string Intensity = unifromName + ".Intensity";
-					std::string Radiance = unifromName + ".Radiance";
-					std::string MinRadius = unifromName + ".MinRadius";
-					std::string Radius = unifromName + ".Radius";
-					std::string Falloff = unifromName + ".Falloff";
-					std::string LightSize = unifromName + ".LightSize";
-
-					baseMaterial->GetShader()->SetFloat3(Position, l.Position);
-					baseMaterial->GetShader()->SetFloat(Intensity, l.Intensity);
-					baseMaterial->GetShader()->SetFloat3(Radiance, l.Radiance);
-					baseMaterial->GetShader()->SetFloat(MinRadius, l.MinRadius);
-					baseMaterial->GetShader()->SetFloat(Radius, l.Radius);
-					baseMaterial->GetShader()->SetFloat(Falloff, l.Falloff);
-					baseMaterial->GetShader()->SetFloat(LightSize, l.SourceSize);
-					pointLightIndex++;
-				}
-			}
 
 			auto rd = baseMaterial->FindResourceDeclaration("u_ShadowMapTexture");
 			if (rd)
@@ -418,10 +399,9 @@ namespace RockEngine
 
 			// Draw outline here
 			m_OutlineMaterial->Set("u_ViewProjection", viewProjection);
-			m_OutlineAnimMaterial->Set("u_ViewProjection", viewProjection);
 			for (auto& dc : m_SelectedMeshDrawList)
 			{
-				Renderer::SubmitMesh(dc.Mesh, dc.Transform, dc.Mesh->IsAnimated() ? m_OutlineAnimMaterial : m_OutlineMaterial);
+				Renderer::SubmitMesh(dc.Mesh, dc.Transform, m_OutlineMaterial);
 			}
 
 			Renderer::Submit([]()
@@ -431,7 +411,7 @@ namespace RockEngine
 				});
 			for (auto& dc : m_SelectedMeshDrawList)
 			{
-				Renderer::SubmitMesh(dc.Mesh, dc.Transform, dc.Mesh->IsAnimated() ? m_OutlineAnimMaterial : m_OutlineMaterial);
+				Renderer::SubmitMesh(dc.Mesh, dc.Transform, m_OutlineMaterial);
 			}
 
 			Renderer::Submit([]()
@@ -441,6 +421,13 @@ namespace RockEngine
 					glStencilFunc(GL_ALWAYS, 1, 0xff);
 					glEnable(GL_DEPTH_TEST);
 				});
+		}
+
+		m_ColiderSphereMaterial->Set("u_ViewProjection", viewProjection);
+		for (auto& dc : m_DrawColiderSphere)
+		{
+			if (dc.Mesh)
+				Renderer::SubmitMesh(dc.Mesh, dc.Transform, m_ColiderSphereMaterial);
 		}
 
 		// Grid
@@ -615,6 +602,7 @@ namespace RockEngine
 			Renderer::BeginRenderPass(m_ShadowMapRenderPass[i]);
 
 			glm::mat4 shadowMapVP = cascades[i].ViewProj;
+			m_ShadowMapShader->SetMat4("u_ViewProjection", shadowMapVP);
 
 			static glm::mat4 scaleBiasMatrix = glm::scale(glm::mat4(1.0f), { 0.5f, 0.5f, 0.5f }) * glm::translate(glm::mat4(1.0f), { 1, 1, 1 });
 			ShadowSettings.LightMatrices[i] = scaleBiasMatrix * cascades[i].ViewProj;
@@ -623,9 +611,7 @@ namespace RockEngine
 			// Render entities
 			for (auto& dc : m_ShadowPassDrawList)
 			{
-				Ref<Shader> shader = dc.Mesh->IsAnimated() ? m_ShadowMapAnimShader : m_ShadowMapShader;
-				shader->SetMat4("u_ViewProjection", shadowMapVP);
-				Renderer::SubmitMeshWithShader(dc.Mesh, dc.Transform, shader);
+				Renderer::SubmitMeshWithShader(dc.Mesh, dc.Transform, m_ShadowMapShader);
 			}
 
 			Renderer::EndRenderPass();
@@ -678,6 +664,7 @@ namespace RockEngine
 		m_DrawList.clear();
 		m_SelectedMeshDrawList.clear();
 		m_ShadowPassDrawList.clear();
+		m_DrawColiderSphere.clear();
 		m_SceneData = {};
 	}
 

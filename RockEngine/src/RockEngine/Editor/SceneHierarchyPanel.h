@@ -12,7 +12,6 @@ namespace RockEngine
 
 		void SetContext(const Ref<Scene>& scene);
 		void OnImGuiRender();
-		void SetSelectionChangedCallback(const std::function<void(Entity)>& func) { m_SelectionChangedCallback = func; }
 
 		void DrawComponentsList();
 	private:
@@ -23,8 +22,5 @@ namespace RockEngine
 		void MeshNodeHierarchy(const Ref<Mesh>& mesh, aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
 	private:
 		Ref<Scene> m_Context;
-
-		std::function<void(Entity)> m_SelectionChangedCallback;
-
 	};
 }
