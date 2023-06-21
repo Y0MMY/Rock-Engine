@@ -67,6 +67,7 @@ namespace RockEngine
 	struct RendererComponent
 	{
 		bool Visible = true;
+		bool DepthTest = false;
 	};
 
 	struct MeshComponent

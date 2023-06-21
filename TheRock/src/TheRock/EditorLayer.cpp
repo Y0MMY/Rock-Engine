@@ -91,7 +91,7 @@ namespace RockEngine
 				m_EditorScene->m_SelectionContext.clear();
 				m_EditorScene->SetSelected({});
 
-				auto& meshEntities = m_EditorScene->GetAllEntitiesWith<MeshComponent>();
+				auto& meshEntities = m_EditorScene->GetAllEntitiesSceneWith<MeshComponent>();
 
 				for (auto e : meshEntities)
 				{

@@ -162,7 +162,7 @@ namespace RockEngine {
 		const std::string& GetName() const { return m_Name; }
 
 		bool IsAnimated() const { return m_IsAnimated; }
-
+		
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
 	private:
 		void BoneTransform(float time);

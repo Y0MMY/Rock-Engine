@@ -31,10 +31,10 @@ namespace RockEngine
 	static RendererAPI* s_RendererAPI = nullptr;
 	static RendererAPI* InitRendererAPI()
 	{
-		switch (RendererAPI::Current())
-		{
-		//case RendererAPIType::OpenGL: return new OpenGLRenderer();
-		}
+		//switch (RendererAPI::Current())
+		//{
+		////case RendererAPIType::OpenGL: return new OpenGLRenderer();
+		//}
 		RE_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
 	}
@@ -203,7 +203,7 @@ namespace RockEngine
 		Renderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
-	void Renderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance> overrideMaterial)
+	void Renderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance> overrideMaterial, bool depthTest)
 	{
 		// auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
 		// auto shader = material->GetShader();
@@ -230,8 +230,8 @@ namespace RockEngine
 			}
 			shader->SetMat4("u_Transform", transform * submesh.Transform);
 
-			Renderer::Submit([submesh, material]() {
-				if (material->GetFlag(MaterialFlag::DepthTest))
+			Renderer::Submit([submesh, material, depthTest]() { // NOTE: Should we use "material->GetFlag(MaterialFlag::DepthtTest)" ? 
+				if (!depthTest)
 					glEnable(GL_DEPTH_TEST);
 				else
 					glDisable(GL_DEPTH_TEST);
@@ -246,7 +246,7 @@ namespace RockEngine
 		}
 	}
 
-	void Renderer::SubmitMeshWithShader(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Shader> shader)
+	void Renderer::SubmitMeshWithShader(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Shader> shader, bool depthTest)
 	{
 		mesh->m_VertexBuffer->Bind();
 		mesh->m_Pipeline->Bind();

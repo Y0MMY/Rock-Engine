@@ -43,7 +43,7 @@ namespace RockEngine
 		// Directional Lights	
 		{
 			m_LightEnvironment = LightEnvironment();
-			auto lights = GetAllEntitiesWith<DirectionalLightComponent>();
+			auto lights = GetAllEntitiesSceneWith<DirectionalLightComponent>();
 			uint32_t directionalLightIndex = 0;
 
 			for (const auto e : lights)
@@ -67,7 +67,7 @@ namespace RockEngine
 		// Point Lights
 		{
 			auto pointLights = m_Registry.group<PointLightComponent>();
-			auto pointlightEntity = GetAllEntitiesWith<PointLightComponent>();
+			auto pointlightEntity = GetAllEntitiesSceneWith<PointLightComponent>();
 			if (pointLights.size() != m_LightEnvironment.PointLights.size())
 				m_LightEnvironment.PointLights.resize(pointLights.size());
 
@@ -112,7 +112,8 @@ namespace RockEngine
 
 			for (const auto& [key, entity] : m_EntityIDMap)
 			{
-				if (!entity->GetComponent<RendererComponent>().Visible)
+				auto rc = entity->GetComponent<RendererComponent>();
+				if (!rc.Visible)
 					continue;
 
 				if (entity->HasComponent<MeshComponent>())
@@ -125,9 +126,9 @@ namespace RockEngine
 						meshComponent.Mesh->OnUpdate(ts);
 
 						if (m_SelectedEntity == entity && renderer->GetOptions().DrawOutline)
-							renderer->SubmitSelectedMesh(meshComponent, transformComponent.GetTransform());
+							renderer->SubmitSelectedMesh(meshComponent, transformComponent.GetTransform(), rc.DepthTest);
 						else
-							renderer->SubmitMesh(meshComponent, transformComponent.GetTransform());
+							renderer->SubmitMesh(meshComponent, transformComponent.GetTransform(), nullptr, rc.DepthTest);
 
 					}
 				}
@@ -135,7 +136,7 @@ namespace RockEngine
 				if (entity->HasComponent<SphereColliderComponent>())
 				{
 					auto& collider = entity->GetComponent<SphereColliderComponent>();
-					renderer->SubmitSoliderSphere(collider, entity->GetComponent<TransformComponent>().GetTransform());
+					renderer->SubmitSoliderSphere(collider, entity->GetComponent<TransformComponent>().GetTransform(), rc.DepthTest);
 				}
 			}
 		}

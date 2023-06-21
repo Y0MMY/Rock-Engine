@@ -41,7 +41,7 @@ namespace RockEngine
 	class SceneRenderer;
 	using EntityMap = std::unordered_map<UUID, Entity*>;
 
-	class Scene : public RefCounted
+	class Scene : public RefCounted 
 	{
 	public:
 		Scene(const std::string& debugName = "Scene");
@@ -67,7 +67,7 @@ namespace RockEngine
 		LightEnvironment& GetLight() { return m_LightEnvironment; }
 
 		template<typename T>
-		decltype(auto) GetAllEntitiesWith()
+		decltype(auto) GetAllEntitiesSceneWith()
 		{
 			std::vector<Entity*> out;
 			for (const auto& [key, e] : m_EntityIDMap)
@@ -76,7 +76,7 @@ namespace RockEngine
 			return out;
 		}
 
-		decltype(auto) GetAllEntities()
+		decltype(auto) GetAllEntitiesScene()
 		{
 			return m_EntityIDMap;
 		}
@@ -96,7 +96,6 @@ namespace RockEngine
 		};
 		std::vector<SelectedContext> m_SelectionContext;
 		std::string m_DebugName;
-		//std::vector<Entity*> m_Entities;
 		EntityMap m_EntityIDMap;
 		Entity* m_SelectedEntity;
 
@@ -110,7 +109,7 @@ namespace RockEngine
 
 		float m_SkyboxLod = 1.0f;
 		float m_EnvironmentIntensity = 1.0f;
-
+	private:
 		friend class SceneRenderer;
 		friend class SceneHierarchyPanel;
 		friend class SceneRendererPanel;

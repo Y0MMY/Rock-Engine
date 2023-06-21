@@ -203,12 +203,15 @@ namespace RockEngine
 					m_Context->SetSelected(newEntity);
 				}
 
+				ImGui::Spacing();
+
 				if (ImGui::BeginMenu("3D"))
 				{
 					if (ImGui::Button("Sphere Collider"))
 					{
 						decltype(auto) newEntity = m_Context->CreateEntity("Mesh Colider");
 						newEntity->AddComponent<SphereColliderComponent>();
+						m_Context->SetSelected(newEntity);
 					}
 
 					ImGui::EndMenu();
@@ -263,7 +266,7 @@ namespace RockEngine
 		ImGui::Begin("Outliner");
 
 		uint32_t entityCount = 0, meshCount = 0;
-		auto& sceneEntities = m_Context->GetAllEntities();
+		auto& sceneEntities = m_Context->GetAllEntitiesScene();
 		for (const auto& [key, entity] : sceneEntities)
 			DrawEntityNode(entity, entityCount, meshCount);
 
@@ -384,6 +387,7 @@ namespace RockEngine
 				UI::BeginPropertyGrid();
 
 				UI::Property("Visible", component.Visible);
+				UI::Property("Depth Test", component.DepthTest);
 
 				UI::EndPropertyGrid();
 
@@ -414,7 +418,9 @@ namespace RockEngine
 				{
 					std::string file = Utils::FileSystem::OpenFileDialog().string();
 					if (!file.empty())
+					{
 						mc.Mesh = Ref<Mesh>::Create(file);
+					}
 				}
 
 				UI::PopID();
@@ -511,7 +517,7 @@ namespace RockEngine
 					scc.DebugMesh = MeshFactory::CreateSphere(scc.Radius);
 				}
 
-				UI::Property("Is Trigger", scc.IsTrigger);
+				//UI::Property("Is Trigger", scc.IsTrigger);
 
 				UI::EndPropertyGrid();
 			});

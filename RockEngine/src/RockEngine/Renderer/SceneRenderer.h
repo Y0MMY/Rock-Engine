@@ -53,11 +53,11 @@ namespace RockEngine
 		void BeginScene(const SceneRendererCamera& camera);
 		void EndScene();
 
-		void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<MaterialInstance> overrideMaterial = nullptr);
-		void SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
+		void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<MaterialInstance> overrideMaterial = nullptr, bool depthTest = false);
+		void SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), bool depthTest = false);
 		void SubmitMeshWithShader(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Shader> shader);
 
-		void SubmitSoliderSphere(const SphereColliderComponent& component, const glm::mat4& transform = glm::mat4(1.0f));
+		void SubmitSoliderSphere(const SphereColliderComponent& component, const glm::mat4& transform = glm::mat4(1.0f), bool depthTest = false);
 
 		SceneRendererOptions& GetOptions();
 		static Environment CreateEnvironmentMap(const std::filesystem::path& filepath);
@@ -141,6 +141,7 @@ namespace RockEngine
 			Ref<Mesh> Mesh;
 			Ref<MaterialInstance> Material;
 			glm::mat4 Transform;
+			bool DepthTest;
 		};
 
 		struct DrawCommandWithShader

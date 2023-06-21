@@ -160,7 +160,7 @@ namespace RockEngine
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
 
-		auto entitys = m_Scene->GetAllEntitiesWith<IDComponent>();
+		auto entitys = m_Scene->GetAllEntitiesSceneWith<IDComponent>();
 		for (auto entity : entitys)
 		{
 			SerializeEntity(out, entity);
@@ -231,7 +231,6 @@ namespace RockEngine
 					if (!deserializedEntity->HasComponent<MeshComponent>())
 					{
 						deserializedEntity->AddComponent<MeshComponent>(Ref<Mesh>::Create(meshPath));
-						deserializedEntity->GetComponent<MeshComponent>().Target = DrawTarget::Draw;
 					}
 
 					RE_CORE_INFO("  Mesh Asset Path: {0}", meshPath);

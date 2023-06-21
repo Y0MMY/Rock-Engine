@@ -62,7 +62,7 @@ namespace RockEngine
 		// Shere Sun
 		auto sphereShader = Shader::Create("assets/shaders/LightMesh.glsl");
 		m_ColiderSphereMaterial = MaterialInstance::Create(Material::Create(sphereShader));
-		m_ColiderSphereMaterial->SetFlag(MaterialFlag::DepthTest, false);
+		//m_ColiderSphereMaterial->SetFlag(MaterialFlag::DepthTest, false);
 
 		// Shadow Map
 		m_ShadowMapShader = Shader::Create("assets/shaders/ShadowMap.glsl");
@@ -129,16 +129,16 @@ namespace RockEngine
 		}
 	}
 
-	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance> overrideMaterial)
+	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance> overrideMaterial, bool depthTest)
 	{
 		// TODO: Culling, sorting, etc.
-		m_DrawList.push_back({ mesh, overrideMaterial, transform });
+		m_DrawList.push_back({ mesh, overrideMaterial, transform, depthTest });
 		m_ShadowPassDrawList.push_back({ mesh, overrideMaterial, transform });
 	}
 
-	void SceneRenderer::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform)
+	void SceneRenderer::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform, bool depthTest)
 	{
-		m_SelectedMeshDrawList.push_back({ mesh, nullptr, transform });
+		m_SelectedMeshDrawList.push_back({ mesh, nullptr, transform, depthTest });
 		m_ShadowPassDrawList.push_back({ mesh, nullptr, transform });
 	}
 
@@ -147,9 +147,9 @@ namespace RockEngine
 		m_DrawListWithShader.push_back({ mesh, shader, transform});
 	}
 
-	void SceneRenderer::SubmitSoliderSphere(const SphereColliderComponent& component, const glm::mat4& transform)
+	void SceneRenderer::SubmitSoliderSphere(const SphereColliderComponent& component, const glm::mat4& transform, bool depthTest)
 	{
-		m_DrawColiderSphere.push_back({ component.DebugMesh, nullptr, transform });
+		m_DrawColiderSphere.push_back({ component.DebugMesh, nullptr, transform, depthTest });
 	}
 
 	static Ref<Shader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
@@ -343,7 +343,7 @@ namespace RockEngine
 
 
 			auto overrideMaterial = nullptr; // dc.Material;
-			Renderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
+			Renderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial, dc.DepthTest);
 		}
 
 		if (outline)
@@ -412,7 +412,7 @@ namespace RockEngine
 			}
 
 			auto overrideMaterial = nullptr; // dc.Material;
-			Renderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
+			Renderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial, dc.DepthTest);
 		}
 
 		if (outline)
@@ -433,7 +433,7 @@ namespace RockEngine
 			m_OutlineAnimMaterial->Set("u_ViewProjection", viewProjection);
 			for (auto& dc : m_SelectedMeshDrawList)
 			{
-				Renderer::SubmitMesh(dc.Mesh, dc.Transform, dc.Mesh->IsAnimated() ? m_OutlineAnimMaterial : m_OutlineMaterial);
+				Renderer::SubmitMesh(dc.Mesh, dc.Transform, dc.Mesh->IsAnimated() ? m_OutlineAnimMaterial : m_OutlineMaterial, dc.DepthTest);
 			}
 
 			Renderer::Submit([]()
@@ -444,7 +444,7 @@ namespace RockEngine
 
 			for (auto& dc : m_SelectedMeshDrawList)
 			{
-				Renderer::SubmitMesh(dc.Mesh, dc.Transform, dc.Mesh->IsAnimated() ? m_OutlineAnimMaterial : m_OutlineMaterial);
+				Renderer::SubmitMesh(dc.Mesh, dc.Transform, dc.Mesh->IsAnimated() ? m_OutlineAnimMaterial : m_OutlineMaterial, dc.DepthTest);
 			}
 
 			Renderer::Submit([]()
@@ -460,7 +460,7 @@ namespace RockEngine
 		for (auto& dc : m_DrawColiderSphere)
 		{
 			if (dc.Mesh)
-				Renderer::SubmitMesh(dc.Mesh, dc.Transform, m_ColiderSphereMaterial);
+				Renderer::SubmitMesh(dc.Mesh, dc.Transform, m_ColiderSphereMaterial, dc.DepthTest);
 		}
 
 		// Grid
